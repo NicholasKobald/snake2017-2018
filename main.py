@@ -11,10 +11,11 @@ def static(path):
 
 @bottle.get('/')
 def index():
-    
+
     return {
         'color': '#00ffff',
     }
+
 
 
 @bottle.post('/start')
