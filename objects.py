@@ -4,7 +4,6 @@ class GameBoard(object):
     def __init__(board):
         self.board = board
 
-    
     def update(self, move_list):
         pass
 
