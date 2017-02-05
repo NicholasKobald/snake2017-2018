@@ -3,25 +3,26 @@
 #
 #
 # N. Kobald - 2017-02-04
-import bottle, os
+import os
+from bottle import run, route, post
 
-@bottle.route('/static/<path:path>')
-def static(path):
-    return bottle.static_file(path, root='static/')
+#for testing locally
 
-@bottle.get('/')
-def index():
+#page to dump data
+@route('/hello')
+def hello():
+    return "Hello World!"
 
-    return {
-        'color': '#00ffff',
-    }
-
-
-
-@bottle.post('/start')
+@route('/start', method='POST')
 def start():
-    data = bottle.request.json
-
-    return {
-        'taunt': 'battlesnake-python!'
+    response = {
+        'taunt':'Roar'
     }
+    return response
+
+@route('/move', method='POST')
+def move():
+    data = bottle.request.json
+    return ''
+
+run(host='localhost', port=8080, debug=True, reloader=True)
