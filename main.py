@@ -4,8 +4,7 @@
 #
 # N. Kobald - 2017-02-04
 import os
-from bottle import run, route, post
-
+from bottle import run, route, post, request
 #for testing locally
 
 #page to dump data
@@ -25,11 +24,18 @@ def start():
 
 @route('/move', method='POST')
 def move():
+    print "In Move."
     available_moves = ['n', 'e', 's', 'w']
-    data = bottle.request.json
+    data = request.body.read()
+
+    response = {
+        'move':'up',
+        'taunt':'Lets raise the ROOOF'
+    }
+    return response
 
 
 def parse_input(board_info):
     print board_info
-    
+
 run(host='localhost', port=8080, debug=True, reloader=True)
