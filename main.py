@@ -31,4 +31,5 @@ def move():
 
 def parse_input(board_info):
     print board_info
+    
 run(host='localhost', port=8080, debug=True, reloader=True)
