@@ -4,6 +4,14 @@
 
 import os, json
 from bottle import run, route, post, request
+from helper import *
+from objects import *
+
+
+def pick_move(data):
+    snake_list = data['snakes']
+    my_snake = 
+    viable_moves = get_valid_moves(data['snake'], data['board'])
 
 #page to dump data
 @route('/hello')
@@ -25,9 +33,7 @@ def move():
     print "In Move."
     available_moves = ['n', 'e', 's', 'w']
     data = json.loads(request.body.read()) #dict
-
-
-
+    pick_move(data)
     response = {
         'move':'up',
         'taunt':'Lets raise the ROOOF'
