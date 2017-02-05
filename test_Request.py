@@ -5,8 +5,9 @@ BASE_URL = 'http://localhost:8080'
 def make_start_request():
     pass
 
+#call to snake api
 def make_move_request():
-    pass
+    requests.post(BASE_URL + '/move', json=request_data)
 
 snake_one = {
     'name': '1',
@@ -55,8 +56,9 @@ request_data = dict(
 )
 
 #call to snake api
-requests.post(BASE_URL + '/move', data=request_data)
+make_move_request()
 
-exit() 
+
+
 
 #    0,9                                   9,9

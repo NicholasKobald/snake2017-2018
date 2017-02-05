@@ -1,11 +1,9 @@
 #
 #
-#
-#
 # N. Kobald - 2017-02-04
-import os
+
+import os, json
 from bottle import run, route, post, request
-#for testing locally
 
 #page to dump data
 @route('/hello')
@@ -26,7 +24,9 @@ def start():
 def move():
     print "In Move."
     available_moves = ['n', 'e', 's', 'w']
-    data = request.body.read()
+    data = json.loads(request.body.read()) #dict
+
+
 
     response = {
         'move':'up',

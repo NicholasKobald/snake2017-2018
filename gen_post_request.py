@@ -44,7 +44,8 @@ def visualize_request(board):
     for row in board:
         print(row)
 def temp_post_request(board):
-    
+    pass
+
 
 def main():
     board = generate_board(4, 4)
