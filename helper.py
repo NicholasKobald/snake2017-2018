@@ -54,9 +54,7 @@ def print_board(board):
 
 def get_valid_moves(snake, board, width=10, height=10):
     candidate_moves = ['n', 'e', 's', 'w']
-
     head = snake['coords'][0]
-    #the opposite might be quicker
     not_safe = lambda y,x:board[x][y]['state']=='head' or board[x][y]['state']=='body'
 
     y = head[0]

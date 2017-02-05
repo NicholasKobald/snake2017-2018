@@ -1,6 +1,7 @@
 #
 #
 #
+
 from helper import *
 
 #given a snake list, and a board, returns the list of boards that

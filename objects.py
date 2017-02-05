@@ -10,6 +10,7 @@ class GameBoard(object):
     def undo(self, move):
         pass
     def construct_board(dict_arr):
+        pass
 
 
 
