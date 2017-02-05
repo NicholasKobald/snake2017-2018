@@ -9,6 +9,12 @@ flip_dict = {
     'w':'e'
 }
 
+def get_moveset(snake, board):
+    return dict(
+        snek=snake,
+        moves=get_valid_moves(snake, board)
+    )
+
 def get_specific_snake(snake_list, snake_name):
     for snake in snake_list:
         if snake['name'] == snake_name:
@@ -26,6 +32,7 @@ def get_dir(coords):
     if coords[0][1] < coords[1][1]:
         return 'n'
     return 's'
+
 def print_board_two(board):
     brs = ''
     for i in range(len(board)):
@@ -49,7 +56,8 @@ def get_valid_moves(snake, board, width=10, height=10):
     candidate_moves = ['n', 'e', 's', 'w']
 
     head = snake['coords'][0]
-    not_safe = lambda y, x:board[x][y]['state']=='head' or board[x][y]['state']=='body'
+    #the opposite might be quicker
+    not_safe = lambda y,x:board[x][y]['state']=='head' or board[x][y]['state']=='body'
 
     y = head[0]
     x = head[1]

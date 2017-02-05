@@ -1,18 +1,21 @@
 
-
+#maybe fuck the classes?
 class GameBoard(object):
-    def __init__(board):
-        self.board = board
+    def __init__(self, board):
+        self.board = []
 
     def update(self, move_list):
         pass
 
     def undo(self, move):
         pass
+    def construct_board(dict_arr):
+
+
 
 class MoveSet():
     def __init__(self):
-        pass
+        self.move_set_list = []
 
-    def get_move_list(self):
-        pass
+    def get_moveset_list(self):
+        return self.move_set_list

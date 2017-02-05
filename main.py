@@ -4,8 +4,9 @@
 
 import os, json
 from bottle import run, route, post, request
-from helper import *
-from objects import *
+from helper import * #helper functions
+from objects import * #helper classes
+from logic import * #meat of the algorithm
 
 OUR_SNAKE_NAME = '1'
 
