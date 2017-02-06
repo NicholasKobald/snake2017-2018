@@ -8,12 +8,15 @@ from helper import * #helper functions
 from objects import * #helper classes
 from logic import * #meat of the algorithm
 
+
 OUR_SNAKE_NAME = '1'
 
 def pick_move(data):
     snake_list = data['snakes']
     my_snake = get_specific_snake(snake_list, OUR_SNAKE_NAME)
     viable_moves = get_valid_moves(my_snake, data['board'])
+    game = GameBoard(data['board'])
+    print(game)
 
 #page to dump data
 @route('/hello')

@@ -9,6 +9,10 @@ from helper import *
 #
 #this implementation only works on a snake_list of length 2
 #To expand to the general case, see iter.tools
+
+#something like this:
+#import itertools
+#list(itertools.product(*all_move_mapped))
 def enumerate_boards(us, them, board):
     board_list = [] #max of 9 in a 1v1, so it's ok to generate them at once
     for our_move in get_valid_moves(us):
@@ -16,7 +20,6 @@ def enumerate_boards(us, them, board):
             gbfm(us, our_move, them, their_move, board)
 
 #gen board from moves
-#
 #TODO realize the existence of food
 def gbfm(us, us_move, them, them_move, board):
     pass

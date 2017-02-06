@@ -9,6 +9,22 @@ flip_dict = {
     'w':'e'
 }
 
+def convert_to_internal_board(board):
+    internal_rep = []
+    for i in range(len(board)):
+        row = []
+        for j in range(len(board[0])):
+            if board['state'] == 'empty':
+                row.append('e')
+            elif board['state']=='head':
+                row.append('h'+board['state']['name'])
+            elif board['state']=='body':
+                row.append('s'+board['state']['name'])
+            elif board['state']=='food':
+                row.append('f')
+        internal_rep.append(row)
+    return internal_rep
+    
 def get_moveset(snake, board):
     return dict(
         snek=snake,
