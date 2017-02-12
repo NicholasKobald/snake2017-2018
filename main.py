@@ -9,6 +9,8 @@ from objects import * #helper classes
 from logic import * #meat of the algorithm
 
 
+GAME_ENV = {}
+
 OUR_SNAKE_NAME = '1'
 
 def pick_move(data):
@@ -26,24 +28,29 @@ def hello():
 @route('/start', method='POST')
 def start():
     print "In start"
-    data = bottle.request.data
-    parse_input(data)
-    response = {
-        'taunt':'Roar'
-    }
-    return response
+    data = json.loads(request.body.read()) #dict
+    response = dict(
+        color='#369',
+        name='Bennet',
+        taunt='My. Treat.'
+    )
+    print data
+    GAME_ENV[data['game_id']] = (data['width'], data['height'])
+    print GAME_ENV[data['game_id']]
+    game = GameBoard(data)
+    return json.dumps(response)
 
 @route('/move', method='POST')
 def move():
-    print "In Move."
+    print "In Move. V2."
+    print "game envor:", GAME_ENV['game_id']
     available_moves = ['n', 'e', 's', 'w']
     data = json.loads(request.body.read()) #dict
-    pick_move(data)
     response = {
         'move':'up',
         'taunt':'Lets raise the ROOOF'
     }
-    return response
+    return json.dumps(response)
 
 
 def parse_input(board_info):

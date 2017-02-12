@@ -4,8 +4,8 @@ from logic import *
 #maybe fuck the classes?
 class GameBoard(object):
 
-    def __init__(self, board):
-        self.internal_rep = self.convert_to_internal_board(board)
+    def __init__(self, start_req):
+        self.env = start_req
 
     def update(self, move_list, snake_list):
         """
