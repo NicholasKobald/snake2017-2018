@@ -4,8 +4,10 @@ from logic import *
 #maybe fuck the classes?
 class GameBoard(object):
 
+    internal_rep = []
+
     def __init__(self, board):
-        self.internal_board = self.convert_to_internal_board(board)
+        self.internal_rep = self.convert_to_internal_board(board)
 
     def update(self, move_list, snake_list):
         """
@@ -22,7 +24,7 @@ class GameBoard(object):
 
     def convert_to_internal_board(self, board):
         internal_rep = []
-        print "In convert. Two"
+        print "In convert.--"
         for i in range(len(board)):
             row = []
             for j in range(len(board[0])):
@@ -36,20 +38,20 @@ class GameBoard(object):
                 elif tile['state']=='food':
                     row.append('f')
             internal_rep.append(row)
-        print "done convert."
         return internal_rep
 
     def print_board(self):
         board = self.internal_rep
-        print "Board rep:"
+        print "----- PRINT BOARD ----\n"
         for i in range(len(board)):
-            row_repr = ''
+            row_repr = '|'
             for j in range(len(board[0])):
-                row_repr += board[i][j]
-                if board[i][j]=='e':
-                    row_repr+=' '
-
+                row_repr += board[i][j] + '|'
+                if board[i][j]=='e' or board[i][j]=='f':
+                    row_repr+='  |'
             print row_repr
+            print('------!!!')
+        print "\n----- PRINT BOARD FIN ----"
 
 
 
