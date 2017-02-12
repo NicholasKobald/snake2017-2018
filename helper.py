@@ -9,22 +9,6 @@ flip_dict = {
     'w':'e'
 }
 
-def convert_to_internal_board(board):
-    internal_rep = []
-    for i in range(len(board)):
-        row = []
-        for j in range(len(board[0])):
-            if board['state'] == 'empty':
-                row.append('e')
-            elif board['state']=='head':
-                row.append('h'+board['state']['name'])
-            elif board['state']=='body':
-                row.append('s'+board['state']['name'])
-            elif board['state']=='food':
-                row.append('f')
-        internal_rep.append(row)
-    return internal_rep
-    
 def get_moveset(snake, board):
     return dict(
         snek=snake,
@@ -40,14 +24,14 @@ def get_specific_snake(snake_list, snake_name):
 def get_dir(coords):
     #moved east
     if coords[0][0] < coords[1][0]:
-        return 'e'
+        return 'right'
     #moved west
     if coords[0][0] > coords[1][0]:
-        return 'w'
+        return 'left'
     #northturn
     if coords[0][1] < coords[1][1]:
-        return 'n'
-    return 's'
+        return 'up'
+    return 'down'
 
 def print_board_two(board):
     brs = ''
@@ -69,7 +53,7 @@ def print_board(board):
         print row_rep
 
 def get_valid_moves(snake, board, width=10, height=10):
-    candidate_moves = ['n', 'e', 's', 'w']
+    candidate_moves = ['up', 'right', 'down', 'left']
     head = snake['coords'][0]
     not_safe = lambda y,x:board[x][y]['state']=='head' or board[x][y]['state']=='body'
 
@@ -77,12 +61,12 @@ def get_valid_moves(snake, board, width=10, height=10):
     x = head[1]
 
     if x == width-1 or not_safe(x+1, y):
-        candidate_moves.remove('e')
+        candidate_moves.remove('right')
     if head[0] == 0 or not_safe(x-1, y):
-        candidate_moves.remove('w')
+        candidate_moves.remove('left')
     if head[1] == height-1 or not_safe(x, y+1):
-        candidate_moves.remove('s')
+        candidate_moves.remove('right')
     if head[1] == 0 or not_safe(x, y-1):
-        candidate_moves.remove('n')
+        candidate_moves.remove('up')
 
     return candidate_moves
