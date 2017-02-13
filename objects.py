@@ -1,23 +1,16 @@
 from logic import *
-
+from gen_fake_board import gen_board
 
 #maybe fuck the classes?
 class GameBoard(object):
 
-    internal_rep = []
+    def __init__(self, board, height, width):
+        self.height = height
+        self.width = width
+        #commented out for testing
+        #self.internal_rep = self.convert_to_internal_board(board)
+        self.internal_rep = gen_board()
 
-    def __init__(self, board):
-        self.internal_rep = self.convert_to_internal_board(board)
-
-    def update(self, move_list, snake_list):
-        """
-        Takes a list of moves, and modifies the internal board rep
-        to correspond to the board after those moves take place
-        """
-        pass
-
-    def undo(self, move):
-        pass
     def __str__(self):
         self.print_board()
         return ''
@@ -48,16 +41,7 @@ class GameBoard(object):
             for j in range(len(board[0])):
                 row_repr += board[i][j] + '|'
                 if board[i][j]=='e' or board[i][j]=='f':
-                    row_repr+='  |'
+                    row_repr+=' '
             print row_repr
-            print('------!!!')
+            print('-' * len(row_repr) )
         print "\n----- PRINT BOARD FIN ----"
-
-
-
-class MoveSet():
-    def __init__(self):
-        self.move_set_list = []
-
-    def get_moveset_list(self):
-        return self.move_set_list
