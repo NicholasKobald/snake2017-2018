@@ -4,9 +4,8 @@
 
 import os, json
 from flask import Flask, request
-from helper import * #helper functions
-from objects import * #helper classes
-from logic import * #meat of the algorithm
+from logic import * 
+from gen_fake_board import gen_board #testng
 
 OUR_SNAKE_NAME = '1'
 
@@ -45,14 +44,13 @@ def move():
 
     print "Playing on a", width, "by", height, "board."
 
-    game = GameBoard(data['board'], height, width
-    
+
     #going to look into best way to differentiate snakes
     #using ID's seems like the best best,
     #for now I'm naming snakes 1, 2, 3.. etc
     #since its allows me to print out boards in a way thats legible.
-
-    pick_move(game, data['snakes'], '1')
+    board = gen_board()
+    pick_move(board, data['snakes'], '1')
 
     response = {
         'move':'up',

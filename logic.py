@@ -13,6 +13,7 @@ from helper import *
 #import itertools
 #list(itertools.product(*all_move_mapped))
 def do_minmax(game, snake_list):
+    pass
 
 
 
@@ -29,6 +30,35 @@ def gbfm(us, us_move, them, them_move, board):
     pass
 
 
+def convert_to_internal_board(board):
+    internal_rep = []
+    print "In convert.--"
+    for i in range(len(board)):
+        row = []
+        for j in range(len(board[0])):
+            tile = board[i][j]
+            if tile['state'] == 'empty':
+                row.append('e')
+            elif tile['state']=='head':
+                row.append('h'+tile['snake'])
+            elif tile['state']=='body':
+                row.append('s'+tile['snake'])
+            elif tile['state']=='food':
+                row.append('f')
+        internal_rep.append(row)
+    return internal_rep
+
+def print_board(board):
+    print "----- PRINT BOARD ----\n"
+    for i in range(len(board)):
+        row_repr = '|'
+        for j in range(len(board[0])):
+            row_repr += board[i][j] + '|'
+            if board[i][j]=='e' or board[i][j]=='f':
+                row_repr+=' '
+        print row_repr
+        print('-' * len(row_repr) )
+    print "\n----- PRINT BOARD FIN ----"
 
 def get_moveset(snake, board):
     return dict(
