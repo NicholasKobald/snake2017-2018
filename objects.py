@@ -1,7 +1,6 @@
 from logic import *
 from gen_fake_board import gen_board
 
-#maybe fuck the classes?
 class GameBoard(object):
 
     def __init__(self, board, height, width):
