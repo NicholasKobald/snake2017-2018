@@ -16,19 +16,20 @@ def home():
     return "Hello World"
 
 def pick_move(board, snake_list, us):
+    #prolly change to ID at some point.
+    our_snake = get_specific_snake(snake_list, us)
 
     height = len(board) #only tested on N x N  (not N x M)
     width = len(board[0])
     print "Playing on a", width, "by", height, "board."
-
-    print_board(board)
+    snake_list.remove(our_snake)
     game_info = dict(
-        our_snake=us,
+        our_snake=our_snake,
         height=height,
         width=width,
         snake_list=snake_list
     )
-    move = do_minmax(board, snake_list, game_info)
+    move = do_minmax(board, game_info)
     print "Move Picked:", move
     return move
 #page to dump data

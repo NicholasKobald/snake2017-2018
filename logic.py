@@ -1,31 +1,54 @@
 #
 #
 #
-from helper import *
 
-def do_minmax(board, snake_list, game_info):
-    for snake in snake_list:
-        snake_moves = get_valid_moves(snake['coords'][0], board, 10, 10)
-        print snake['name'], "has moves", snake_moves
+def do_minmax(board, game_info, depth=None):
+    possible = eb(game_info['our_snake'], game_info['snake_list'], board)
+    print "got possible boards."
+    print_board(possible[1])
 
-#this implementation only works on a snake_list of length 2
-#To expand to the general case, see iter.tools
+    print "Number of resulting boards:", len(possible)
 
-#something like this:
-#import itertools
-#list(itertools.product(*all_move_mapped))
-def enumerate_boards(us, them, board):
+
+#EnumerateBoards
+def eb(us, opponent, board):
     board_list = [] #max of 9 in a 1v1, so it's ok to generate them at once
-    for our_move in get_valid_moves(us):
-        for their_move in get_valid_moves(us):
-            gbfm(us, our_move, them, their_move, board)
+    opponent = opponent.pop()
+    for our_move in get_valid_moves(us['coords'][0], board, 10, 10):
+        for their_move in get_valid_moves(opponent['coords'][0], board, 10, 10):
+            board_list.append(gbfm(us, our_move, opponent, their_move, board))
+
     return board_list
 
-#gen board from moves
-#TODO realize the existence of food
 def gbfm(us, us_move, them, them_move, board):
-    pass
+    print us['name'], "moving", us_move, "them:", them['name'], "moving", them_move
+    new_board = [row[:] for row in board]
+    enact_move(us, us_move, board)
+    enact_move(them, them_move, board)
+    return new_board
 
+
+def enact_move(snake, direc, board):
+    head = snake['coords'][0]
+    new_head = get_new_head(head, direc)
+    snake['coords'].insert(0, new_head)
+    board[new_head[0]][new_head[1]] = 'h'+snake['name']
+    board[head[0]][head[1]] = 's'+snake['name']
+    if board[new_head[0]][new_head[1]] == 'f':
+        return
+    snake['coords'].pop()
+
+def get_new_head(h, direction):
+    head = h[:]
+    if direction == 'up':
+        head[0] -= 1
+    if direction == 'down':
+        head[0] += 1
+    if direction == 'left':
+        head[1] -= 1
+    if direction == 'right':
+        head[1] += 1
+    return head
 
 def convert_to_internal_board(board):
     internal_rep = []
