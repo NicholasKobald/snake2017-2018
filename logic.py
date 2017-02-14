@@ -3,20 +3,17 @@
 #
 from helper import *
 
-#given a snake list, and a board, returns the list of boards that
-#arise from any combination of moves.
-#
+def do_minmax(board, snake_list, game_info):
+    for snake in snake_list:
+        snake_moves = get_valid_moves(snake['coords'][0], board, 10, 10)
+        print snake['name'], "has moves", snake_moves
+
 #this implementation only works on a snake_list of length 2
 #To expand to the general case, see iter.tools
 
 #something like this:
 #import itertools
 #list(itertools.product(*all_move_mapped))
-def do_minmax(game, snake_list):
-    pass
-
-
-
 def enumerate_boards(us, them, board):
     board_list = [] #max of 9 in a 1v1, so it's ok to generate them at once
     for our_move in get_valid_moves(us):
@@ -93,22 +90,22 @@ def print_board_two(board):
             else:
                 brs+='S'
 
-def get_valid_moves(snake, board):
+def get_valid_moves(head, board, height, width):
     candidate_moves = ['up', 'right', 'down', 'left']
-    head = snake['coords'][0]
+
     snake_square = lambda s: s.startswith('h') or s.startswith('s')
     not_safe = lambda y,x: snake_square(board[x][y]) or snake_square(board[x][y])
 
-    y = head[0]
-    x = head[1]
+    y = head[0] #how many lists in we go
+    x = head[1] #how many elements over
 
     if x == width-1 or not_safe(x+1, y):
         candidate_moves.remove('right')
-    if head[0] == 0 or not_safe(x-1, y):
+    if x == 0 or not_safe(x-1, y):
         candidate_moves.remove('left')
-    if head[1] == height-1 or not_safe(x, y+1):
+    if y == height-1 or not_safe(x, y+1):
         candidate_moves.remove('right')
-    if head[1] == 0 or not_safe(x, y-1):
+    if y == 0 or not_safe(x, y-1):
         candidate_moves.remove('up')
 
     return candidate_moves

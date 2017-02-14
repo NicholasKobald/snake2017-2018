@@ -4,8 +4,8 @@
 
 import os, json
 from flask import Flask, request
-from logic import * 
-from gen_fake_board import gen_board #testng
+from logic import *
+from gen_fake_board import gen_board, gen_snake_list #testng
 
 OUR_SNAKE_NAME = '1'
 
@@ -15,11 +15,22 @@ app = Flask(__name__)
 def home():
     return "Hello World"
 
-def pick_move(game_obj):
-    game_obj.print_board()
-    move = do_minmax(game_obj, snake_list)
-    print "Done pick_move"
+def pick_move(board, snake_list, us):
 
+    height = len(board) #only tested on N x N  (not N x M)
+    width = len(board[0])
+    print "Playing on a", width, "by", height, "board."
+
+    print_board(board)
+    game_info = dict(
+        our_snake=us,
+        height=height,
+        width=width,
+        snake_list=snake_list
+    )
+    move = do_minmax(board, snake_list, game_info)
+    print "Move Picked:", move
+    return move
 #page to dump data
 @app.route('/hello')
 def hello():
@@ -39,18 +50,14 @@ def start():
 def move():
     data = request.get_json(force=True) #dict
 
-    height = len(data['board']) #only tested on N x N  (not N x M)
-    width = len(data['board'][0])
-
-    print "Playing on a", width, "by", height, "board."
-
-
     #going to look into best way to differentiate snakes
     #using ID's seems like the best best,
     #for now I'm naming snakes 1, 2, 3.. etc
     #since its allows me to print out boards in a way thats legible.
-    board = gen_board()
-    pick_move(board, data['snakes'], '1')
+
+    board = gen_board() #testing
+    snake_list = gen_snake_list() #testing
+    pick_move(board, snake_list, '1')
 
     response = {
         'move':'up',

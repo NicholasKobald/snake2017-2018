@@ -1,3 +1,18 @@
+def gen_snake_list():
+    snek_one = dict(
+        name='1',
+        id='hashashash',
+        health_points=100,
+        coords=[[4,1], [3,1], [2,1]]
+    )
+    snek_two = dict(
+        name='2',
+        id='watever',
+        health_points=95,
+        coords=[[6,8], [7,8], [8,8]]
+    )
+    return [snek_one, snek_two]
+
 def gen_board(width=10, height=10):
     print "In gen board."
     board_list = []
