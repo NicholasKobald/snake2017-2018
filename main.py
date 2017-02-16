@@ -39,6 +39,7 @@ def hello():
 
 @app.route('/start', methods=['POST'])
 def start():
+    print "Got started pinged."
     data = request.get_json(force=True) #dict
     response = dict(
         color='#369',
@@ -50,18 +51,10 @@ def start():
 @app.route('/move', methods=['POST'])
 def move():
     data = request.get_json(force=True) #dict
-
-    #going to look into best way to differentiate snakes
-    #using ID's seems like the best best,
-    #for now I'm naming snakes 1, 2, 3.. etc
-    #since its allows me to print out boards in a way thats legible.
-
-    board = gen_board() #testing
-    snake_list = gen_snake_list() #testing
-    pick_move(board, snake_list, '1')
-
+    print "Got pinged."
+    
     response = {
-        'move':'up',
+        'move':'left',
         'taunt':'Lets raise the ROOOF'
     }
 
