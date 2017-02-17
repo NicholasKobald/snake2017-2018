@@ -2,6 +2,24 @@
 #
 #
 
+"""
+
+This whole file is essentially
+deprecated pending the creation of
+the Tile class, and implementation of
+
+get_board_from_data
+
+once those two things exist, we can update the functions
+in here and business as usual.
+
+"""
+#takes the data, and returns a representation
+#as a 2D array
+def get_board_from_data(data):
+    pass
+
+#main recursive algorithm
 def do_minmax(board, game_info, depth=None):
     possible = eb(game_info['our_snake'], game_info['snake_list'], board)
     print "got possible boards."
@@ -20,6 +38,11 @@ def eb(us, opponent, board):
 
     return board_list
 
+
+#get board from move. Takes two players,
+#and their corresponding moves and returns them
+#board that should arise as a result of both
+#players making their moves.
 def gbfm(us, us_move, them, them_move, board):
     print us['name'], "moving", us_move, "them:", them['name'], "moving", them_move
     new_board = [row[:] for row in board]
@@ -27,7 +50,7 @@ def gbfm(us, us_move, them, them_move, board):
     enact_move(them, them_move, board)
     return new_board
 
-
+#helps GBFM
 def enact_move(snake, direc, board):
     head = snake['coords'][0]
     new_head = get_new_head(head, direc)
@@ -38,6 +61,7 @@ def enact_move(snake, direc, board):
         return
     snake['coords'].pop()
 
+#helps enact_move
 def get_new_head(h, direction):
     head = h[:]
     if direction == 'up':
@@ -50,6 +74,7 @@ def get_new_head(h, direction):
         head[1] += 1
     return head
 
+#convers to internal board
 def convert_to_internal_board(board):
     internal_rep = []
     print "In convert.--"
