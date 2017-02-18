@@ -16,16 +16,19 @@ class Tile:
     def set_tile_type(self, tile_data):
         self.data = tile_data
 
+    def __str__(self):
+        return self.data['type'][:1]
+
 
 class Board:
 
-    def __init__(height, width, board):
+    def __init__(self, height, width, board):
         self.height = height
         self.width = width
         self.board = board      # expects a 2D array of Tile objects
 
     # returns list of moves that will not result in instant death (wall or snake)
-    def get_valid_moves(col, row):
+    def get_valid_moves(self, col, row):
         valid_moves = []
         if(col < width-1 and get_tile(col+1, row).is_safe()):
             valid_moves.append('right')
@@ -38,5 +41,19 @@ class Board:
 
         return valid_moves
 
-    def get_tile(col, row):
-        return board[row][col]
+    def get_tile(self, col, row):
+        return self.board[row][col]
+
+    def print_board(self):
+        board = self.board
+        for i in range(self.height):
+            row = ''
+            for j in range(self.width):
+                space_val = str(self.get_tile(j, i))
+                if space_val == 'e':
+                    row += '  |'
+                else:
+                    row += (str(self.get_tile(j, i))) + ' |'
+
+            print row
+            print '-'*self.width*3

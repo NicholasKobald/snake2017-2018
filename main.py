@@ -27,6 +27,7 @@ def home():
 #and some basic parsing
 def pick_move(data):
     board = create_board_from_data(data)
+    board.print_board()
 
 
 

@@ -29,7 +29,8 @@ def create_board_from_data(data):
         x, y = food[0], food[1]
         board[y][x].set_tile_type(dict(type='food'))
 
-    return board
+    board_obj = Board(height, width, board)
+    return board_obj
 
 def print_board(board):
     for i in range(len(board)):
