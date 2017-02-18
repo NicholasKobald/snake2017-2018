@@ -26,8 +26,12 @@ def home():
 #Logic about which algorithm gets run,
 #and some basic parsing
 def pick_move(data):
+<<<<<<< HEAD
     #returns Board Obj
     board = create_board_from_data(data)
+=======
+    board = get_board_from_data(data)
+>>>>>>> cf7fa624077b6a2bb18cf5abe1cacb173045582d
 
 
 
