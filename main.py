@@ -25,8 +25,10 @@ def home():
 
 #Logic about which algorithm gets run,
 #and some basic parsing
-def pick_move(board, snake_list, us):
-    pass
+def pick_move(data):
+    board = get_board_from_data(data)
+    
+
 
 
 #page to dump data
@@ -36,8 +38,7 @@ def hello():
 
 def print_data(data):
     for key in data:
-        print key
-    print json.dumps(data)
+        print key, ";", data[key]
 
 @app.route('/start', methods=['POST'])
 def start():
@@ -56,11 +57,11 @@ def move():
     data = request.get_json(force=True) #dict
     print "Got pinged."
     print_data(data)
+    pick_move(data)
     response = {
         'move':'left',
         'taunt':'Lets raise the ROOOF'
     }
-
     return json.dumps(response)
 
 if __name__ == '__main__':

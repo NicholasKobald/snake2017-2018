@@ -2,8 +2,8 @@
 #
 #
 
-class Tile(Object):
-    
+class Tile():
+
     def __init__():
         pass
 
@@ -12,7 +12,9 @@ class Tile(Object):
             return True
         return False
 
-class Board(object):
+
+class Board():
+
     def __init__():
         height = None
         width = None
