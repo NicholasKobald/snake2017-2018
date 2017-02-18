@@ -31,7 +31,8 @@ def pick_move(data):
     board.print_board()
 
     snake_id = data['you']
-    snake_coords = get_snake_head(snake_id, data['snakes'])
+    snake = get_snake(snake_id, data['snakes'])
+    snake_coords = get_head_coords(snake)
     x, y = snake_coords[0], snake_coords[1]
     return board.get_valid_moves(x, y)
 
