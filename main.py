@@ -27,7 +27,7 @@ def home():
 #and some basic parsing
 def pick_move(data):
     board = get_board_from_data(data)
-    
+
 
 
 
