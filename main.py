@@ -12,9 +12,7 @@
 
 import os, json
 from flask import Flask, request
-from logic import *
 from deprecated import *
-from gen_fake_board import gen_board, gen_snake_list #testng
 
 OUR_SNAKE_NAME = '1'
 
