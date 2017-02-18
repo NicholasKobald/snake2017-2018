@@ -27,30 +27,19 @@ def home():
 #Logic about which algorithm gets run,
 #and some basic parsing
 def pick_move(board, snake_list, us):
-    #prolly change to ID at some point.
-    our_snake = get_specific_snake(snake_list, us)
+    pass
 
-    height = len(board) #only tested on N x N  (not N x M)
-    width = len(board[0])
-    print "Playing on a", width, "by", height, "board."
-    snake_list.remove(our_snake)
-    game_info = dict(
-        our_snake=our_snake,
-        height=height,
-        width=width,
-        snake_list=snake_list
-    )
-    move = do_minmax(board, game_info)
-    print "Move Picked:", move
-    return move
+
 #page to dump data
 @app.route('/hello')
 def hello():
     return "Hello World!"
+
 def print_data(data):
     for key in data:
         print key
     print json.dumps(data)
+
 @app.route('/start', methods=['POST'])
 def start():
     print "Got started pinged."
