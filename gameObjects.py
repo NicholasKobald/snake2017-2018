@@ -1,6 +1,11 @@
 #
 #
 #
+class BoardSnakeTuple:
+
+    def __init__(self, board, snake_list):
+        self.board = board
+        self.snake_list = snake_list
 
 class Tile:
 
@@ -74,6 +79,7 @@ class Board:
             x, y = food[0], food[1]
             board[y][x].set_tile_type(dict(type='food'))
         return board
+
 
     def print_board(self):
         board = self.board

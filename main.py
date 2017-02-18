@@ -14,6 +14,7 @@ import os, json
 from flask import Flask, request
 from deprecated import *
 from shared import *
+from duel import *
 from gameObjects import *
 OUR_SNAKE_NAME = '1'
 
@@ -29,12 +30,9 @@ def home():
 def pick_move(data):
     board = Board(data['height'], data['width'], data['snakes'], data['food'])
     board.print_board()
-
-    snake_id = data['you']
-    snake = get_snake(snake_id, data['snakes'])
-    snake_coords = get_head_coords(snake)
-    x, y = snake_coords[0], snake_coords[1]
-    return board.get_valid_moves(x, y)
+    move = minmax(board, data['snakes'], data['you'])
+    print "Minmax returned", move
+    return move
 
 
 #page to dump data
@@ -44,7 +42,7 @@ def hello():
 
 def print_data(data):
     for key in data:
-        print key, ";", data[key]
+        print key, ":", data[key]
 
 @app.route('/start', methods=['POST'])
 def start():
@@ -63,9 +61,7 @@ def move():
     data = request.get_json(force=True) #dict
     print "Got pinged."
     print_data(data)
-    all_directions = pick_move(data)
-    print all_directions
-    direction = all_directions[0]
+    direction = pick_move(data)
     response = {
         'move':direction,
         'taunt':'Lets raise the ROOOF'
