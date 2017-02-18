@@ -13,7 +13,7 @@
 import os, json
 from flask import Flask, request
 from deprecated import *
-
+from shared import *
 OUR_SNAKE_NAME = '1'
 
 app = Flask(__name__)
@@ -26,8 +26,9 @@ def home():
 #Logic about which algorithm gets run,
 #and some basic parsing
 def pick_move(data):
-    board = get_board_from_data(data)
-    
+    #returns Board Obj
+    board = create_board_from_data(data)
+
 
 
 
