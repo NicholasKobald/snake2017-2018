@@ -32,14 +32,28 @@ def enumerate_boards(board, snake_list):
 # { id: move} where move is a valid move.
 def get_board_from_moves(board, move_list, snake_list):
     for move in move_list:
-        enact_move(move, snake_list)
+        enact_move(board, move, snake_list)
 
-def enact_move(move_info, snake_list):
+def enact_move(board, move_info, snake_list):
     assert len(move_info) == 1
     snake_id, move = move_info.items()[0]
     snake = get_snake(snake_id, snake_list)
     head = get_head_coords(snake)
-    
+    x, y = get_tile_from_move(head, move)
+    print snake
+    if not board.get_tile(x, y).is_food():
+        #if it didn't eat, we can remove the last cell
+        snake['coords'].pop()
+
+    #[x, y] + snake['coords']
+    #faster:
+    snake['coords'].insert(0, [x, y])
+
+
+
+
+
+
 
 
 

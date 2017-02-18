@@ -16,7 +16,10 @@ class Tile:
             self.data = data
 
     def is_safe(self):
-        return (self.data['type'] != 'snake')
+        return self.data['type'] != 'snake'
+
+    def is_food(self):
+        return self.data['type'] == 'food'
 
     def set_tile_type(self, tile_data):
         self.data = tile_data
@@ -46,8 +49,18 @@ class Board:
 
         return valid_moves
 
+
     def get_tile(self, col, row):
+        if self.not_valid_tile(row, col):
+            return None
+
         return self.board[row][col]
+
+    def not_valid_tile(self, row, col):
+        if row > self.width-1 or row < 0:
+            return False
+        if col > self.height-1 or col < 0:
+            return False
 
     def create_board_from_data(self, snakes, food_list):
         board = []
