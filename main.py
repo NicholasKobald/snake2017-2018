@@ -9,9 +9,7 @@
 #tile classes, abstract the board away a bit?
 #might be overkill...
 # Implement like this, or look into Cython immediately?
-#
-#
-#
+
 import os, json
 from flask import Flask, request
 from logic import *
