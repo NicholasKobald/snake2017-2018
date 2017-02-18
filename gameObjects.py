@@ -4,17 +4,6 @@
 
 class Tile:
 
-<<<<<<< HEAD
-    def __init__(self):
-        pass
-
-    def is_safe(self):
-        if self.has_snake:
-            return True
-        return False
-    def set_tile_type(self, dict):
-        return ''
-=======
     def __init__(self, data=None):
         if data == None:
             self.data = dict(type='empty')
@@ -26,7 +15,6 @@ class Tile:
 
     def set_tile_type(self, tile_data):
         self.data = tile_data
->>>>>>> cf7fa624077b6a2bb18cf5abe1cacb173045582d
 
 
 class Board:
