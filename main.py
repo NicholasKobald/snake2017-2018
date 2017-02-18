@@ -28,11 +28,11 @@ def home():
 def pick_move(data):
     board = create_board_from_data(data)
     board.print_board()
-    my_snake_id = data['you']
-    for snake in data['snakes']:
-        if snake['id'] == my_snake_id:
-            x, y = snake['coords'][0][0], snake['coords'][0][1]
-            return board.get_valid_moves(x, y)
+
+    snake_id = data['you']
+    snake_coords = get_snake_head(snake_id, data['snakes'])
+    x, y = snake_coords[0], snake_coords[1]
+    return board.get_valid_moves(x, y)
 
 
 #page to dump data
