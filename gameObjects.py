@@ -30,14 +30,14 @@ class Board:
     # returns list of moves that will not result in instant death (wall or snake)
     def get_valid_moves(self, col, row):
         valid_moves = []
-        if(col < width-1 and get_tile(col+1, row).is_safe()):
+        if(col < self.width-1 and self.get_tile(col+1, row).is_safe()):
             valid_moves.append('right')
-        if(row < height-1 and get_tile(col, row+1).is_safe()):
+        if(row < self.height-1 and self.get_tile(col, row+1).is_safe()):
             valid_moves.append('down')
-        if(col > 0 and get_tile(col-1, row).is_safe()):
+        if(col > 0 and self.get_tile(col-1, row).is_safe()):
             valid_moves.append('left')
-        if(row > 0 and get_tile(col, row-1).is_safe()):
-            valid_moves.append('down')
+        if(row > 0 and self.get_tile(col, row-1).is_safe()):
+            valid_moves.append('up')
 
         return valid_moves
 

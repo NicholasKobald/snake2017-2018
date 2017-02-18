@@ -28,8 +28,11 @@ def home():
 def pick_move(data):
     board = create_board_from_data(data)
     board.print_board()
-
-
+    my_snake_id = data['you']
+    for snake in data['snakes']:
+        if snake['id'] == my_snake_id:
+            x, y = snake['coords'][0][0], snake['coords'][0][1]
+            return board.get_valid_moves(x, y)
 
 
 #page to dump data
@@ -58,9 +61,11 @@ def move():
     data = request.get_json(force=True) #dict
     print "Got pinged."
     print_data(data)
-    pick_move(data)
+    all_directions = pick_move(data)
+    print all_directions
+    direction = all_directions[0]
     response = {
-        'move':'left',
+        'move':direction,
         'taunt':'Lets raise the ROOOF'
     }
     return json.dumps(response)
