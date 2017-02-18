@@ -1,11 +1,13 @@
 #
 #
 #
-class BoardSnakeTuple:
 
-    def __init__(self, board, snake_list):
+#bassically a wrapper for the game data
+class gameObject:
+    def __init__(self, board, snake_list, food_list):
         self.board = board
         self.snake_list = snake_list
+        self.food_list = food_list
 
 class Tile:
 
