@@ -46,7 +46,7 @@ def enact_move(board, move_info, snake_list):
         snake['coords'].pop()
     else:
         snake['health_points'] = 100
-    #[x, y] + snake['coords']
+ 
     snake['coords'].insert(0, [x, y])
 
 

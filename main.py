@@ -30,7 +30,7 @@ def home():
 def pick_move(data):
     board = Board(data['height'], data['width'], data['snakes'], data['food'])
     board.print_board()
-    move = minmax(board, data['snakes'], data['you'])
+    move = minmax(board, data['snakes'], data['you'], data['food']))
     print "Minmax returned", move
     return move
 
