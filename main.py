@@ -7,7 +7,7 @@ import os, json
 import time
 
 from flask import Flask, request
-from deprecated import *
+
 from shared import *
 from duel import *
 from gameObjects import *
