@@ -28,9 +28,10 @@ def home():
 #Logic about which algorithm gets run,
 #and some basic parsing
 def pick_move(data):
+    print "Init board."
     board = Board(data['height'], data['width'], data['snakes'], data['food'])
-    board.print_board()
-    move = minmax(board, data['snakes'], data['you'], data['food']))
+    print "Cal minmax."
+    move = minmax(board, data['snakes'], data['you'], data['food'])
     print "Minmax returned", move
     return move
 

@@ -3,11 +3,6 @@
 #
 
 #bassically a wrapper for the game data
-class gameObject:
-    def __init__(self, board, snake_list, food_list):
-        self.board = board
-        self.snake_list = snake_list
-        self.food_list = food_list
 
 class Tile:
 
@@ -23,10 +18,15 @@ class Tile:
     def is_food(self):
         return self.data['type'] == 'food'
 
+    def is_head(self):
+        return self.data['type'] == snake and data['head']
+
     def set_tile_type(self, tile_data):
         self.data = tile_data
 
     def __str__(self):
+        if self.data['type'] == 'snake' and self.data['head']:
+            return 'h'
         return self.data['type'][:1]
 
 
@@ -51,18 +51,20 @@ class Board:
 
         return valid_moves
 
-
-    def get_tile(self, col, row):
+    def safe_get_tile(self, col, row):
         if self.not_valid_tile(row, col):
             return None
+        return self.board[row][col]
 
+    def get_tile(self, col, row):
         return self.board[row][col]
 
     def not_valid_tile(self, row, col):
+        print row, col
         if row > self.width-1 or row < 0:
-            return False
+            return True
         if col > self.height-1 or col < 0:
-            return False
+            return True
 
     def create_board_from_data(self, snakes, food_list):
         board = []
