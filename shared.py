@@ -28,3 +28,12 @@ def get_moves_from_id(snake_id, snake_list, board):
     head = get_head_coords(snake)
     moves = board.get_valid_moves(head[0], head[1])
     return moves
+
+def determine_distance_to_nearest_food(head, food_list):
+    min_dist = float('inf')
+    for food in food_list:
+        x_diff = abs(head[0]-food[0])
+        y_diff = abs(head[1]-food[1])
+        min(min_dist, (x_diff+y_diff))
+
+    return min_dist

@@ -21,12 +21,10 @@ def home():
 #Logic about which algorithm gets run,
 #and some basic parsing
 def pick_move(data):
-    print "Init board."
     board = Board(data['height'], data['width'], data['snakes'], data['food'])
-    print "Cal minmax."
     move = minmax(board, data['snakes'], data['you'], data['food'], 0)
-    print "Minmax returned", move
-    return move
+    print "move returned", move['move']
+    return move['move']
 
 
 #page to dump data
@@ -54,7 +52,6 @@ def start():
 def move():
     data = request.get_json(force=True) #dict
     print "Got pinged."
-    print_data(data)
     direction = pick_move(data)
     response = {
         'move':direction,

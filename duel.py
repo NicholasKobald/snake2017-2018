@@ -16,17 +16,26 @@ def print_snake_data(snake):
         print el, "::", snake[el]
     print " -- end snake data -- "
 
-def minmax(board, snake_list, us, food_list):
-    future_games = enumerate_boards(board, snake_list, food_list)
-    board.print_board()
-    for f in future_games:
-        b = f['board']
-        b.print_board()
-    moves = get_moves_from_id(us, snake_list, board)
-    print "Valid moves:", moves
+def minmax(board, snake_list, us, food_list, depth):
+    if depth==1:
+        val = score_board(board, us, snake_list, food_list)
+        return {'val':val, 'move':None}
 
-    return random.choice(moves) #crashes if empty, which is appropriate.
-def enumerate_boards(board, snake_list, food_list):
+    future_games = enumerate_boards(board, snake_list, food_list, us)
+
+    move = None
+    node_value = float('-inf')
+    
+    for f_info in future_games:
+        v = minmax(f_info['board'], f_info['snake_list'], us, f_info['food_list'], depth+1)
+        if v['val'] > node_value:
+            node_value = v['val']
+            move = f_info['our_move']
+            print "updated move to", move
+
+    return {'val': node_value,'move': move}
+
+def enumerate_boards(board, snake_list, food_list, us):
     move_set = []
     for snake in snake_list:
         snake_moves = []
@@ -41,14 +50,18 @@ def enumerate_boards(board, snake_list, food_list):
     new_snake_list = snake_list[:]
     for comb in all_move_comb:
         #NOTE hardcopy of snakelist and food. we change things from here on out
-        info_list.append(get_board_from_moves(board, comb, deepcopy(snake_list), deepcopy(food_list)))
+        info_list.append(get_board_from_moves(board, comb, deepcopy(snake_list), deepcopy(food_list), us))
 
     return info_list
 
 #movelist should be a list of keyvalue pairs,
 # { id: move} where move is a valid move.
-def get_board_from_moves(board, move_list, snake_list, food_list):
+def get_board_from_moves(board, move_list, snake_list, food_list, us):
+    our_move = None
     for move in move_list:
+        key, val = move.items()[0]
+        if key == us:
+            our_move = val
         enact_move(board, move, snake_list, food_list)
 
     compute_collisions(snake_list)
@@ -57,7 +70,8 @@ def get_board_from_moves(board, move_list, snake_list, food_list):
     game_info = dict(
         board=new_board,
         snake_list=snake_list,
-        food_list=food_list
+        food_list=food_list,
+        our_move=our_move
     )
     return game_info
 
@@ -116,5 +130,11 @@ def col_winner(snek_one, snek_two, dead_snakes):
         dead_snakes.append(snek_two['id'])
         dead_snakes.append(snek_one['id'])
 
-def score_board(board, us):
-    pass
+def score_board(board, us, snake_list, food_list):
+    #our_snake = get_snake(us, snake_list)
+    #length = len(our_snake['coords'])
+    #head = our_snake['coords'][0]
+    #far_from_food = determine_distance_to_nearest_food(head, food_list)
+    node_val = len(get_moves_from_id(us, snake_list, board))
+    print "returning", node_val
+    return node_val
