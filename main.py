@@ -28,11 +28,13 @@ def home():
 #and some basic parsing
 def pick_move(data):
     board = Board(data['height'], data['width'], data['snakes'], data['food'])
-    board.print_board()
 
+    # get our snake's head coords
     snake_id = data['you']
-    snake_coords = get_snake_head(snake_id, data['snakes'])
+    snake_coords = get_head_coords(get_snake(snake_id, data['snakes']))
     x, y = snake_coords[0], snake_coords[1]
+
+    # return list of all possible moves
     return board.get_valid_moves(x, y)
 
 
@@ -72,4 +74,4 @@ def move():
     return json.dumps(response)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0')
+    app.run(host='0.0.0.0', port=5001)
