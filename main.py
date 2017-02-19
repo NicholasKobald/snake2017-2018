@@ -4,6 +4,8 @@
 #
 
 import os, json
+import time
+
 from flask import Flask, request
 from deprecated import *
 from shared import *
@@ -43,13 +45,14 @@ def start():
     #print_data(data)
     response = dict(
         color='#369',
-        name='Bennet',
+        name='master_ai',
         taunt='My. Treat.'
     )
     return json.dumps(response)
 
 @app.route('/move', methods=['POST'])
 def move():
+    start = time.time()
     data = request.get_json(force=True) #dict
     print "Got pinged."
     direction = pick_move(data)
@@ -57,6 +60,8 @@ def move():
         'move':direction,
         'taunt':'Lets raise the ROOOF'
     }
+    end = time.time()
+    print "Took", end - start, "seconds to compute move."
     return json.dumps(response)
 
 if __name__ == '__main__':

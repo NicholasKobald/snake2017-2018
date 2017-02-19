@@ -17,7 +17,7 @@ def print_snake_data(snake):
     print " -- end snake data -- "
 
 def minmax(board, snake_list, us, food_list, depth):
-    if depth==4:
+    if depth==6:
         val = score_board(board, us, snake_list, food_list)
         return {'val':val, 'move':None}
 
@@ -27,13 +27,17 @@ def minmax(board, snake_list, us, food_list, depth):
     node_value = float('-inf')
 
     for f_info in future_games:
-        
         v = minmax(f_info['board'], f_info['snake_list'], us, f_info['food_list'], depth+1)
         if v['val'] > node_value:
             node_value = v['val']
             move = f_info['our_move']
 
     return {'val': node_value,'move': move}
+
+def print_future(board, snake_list, food_list, f_info):
+    pass
+
+
 
 def enumerate_boards(board, snake_list, food_list, us):
     move_set = []
@@ -88,7 +92,8 @@ def enact_move(board, move_info, snake_list, food_list):
     tile = board.get_tile(x, y)
     if tile and tile.is_food():
         snake['health_points'] = 100
-        food_list.remove([x, y])
+        if [x, y] in food_list:
+            food_list.remove([x, y])
     else:
         snake['health_points'] = snake['health_points'] - 1
         snake['coords'].pop() #didn't eat, so the entire body moves forward
