@@ -17,7 +17,7 @@ def print_snake_data(snake):
     print " -- end snake data -- "
 
 def minmax(board, snake_list, us, food_list, depth):
-    if depth==1:
+    if depth==4:
         val = score_board(board, us, snake_list, food_list)
         return {'val':val, 'move':None}
 
@@ -25,13 +25,13 @@ def minmax(board, snake_list, us, food_list, depth):
 
     move = None
     node_value = float('-inf')
-    
+
     for f_info in future_games:
+        
         v = minmax(f_info['board'], f_info['snake_list'], us, f_info['food_list'], depth+1)
         if v['val'] > node_value:
             node_value = v['val']
             move = f_info['our_move']
-            print "updated move to", move
 
     return {'val': node_value,'move': move}
 
@@ -131,10 +131,10 @@ def col_winner(snek_one, snek_two, dead_snakes):
         dead_snakes.append(snek_one['id'])
 
 def score_board(board, us, snake_list, food_list):
-    #our_snake = get_snake(us, snake_list)
-    #length = len(our_snake['coords'])
-    #head = our_snake['coords'][0]
-    #far_from_food = determine_distance_to_nearest_food(head, food_list)
-    node_val = len(get_moves_from_id(us, snake_list, board))
-    print "returning", node_val
+    our_snake = get_snake(us, snake_list)
+    length = len(our_snake['coords'])
+    num_moves = len(get_moves_from_id(us, snake_list, board))
+    num_moves = float(num_moves)
+    length_con = float(length)/100
+    node_val = num_moves + length_con
     return node_val
