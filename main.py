@@ -38,10 +38,13 @@ def pick_move(data):
     valid_moves = board.get_valid_moves(x, y)
 
     # find distances from snake head to each food bit
-    food_dict_by_dist = get_displacement_for_each(x, y, data['food'])
+    #food_dict_by_dist = get_displacement_for_each(x, y, data['food'])
+    food_dict_by_shortest_path = get_shortest_path_for_each(x, y, board, data['food'])
 
     # find move towards food
-    move_towards_food = get_safe_move_to_nearest_food(x, y, valid_moves, food_dict_by_dist)
+    #move_towards_food_1 = get_safe_move_to_nearest_food(x, y, valid_moves, food_dict_by_dist)
+    move_towards_food = get_safe_move_to_nearest_food(x, y, valid_moves, food_dict_by_shortest_path)
+    # print "displ: ", move_towards_food_1, " BFS: ", move_towards_food
     if move_towards_food == None:
         # TODO add more intelligent behavior (not just pick some valid move)
         move = valid_moves[0]
@@ -57,8 +60,9 @@ def hello():
     return "Hello World!"
 
 def print_data(data):
+    print "DATA\n********************"
     for key in data:
-        print key, ";", data[key]
+        print key, ":", data[key]
 
 @app.route('/start', methods=['POST'])
 def start():
@@ -66,7 +70,7 @@ def start():
     data = request.get_json(force=True) #dict
     #print_data(data)
     response = dict(
-        color='#369',
+        color='#FFF',
         name='Bennet',
         taunt='My. Treat.'
     )
@@ -75,7 +79,7 @@ def start():
 @app.route('/move', methods=['POST'])
 def move():
     data = request.get_json(force=True) #dict
-    print "\nGot pinged.\n"
+    print "\nPINGED\n********************"
     print_data(data)
 
     move = pick_move(data)
