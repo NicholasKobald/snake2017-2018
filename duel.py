@@ -5,6 +5,8 @@
 import itertools
 import random
 
+from copy import deepcopy
+
 from shared import *
 from gameObjects import *
 
@@ -15,11 +17,11 @@ def print_snake_data(snake):
     print " -- end snake data -- "
 
 def minmax(board, snake_list, us, food_list):
-
-    print_snake_data(get_snake(us, snake_list))
-    possible_boards = enumerate_boards(board, snake_list, food_list)
-    print_snake_data(get_snake(us, snake_list))
+    future_games = enumerate_boards(board, snake_list, food_list)
     board.print_board()
+    for f in future_games:
+        b = f['board']
+        b.print_board()
     moves = get_moves_from_id(us, snake_list, board)
     print "Valid moves:", moves
 
@@ -34,14 +36,14 @@ def enumerate_boards(board, snake_list, food_list):
             snake_moves.append({snake['id'] : valid_move})
         move_set.append(snake_moves)
 
-    board_list = []
+    info_list = []
     all_move_comb = itertools.product(*move_set)
     new_snake_list = snake_list[:]
     for comb in all_move_comb:
-        #NOTE hardcopy of snakelist and food. we change things
-        snakelist_copy = snake_list[:]
-        foodlist_copy = food_list[:]
-        #get_board_from_moves(board, comb, snakelist_copy, foodlist_copy)
+        #NOTE hardcopy of snakelist and food. we change things from here on out
+        info_list.append(get_board_from_moves(board, comb, deepcopy(snake_list), deepcopy(food_list)))
+
+    return info_list
 
 #movelist should be a list of keyvalue pairs,
 # { id: move} where move is a valid move.
@@ -49,7 +51,35 @@ def get_board_from_moves(board, move_list, snake_list, food_list):
     for move in move_list:
         enact_move(board, move, snake_list, food_list)
 
-    #compute_collisions(snake_list)
+    compute_collisions(snake_list)
+
+    new_board = Board(board.height, board.width, snake_list, food_list)
+    game_info = dict(
+        board=new_board,
+        snake_list=snake_list,
+        food_list=food_list
+    )
+    return game_info
+
+#NOTE
+# -- Look into rules about food getting spawned?
+# -- answer may lie in server source code?
+# -- predict future food???
+def enact_move(board, move_info, snake_list, food_list):
+    assert len(move_info) == 1
+    snake_id, move = move_info.items()[0]
+    snake = get_snake(snake_id, snake_list)
+    head = get_head_coords(snake)
+    x, y = get_tile_from_move(head, move)
+    tile = board.get_tile(x, y)
+    if tile and tile.is_food():
+        snake['health_points'] = 100
+        food_list.remove([x, y])
+    else:
+        snake['health_points'] = snake['health_points'] - 1
+        snake['coords'].pop() #didn't eat, so the entire body moves forward
+
+    snake['coords'].insert(0, [x, y])
 
 def compute_collisions(snake_list):
     dead_snakes = []
@@ -74,27 +104,17 @@ def compute_collisions(snake_list):
 def col_winner(snek_one, snek_two, dead_snakes):
     snake_one_length = len(snek_one['coords'])
     snake_two_length = len(snek_two['coords'])
-    #TODO not done
 
-#NOTE
-# -- Look into rules about food getting spawned?
-# -- answer may lie in server source code?
-# -- predict future food???
-def enact_move(board, move_info, snake_list, food_list):
-    assert len(move_info) == 1
-    snake_id, move = move_info.items()[0]
-    snake = get_snake(snake_id, snake_list)
-    head = get_head_coords(snake)
-    x, y = get_tile_from_move(head, move)
-    tile = board.get_tile(x, y)
-    if tile and tile.is_food():
-        snake['health_points'] = 100
-        food_list.remove([x, y])
-    else:
-        snake['health_points'] = snake['health_points'] - 1
-        snake['coords'].pop() #didn't eat, so the entire body moves forward
+    if snake_one_length > snake_two_length:
+        dead_snakes.append(snek_two['id'])
+        return
+    if snake_two_length > snake_one_length:
+        dead_snakes.append(snek_one['id'])
+        return
 
-    snake['coords'].insert(0, [x, y])
+    if snake_one_length == snake_two_length:
+        dead_snakes.append(snek_two['id'])
+        dead_snakes.append(snek_one['id'])
 
 def score_board(board, us):
     pass

@@ -2,13 +2,6 @@
 #
 # N. Kobald - 2017-02-04
 #
-#TODO rearrange code into duel.py, shared.py, gladiator.py
-#TODO implement TILE class
-#TODO implement get_board_from_data
-#TODO maybe a BOARD class that is made up of
-#tile classes, abstract the board away a bit?
-#might be overkill...
-# Implement like this, or look into Cython immediately?
 
 import os, json
 from flask import Flask, request
@@ -31,7 +24,7 @@ def pick_move(data):
     print "Init board."
     board = Board(data['height'], data['width'], data['snakes'], data['food'])
     print "Cal minmax."
-    move = minmax(board, data['snakes'], data['you'], data['food'])
+    move = minmax(board, data['snakes'], data['you'], data['food'], 0)
     print "Minmax returned", move
     return move
 
