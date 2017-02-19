@@ -34,8 +34,21 @@ def pick_move(data):
     snake_coords = get_head_coords(get_snake(snake_id, data['snakes']))
     x, y = snake_coords[0], snake_coords[1]
 
-    # return list of all possible moves
-    return board.get_valid_moves(x, y)
+    # find safe moves first
+    valid_moves = board.get_valid_moves(x, y)
+
+    # find distances from snake head to each food bit
+    food_dict_by_dist = get_displacement_for_each(x, y, data['food'])
+
+    # find move towards food
+    move_towards_food = get_safe_move_to_nearest_food(x, y, valid_moves, food_dict_by_dist)
+    if move_towards_food == None:
+        # TODO add more intelligent behavior (not just pick some valid move)
+        move = valid_moves[0]
+    else:
+        move = move_towards_food
+    # return move that approaches nearest food
+    return move
 
 
 #page to dump data
@@ -62,13 +75,13 @@ def start():
 @app.route('/move', methods=['POST'])
 def move():
     data = request.get_json(force=True) #dict
-    print "Got pinged."
+    print "\nGot pinged.\n"
     print_data(data)
-    all_directions = pick_move(data)
-    print all_directions
-    direction = all_directions[0]
+
+    move = pick_move(data)
+    print "MOVE PICKED ======== " + str(move) + "\n"
     response = {
-        'move':direction,
+        'move':pick_move(data),
         'taunt':'Lets raise the ROOOF'
     }
     return json.dumps(response)
