@@ -18,7 +18,7 @@ def print_snake_data(snake):
     print " -- end snake data -- "
 
 def minmax(board, snake_info, us, food_list, depth):
-    if depth==5:
+    if depth==5 or len(snake_info)==1:
         val = score_board(board, us, snake_info, food_list)
         return {'val':val, 'move':None}
 

@@ -52,8 +52,8 @@ class Board:
         if self.not_valid_tile(row, col):
             return None
         return self.board[row][col]
-    def get_tile(self, col, row):
 
+    def get_tile(self, col, row):
         return self.board[row][col]
 
     def not_valid_tile(self, row, col):
