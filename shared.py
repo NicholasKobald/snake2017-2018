@@ -29,6 +29,13 @@ def get_moves_from_id(snake_id, snake_list, board):
     moves = board.get_valid_moves(head[0], head[1])
     return moves
 
+def create_snake_dict(snake_list):
+    snake_dict = dict()
+    for snake in snake_list:
+        snake_dict[snake['id']] = snake
+        del snake['id'] #nolonger needed. 
+    return snake_dict
+
 def determine_distance_to_nearest_food(head, food_list):
     min_dist = float('inf')
     for food in food_list:

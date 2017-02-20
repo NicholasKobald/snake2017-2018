@@ -23,8 +23,10 @@ def home():
 #Logic about which algorithm gets run,
 #and some basic parsing
 def pick_move(data):
-    board = Board(data['height'], data['width'], data['snakes'], data['food'])
-    move = minmax(board, data['snakes'], data['you'], data['food'], 0)
+    snake_dict = create_snake_dict(data['snakes'])
+    board = Board(data['height'], data['width'], snake_dict, data['food'])
+    print snake_dict
+    move = minmax(board, snake_dict, data['you'], data['food'], 0)
     print "move returned", move['move']
     return move['move']
 
