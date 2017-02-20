@@ -14,11 +14,11 @@ from gameObjects import *
 def print_snake_data(snake):
     print " --- snake data --"
     for el in snake:
-        print el, "::", snake[el]
+        print el, ":", snake[el]
     print " -- end snake data -- "
 
 def minmax(board, snake_info, us, food_list, depth):
-    if depth==5 or len(snake_info)==1:
+    if depth==5:
         val = score_board(board, us, snake_info, food_list)
         return {'val':val, 'move':None}
 
@@ -95,6 +95,7 @@ def enact_move(board, move_info, snake_info, food_list):
     x, y = get_tile_from_move(head, move)
     tile = board.get_tile(x, y)
     if tile and tile.is_food():
+        snake['eaten'] += 1
         snake['health_points'] = 100
         if [x, y] in food_list:
             food_list.remove([x, y])
@@ -147,10 +148,12 @@ def col_winner(snek_one, snek_two, dead_snakes):
 def score_board(board, us, snake_info, food_list):
     #our_snake = get_snake(us, snake_info)
     our_snake = snake_info[us] #why i did this
-    head = our_snake['coords'][0]
     length = len(our_snake['coords'])
-    num_moves = len(board.get_valid_moves(head[0], head[1]))
-    num_moves = float(num_moves)
+    head = our_snake['coords'][0]
+    num_moves = float(len(board.get_valid_moves(head[0], head[1])))
     length_con = float(length)/100
     node_val = num_moves + length_con
+    health = float(our_snake['health_points'])/100
+    if length>20:
+        return (count_reachable(board, head)) + float(our_snake['eaten'])/health
     return node_val

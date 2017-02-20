@@ -24,12 +24,12 @@ def home():
 #and some basic parsing
 def pick_move(data):
     snake_dict = create_snake_dict(data['snakes'])
+    #print "--- ORIGINAL BOARD FROM WHICH ALL OTHERS FOLLOW --- "
     board = Board(data['height'], data['width'], snake_dict, data['food'])
-    print snake_dict
+    #board.print_board()
+    #print "Num snakes:", len(snake_dict)
     move = minmax(board, snake_dict, data['you'], data['food'], 0)
-    print "move returned", move['move']
     return move['move']
-
 
 #page to dump data
 @app.route('/hello')
