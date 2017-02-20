@@ -65,4 +65,5 @@ def move():
     return json.dumps(response)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0') #for testing locally
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', debug=True, port=port) #for testing locally
