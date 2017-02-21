@@ -18,7 +18,7 @@ def print_snake_data(snake):
     print " -- end snake data -- "
 
 def minmax(board, snake_info, us, food_list, depth):
-    if depth==5:
+    if depth==3:
         val = score_board(board, us, snake_info, food_list)
         return {'val':val, 'move':None}
 
@@ -71,7 +71,14 @@ def get_board_from_moves(board, move_list, snake_info, food_list, us):
             our_move = val
         enact_move(board, move, snake_info, food_list)
 
-    compute_collisions(snake_info)
+    #compute_collisions(snake_info)
+    dead = []
+    for s_id, snake in snake_info.iteritems():
+        if len(board.get_valid_moves(snake['coords'][0][0], snake['coords'][0][1])) == 0:
+            dead.append(s_id)
+
+    for s_id in dead:
+        del snake_info[s_id]
 
     new_board = Board(board.height, board.width, snake_info, food_list)
     game_info = dict(
@@ -135,18 +142,21 @@ def col_winner(snek_one, snek_two, dead_snakes):
     snake_two_length = len(snek_two['coords'])
 
     if snake_one_length > snake_two_length:
-        dead_snakes.append(snek_two['id'])
+        dead_snakes.append(snek_one)
         return
     if snake_two_length > snake_one_length:
-        dead_snakes.append(snek_one['id'])
+        dead_snakes.append(snek_two)
         return
 
     if snake_one_length == snake_two_length:
-        dead_snakes.append(snek_two['id'])
-        dead_snakes.append(snek_one['id'])
+        dead_snakes.append(snek_two)
+        dead_snakes.append(snek_one)
 
 def score_board(board, us, snake_info, food_list):
-    #our_snake = get_snake(us, snake_info)
+    if us not in snake_info:
+        return float('-inf')
+    elif us in snake_info and len(snake_info)==1:
+        return float('inf')
     our_snake = snake_info[us] #why i did this
     length = len(our_snake['coords'])
     head = our_snake['coords'][0]

@@ -29,6 +29,7 @@ def pick_move(data):
     #board.print_board()
     #print "Num snakes:", len(snake_dict)
     move = minmax(board, snake_dict, data['you'], data['food'], 0)
+    print "returning", move['move']
     return move['move']
 
 #page to dump data
@@ -46,7 +47,7 @@ def start():
     data = request.get_json(force=True) #dict
     #print_data(data)
     response = dict(
-        color='#369',
+        color='#000',
         name='master_ai',
         taunt='My. Treat.'
     )
