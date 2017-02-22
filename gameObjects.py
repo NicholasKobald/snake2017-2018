@@ -12,6 +12,12 @@ class Tile:
         else:
             self.data = data
 
+    def eat(self):
+        self.data['type'] = 'empty'
+
+    def throwup(self):
+        self.data['type'] = 'food'
+
     def is_safe(self):
         return self.data['type'] != 'snake'
 

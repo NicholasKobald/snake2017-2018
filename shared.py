@@ -1,5 +1,13 @@
 from gameObjects import *
 
+
+flip_dict = dict(
+    up='down',
+    left='right',
+    right='left',
+    down='up'
+)
+
 def get_head_coords(snake):
     head_x, head_y = snake['coords'][0][0], snake['coords'][0][1]
     return (head_x, head_y)

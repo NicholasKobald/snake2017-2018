@@ -47,7 +47,7 @@ def start():
     data = request.get_json(force=True) #dict
     #print_data(data)
     response = dict(
-        color='#000',
+        color='#3336699',
         name='master_ai',
         taunt='My. Treat.'
     )
