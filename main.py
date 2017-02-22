@@ -23,11 +23,14 @@ def home():
 #Logic about which algorithm gets run,
 #and some basic parsing
 def pick_move(data):
-    board = Board(data['height'], data['width'], data['snakes'], data['food'])
-    move = minmax(board, data['snakes'], data['you'], data['food'], 0)
-    print "move returned", move['move']
+    snake_dict = create_snake_dict(data['snakes'])
+    #print "--- ORIGINAL BOARD FROM WHICH ALL OTHERS FOLLOW --- "
+    board = Board(data['height'], data['width'], snake_dict, data['food'])
+    #board.print_board()
+    #print "Num snakes:", len(snake_dict)
+    move = minmax(board, snake_dict, data['you'], data['food'], 0)
+    print "returning", move['move']
     return move['move']
-
 
 #page to dump data
 @app.route('/hello')
@@ -44,7 +47,7 @@ def start():
     data = request.get_json(force=True) #dict
     #print_data(data)
     response = dict(
-        color='#369',
+        color='#000',
         name='master_ai',
         taunt='My. Treat.'
     )
@@ -67,6 +70,5 @@ def move():
 if __name__ == '__main__':
     #use 5000 if we're local, or whatever port
     #heroku tells us to use.
-    
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)

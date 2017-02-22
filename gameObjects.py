@@ -52,8 +52,8 @@ class Board:
         if self.not_valid_tile(row, col):
             return None
         return self.board[row][col]
-    def get_tile(self, col, row):
 
+    def get_tile(self, col, row):
         return self.board[row][col]
 
     def not_valid_tile(self, row, col):
@@ -77,13 +77,13 @@ class Board:
             board.append(row)
 
         # encode snakes into board by setting Tile object type to 'snake'
-        for snake in snakes:
+        for s_id, snake in snakes.iteritems():
             at_head = True
             for coord in snake['coords']:
                 x, y = coord[0], coord[1]
                 board[y][x].set_tile_type(dict(
                     type='snake',
-                    snake_id=snake['id'],
+                    snake_id=s_id,
                     head=at_head
                 ))
                 at_head = False
