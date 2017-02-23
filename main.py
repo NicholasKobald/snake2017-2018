@@ -10,10 +10,11 @@
 #might be overkill...
 # Implement like this, or look into Cython immediately?
 
-import os, json
+import os, json, sys
 from flask import Flask, request
 from deprecated import *
 from shared import *
+from food_fetcher import *
 from gameObjects import *
 OUR_SNAKE_NAME = '1'
 
@@ -26,33 +27,11 @@ def home():
 
 #Logic about which algorithm gets run,
 #and some basic parsing
-def pick_move(data):
-    board = Board(data['height'], data['width'], data['snakes'], data['food'])
-
-    # get our snake's head coords
-    snake_id = data['you']
-    snake_coords = get_head_coords(get_snake(snake_id, data['snakes']))
-    x, y = snake_coords[0], snake_coords[1]
-
-    # find safe moves first
-    valid_moves = board.get_valid_moves(x, y)
-
-    # find distances from snake head to each food bit
-    #food_dict_by_dist = get_displacement_for_each(x, y, data['food'])
-    food_dict_by_shortest_path = get_shortest_path_for_each(x, y, board, data['food'])
-
-    # find move towards food
-    #move_towards_food_1 = get_safe_move_to_nearest_food(x, y, valid_moves, food_dict_by_dist)
-    move_towards_food = get_safe_move_to_nearest_food(x, y, valid_moves, food_dict_by_shortest_path)
-    # print "displ: ", move_towards_food_1, " BFS: ", move_towards_food
-    if move_towards_food == None:
-        # TODO add more intelligent behavior (not just pick some valid move)
-        move = valid_moves[0]
-    else:
-        move = move_towards_food
-    # return move that approaches nearest food
-    return move
-
+def pick_move(data, mode):
+    if mode == 'food-fetcher':
+        return pick_move_to_food(data)
+    error_msg = 'No protocol set for mode=' + str(mode)
+    raise Exception(error_msg)
 
 #page to dump data
 @app.route('/hello')
@@ -82,14 +61,21 @@ def move():
     print "\nPINGED\n********************"
     print_data(data)
 
-    move = pick_move(data)
+    # TODO pick a default
+    if len(sys.argv) == 1:
+        mode = 'default'
+    else:
+        mode = sys.argv[1]
+
+    print "Running in mode: ", mode
+    move = pick_move(data, mode)
     print "MOVE PICKED ======== " + str(move) + "\n"
     response = {
-        'move':pick_move(data),
+        'move':move,
         'taunt':'Lets raise the ROOOF'
     }
     return json.dumps(response)
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=(os.environ.get("PORT", "5001"))
 
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=(os.environ.get("PORT", "5001")))

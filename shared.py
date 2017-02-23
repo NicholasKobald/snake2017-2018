@@ -9,45 +9,56 @@ def get_snake(snake_id, snakes):
         if snake['id'] == snake_id:
             return snake
 
+# computes position resulting from current positioin and move
+# clunky, big, annoying to write... put it in a function!
+def get_pos_from_move(cur_pos, move):
+    col, row = cur_pos[0], cur_pos[1]
+    if move == 'up':
+        return (col, row-1)
+    elif move == 'down':
+        return (col, row+1)
+    elif move == 'left':
+        return (col-1, row)
+    elif move == 'right':
+        return (col+1, row)
+
+    raise Exception
+
+
 # finds distance of shortest path from (col, row) to each pair of coords in coord_list
 # returns a dict where (key=dist, val=list of coordinates)
 def get_shortest_path_for_each(col, row, board, coords_list):
     dist_to = dict()
 
+    # perform BFS to compute min path from (col, row) to every item in coords_list
     for coords in coords_list:
         queue = [dict(col=col, row=row, path_len=0)]
+        # init entire board to False i.e. not visited
         visited = [ [False]*board.width for i in range(board.height) ]
         while len(queue) > 0:
-            # pop from queue
             cur_pos = queue.pop(0)
-            # print "cur pos is:", cur_pos, "type:", type(cur_pos)
             cur_col, cur_row = cur_pos['col'], cur_pos['row']
             cur_path_len = cur_pos['path_len']
 
-            # print "visited: " + str(visited)
             if visited[cur_col][cur_row]:
                 continue
             visited[cur_col][cur_row] = True
 
-            # check if we've reached the destination
+            # have we reached the destination?
             if cur_col == coords[0] and cur_row == coords[1]:
                 # now add to list of foods that are 'cur_path_len' moves away
                 if cur_path_len in dist_to:
                     dist_to[cur_path_len].append(coords)
+                # create that list if necessary
                 else:
                     dist_to[cur_path_len] = [coords]
                 break
 
+            # o.w. continue searching
             valid_moves = board.get_valid_moves(cur_col, cur_row)
-
-            if "right" in valid_moves:
-                queue.append({'col': cur_col+1, 'row': cur_row, 'path_len': cur_path_len+1})
-            if "down" in valid_moves:
-                queue.append({'col': cur_col, 'row': cur_row+1, 'path_len': cur_path_len+1})
-            if "left" in valid_moves:
-                queue.append({'col': cur_col-1, 'row': cur_row, 'path_len': cur_path_len+1})
-            if "up" in valid_moves:
-                queue.append({'col': cur_col, 'row': cur_row-1, 'path_len': cur_path_len+1})
+            for move in valid_moves:
+                new_pos = get_pos_from_move((cur_pos['col'], cur_pos['row']), move)
+                queue.append({'col': new_pos[0], 'row': new_pos[1], 'path_len': cur_path_len+1})
     print "shortest_to: " + str(dist_to)
     return dist_to
 
@@ -75,6 +86,9 @@ def get_safe_move_to_nearest_food(col, row, valid_moves, food_dict_by_dist):
                     return "up"
     return None
 
+# NOTE: should probs use get_shortest_path_for_each() instead
+# - this one is a tad faster but much dumber
+#
 # finds distance from (col, row) to each pair of coords in coord_list
 # returns a dict where (key=dist, val=list of coordinates)
 def get_displacement_for_each(col, row, coord_list):
