@@ -2,19 +2,15 @@
 #
 # N. Kobald - 2017-02-04
 #
-#TODO rearrange code into duel.py, shared.py, gladiator.py
-#TODO implement TILE class
-#TODO implement get_board_from_data
-#TODO maybe a BOARD class that is made up of
-#tile classes, abstract the board away a bit?
-#might be overkill...
-# Implement like this, or look into Cython immediately?
 
 import os, json, sys
+import time
+
 from flask import Flask, request
-from deprecated import *
+
 from shared import *
 from food_fetcher import *
+from duel import *
 from gameObjects import *
 OUR_SNAKE_NAME = '1'
 
@@ -30,6 +26,15 @@ def home():
 def pick_move(data, mode):
     if mode == 'food-fetcher':
         return pick_move_to_food(data)
+    elif mode == 'min-max':
+        snake_dict = create_snake_dict(data['snakes'])
+        #print "--- ORIGINAL BOARD FROM WHICH ALL OTHERS FOLLOW --- "
+        board = Board(data['height'], data['width'], snake_dict, data['food'])
+        #board.print_board()
+        #print "Num snakes:", len(snake_dict)
+        move = minmax(board, snake_dict, data['you'], data['food'], 0)
+        print "returning", move['move']
+        return move['move']
     error_msg = 'No protocol set for mode=' + str(mode)
     raise Exception(error_msg)
 
@@ -49,14 +54,15 @@ def start():
     data = request.get_json(force=True) #dict
     #print_data(data)
     response = dict(
-        color='#FFF',
-        name='Bennet',
+        color='#000',
+        name='master_ai',
         taunt='My. Treat.'
     )
     return json.dumps(response)
 
 @app.route('/move', methods=['POST'])
 def move():
+    start = time.time()
     data = request.get_json(force=True) #dict
     print "\nPINGED\n********************"
     print_data(data)
@@ -74,8 +80,13 @@ def move():
         'move':move,
         'taunt':'Lets raise the ROOOF'
     }
+    end = time.time()
+    print "Took", end - start, "seconds to compute move."
     return json.dumps(response)
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=(os.environ.get("PORT", "5001")))
+    #use 5000 if we're local, or whatever port
+    #heroku tells us to use.
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)
