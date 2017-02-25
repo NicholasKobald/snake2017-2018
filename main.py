@@ -3,12 +3,13 @@
 # N. Kobald - 2017-02-04
 #
 
-import os, json
+import os, json, sys
 import time
 
 from flask import Flask, request
 
 from shared import *
+from food_fetcher import *
 from duel import *
 from gameObjects import *
 OUR_SNAKE_NAME = '1'
@@ -22,15 +23,20 @@ def home():
 
 #Logic about which algorithm gets run,
 #and some basic parsing
-def pick_move(data):
-    snake_dict = create_snake_dict(data['snakes'])
-    #print "--- ORIGINAL BOARD FROM WHICH ALL OTHERS FOLLOW --- "
-    board = Board(data['height'], data['width'], snake_dict, data['food'])
-    #board.print_board()
-    #print "Num snakes:", len(snake_dict)
-    move = minmax(board, snake_dict, data['you'], data['food'], 0)
-    print "returning", move['move']
-    return move['move']
+def pick_move(data, mode):
+    if mode == 'food-fetcher':
+        return pick_move_to_food(data)
+    elif mode == 'min-max':
+        snake_dict = create_snake_dict(data['snakes'])
+        #print "--- ORIGINAL BOARD FROM WHICH ALL OTHERS FOLLOW --- "
+        board = Board(data['height'], data['width'], snake_dict, data['food'])
+        #board.print_board()
+        #print "Num snakes:", len(snake_dict)
+        move = minmax(board, snake_dict, data['you'], data['food'], 0)
+        print "returning", move['move']
+        return move['move']
+    error_msg = 'No protocol set for mode=' + str(mode)
+    raise Exception(error_msg)
 
 #page to dump data
 @app.route('/hello')
@@ -38,6 +44,7 @@ def hello():
     return "Hello World!"
 
 def print_data(data):
+    print "DATA\n********************"
     for key in data:
         print key, ":", data[key]
 
@@ -57,15 +64,26 @@ def start():
 def move():
     start = time.time()
     data = request.get_json(force=True) #dict
-    print "Got pinged."
-    direction = pick_move(data)
+    print "\nPINGED\n********************"
+    print_data(data)
+
+    # TODO pick a default
+    if len(sys.argv) == 1:
+        mode = 'default'
+    else:
+        mode = sys.argv[1]
+
+    print "Running in mode: ", mode
+    move = pick_move(data, mode)
+    print "MOVE PICKED ======== " + str(move) + "\n"
     response = {
-        'move':direction,
+        'move':move,
         'taunt':'Lets raise the ROOOF'
     }
     end = time.time()
     print "Took", end - start, "seconds to compute move."
     return json.dumps(response)
+
 
 if __name__ == '__main__':
     #use 5000 if we're local, or whatever port

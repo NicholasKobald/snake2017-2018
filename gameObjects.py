@@ -29,10 +29,10 @@ class Tile:
 
 class Board:
 
-    def __init__(self, height, width, snakes, food):
+    def __init__(self, height, width, snake_dict, food):
         self.height = height
         self.width = width
-        self.board = self.create_board_from_data(snakes, food)      # expects a 2D array of Tile objects
+        self.board = self.create_board_from_data(snake_dict, food)      # expects a 2D array of Tile objects
 
     # returns list of moves that will not result in instant death (wall or snake)
     def get_valid_moves(self, col, row):
