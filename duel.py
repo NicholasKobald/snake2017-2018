@@ -99,7 +99,7 @@ def enact_move(board, move_info, snake_info, food_list):
     snake = snake_info[snake_id]
     head = snake['coords'][0]
 
-    x, y = get_tile_from_move(head, move)
+    x, y = get_pos_from_move(head, move)
     tile = board.get_tile(x, y)
     if tile and tile.is_food():
         snake['eaten'] += 1

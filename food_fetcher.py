@@ -2,11 +2,12 @@ from gameObjects import *
 from shared import *
 
 def pick_move_to_food(data):
-    board = Board(data['height'], data['width'], data['snakes'], data['food'])
+    snake_dict = create_snake_dict(data['snakes'])
+    board = Board(data['height'], data['width'], snake_dict, data['food'])
 
     # get our snake's head coords
     snake_id = data['you']
-    snake_coords = get_head_coords(get_snake(snake_id, data['snakes']))
+    snake_coords = get_head_coords(snake_dict[snake_id])
     x, y = snake_coords[0], snake_coords[1]
 
     # find safe moves first

@@ -4,11 +4,6 @@ def get_head_coords(snake):
     head_x, head_y = snake['coords'][0][0], snake['coords'][0][1]
     return (head_x, head_y)
 
-def get_snake(snake_id, snakes):
-    for snake in snakes:
-        if snake['id'] == snake_id:
-            return snake
-
 # computes position resulting from current positioin and move
 # clunky, big, annoying to write... put it in a function!
 def get_pos_from_move(cur_pos, move):
