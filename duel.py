@@ -8,7 +8,7 @@ import random
 from shared import *
 from gameObjects import *
 
-depth_score = [100, 50, 25, 12, 6, 3, 2, 1]
+depth_score = [1000000, 5000, 250, 12, 6, 3, 2, 1]
 
 def print_snake_data(snake):
     print " --- snake data --"
@@ -19,28 +19,38 @@ def print_snake_data(snake):
 def start_minmax(board, snake_info, us, food_list):
     all_move_combinations = get_all_move_comb(board, snake_info, food_list)
     node_val = float('-inf')
+    print " --- Prior to recursing --------"
+    print_future(board, snake_info, food_list)
+    print " ----- END PRIOR -------- "
     move = None
     for current_moveset in all_move_combinations:
         our_move = get_our_move_now(current_moveset, us)
-        dead_snakes = get_board_from_moves(board, current_moveset, snake_info, food_list, us, 0)
+        dead_snakes = get_board_from_moves(board, current_moveset, snake_info, food_list, us, 1)
+        print "RECURISNG ON MOVE", our_move
+        print_future(board, snake_info, food_list)
         cur = minmax(board, snake_info, us, food_list, 1)
         if cur>node_val:
             node_val = cur
             print "The value of CUR at root is:", cur
             print "updated our move from ROOT to", our_move
             move = our_move
-        undo_move_set(board, current_moveset, dead_snakes, snake_info, food_list, 0)
+        undo_move_set(board, current_moveset, dead_snakes, snake_info, food_list, 1)
 
-    print "Start minmax is returning", move
+    print " --- AFTER RECURSING --------- "
+    print_future(board, snake_info, food_list)
+    print " ----- AFTERRR  -------- "
     return move
 
 def minmax(board, snake_info, us, food_list, depth):
-    if depth==7:
+    #TODO put more thought into basecase
+    if depth==4 or us not in snake_info:
         return score_board(board, us, snake_info, food_list)
 
+    print " --- Prior to recursing AT DEPTH", depth, "--------"
+    print_future(board, snake_info, food_list)
+    print " ----- END PRIOR -------- "
 
     all_move_combinations = get_all_move_comb(board, snake_info, food_list)
-
     node_val = float('-inf')
     best = node_val
     for current_moveset in all_move_combinations:
@@ -52,6 +62,9 @@ def minmax(board, snake_info, us, food_list, depth):
             best = node_val
 
 
+    print " --- AFTER  recursing AT DEPTH", depth, "--------"
+    print_future(board, snake_info, food_list)
+    print " ----- AFTER RECURSING  -------- "
     return best
 
 def get_our_move_now(move_set, us):
@@ -60,12 +73,12 @@ def get_our_move_now(move_set, us):
             return move['move']
 
 def undo_move_set(board, prev_moveset, dead_snakes, snake_info, food_list, depth):
-    for move in prev_moveset:
-        if move['snake'] in snake_info:
-            undo_move(move, snake_info[move['snake']], food_list, board, depth)
-
     for s_id, ded in dead_snakes.iteritems():
         snake_info[s_id] = ded
+
+    for move in prev_moveset:
+        undo_move(move, snake_info[move['snake']], food_list, board, depth)
+
 
 
 def undo_move(move, snake, food_list, board, depth):
@@ -88,9 +101,7 @@ def undo_move(move, snake, food_list, board, depth):
             type='snake',
             head=True
         ))
-    #when does this not happen?
     #this now looking at the PREVIOUS Turn.
-    #the tail is already there. probably.
     if not snake['ate'][-1]:
         t_x, t_y = snake['old_tails'].pop()
         snake['coords'].append([t_x, t_y])
@@ -188,12 +199,12 @@ def score_board(board, us, snake_info, food_list):
     if us not in snake_info:
         return float('-inf')
 
+    #print_snake_data(snake_info[us])
+    #obvious loss/win conditions.
+    #print_future(board, snake_info, food_list)
+    print "returning", snake_info[us]['eaten']
     return snake_info[us]['eaten']
     """
-    #obvious loss/win conditions.
-    if us not in snake_info:
-        return float('-inf')
-
     our_snake = snake_info[us] #why i did this
     length = len(our_snake['coords'])
     head = our_snake['coords'][0]
@@ -203,7 +214,7 @@ def score_board(board, us, snake_info, food_list):
     health = float(our_snake['health_points'])/100
     #past a certain length (this should be a function of)
     #board size, not cutting ourself off is important.
-    if length>20:
+    if length>5:
         return (count_reachable(board, head)) + float(our_snake['eaten'])/health
     return node_val
     """
