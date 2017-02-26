@@ -42,6 +42,9 @@ def create_snake_dict(snake_list):
     for snake in snake_list:
         snake_dict[snake['id']] = snake
         snake['eaten'] = 0
+        snake['ate'] = [False] #init with prev game info. 
+        snake['old_tails'] = []
+        snake['food_eaten'] = []
         del snake['id'] #nolonger needed.
     return snake_dict
 

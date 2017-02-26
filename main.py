@@ -23,14 +23,15 @@ def home():
 #Logic about which algorithm gets run,
 #and some basic parsing
 def pick_move(data):
+    print " ------ DEBUG START -------- "
     snake_dict = create_snake_dict(data['snakes'])
     #print "--- ORIGINAL BOARD FROM WHICH ALL OTHERS FOLLOW --- "
     board = Board(data['height'], data['width'], snake_dict, data['food'])
     #board.print_board()
     #print "Num snakes:", len(snake_dict)
-    move = minmax(board, snake_dict, data['you'], data['food'], 0)
-    print "returning", move['move']
-    return move['move']
+    move = start_minmax(board, snake_dict, data['you'], data['food'])
+    print " ----------- MOVE END ----------- "
+    return move
 
 #page to dump data
 @app.route('/hello')

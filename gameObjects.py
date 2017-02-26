@@ -72,7 +72,6 @@ class Board:
     def create_board_from_data(self, snakes, food_list):
         board = []
         height, width = self.height, self.width
-
         # creates board of empty Tile objects
         for i in range(height):
             row = []
@@ -81,7 +80,6 @@ class Board:
                 tile=Tile()
                 row.append(tile)
             board.append(row)
-
         # encode snakes into board by setting Tile object type to 'snake'
         for s_id, snake in snakes.iteritems():
             at_head = True
@@ -93,13 +91,11 @@ class Board:
                     head=at_head
                 ))
                 at_head = False
-
         # encode food into board by setting Tile object type to 'food'
         for food in food_list:
             x, y = food[0], food[1]
             board[y][x].set_tile_type(dict(type='food'))
         return board
-
 
     def print_board(self):
         board = self.board
