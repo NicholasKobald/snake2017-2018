@@ -52,7 +52,6 @@ def print_data(data):
 def start():
     print "Got started pinged."
     data = request.get_json(force=True) #dict
-    #print_data(data)
     response = dict(
         color='#000',
         name='master_ai',
@@ -65,7 +64,6 @@ def move():
     start = time.time()
     data = request.get_json(force=True) #dict
     print "\nPINGED\n********************"
-    print_data(data)
 
     # TODO pick a default
     if len(sys.argv) == 1:
@@ -73,7 +71,6 @@ def move():
     else:
         mode = sys.argv[1]
 
-    print "Running in mode: ", mode
     move = pick_move(data, mode)
     print "MOVE PICKED ======== " + str(move) + "\n"
     response = {

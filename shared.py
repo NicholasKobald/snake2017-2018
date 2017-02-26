@@ -54,7 +54,6 @@ def get_shortest_path_for_each(col, row, board, coords_list):
             for move in valid_moves:
                 new_pos = get_pos_from_move((cur_pos['col'], cur_pos['row']), move)
                 queue.append({'col': new_pos[0], 'row': new_pos[1], 'path_len': cur_path_len+1})
-    print "shortest_to: " + str(dist_to)
     return dist_to
 
 # TODO consider generalizing function signature to any coord_dict_by_dist
@@ -96,7 +95,6 @@ def get_displacement_for_each(col, row, coord_list):
             distances[dist].append(item)
         else:
             distances[dist] = [item]
-    print "distances: " + str(distances)
     return distances
 
 def get_moves_from_id(snake_id, snake_list, board):
