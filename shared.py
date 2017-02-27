@@ -1,5 +1,7 @@
 from gameObjects import *
 
+DEBUG = True
+
 def get_head_coords(snake):
     head_x, head_y = snake['coords'][0][0], snake['coords'][0][1]
     return (head_x, head_y)
@@ -7,17 +9,18 @@ def get_head_coords(snake):
 
 # computes position resulting from current position and move
 # clunky, big, annoying to write... put it in a function!
+# TODO add boundary check to avoid index out of bounds
 def get_pos_from_move(cur_pos, move):
     col, row = cur_pos[0], cur_pos[1]
-    if move == 'up' and row-1 >= 0:
+    if move == 'up':
         return (col, row-1)
-    elif move == 'down' and row+1 < height:
+    elif move == 'down':
         return (col, row+1)
-    elif move == 'left' and col-1 >= 0:
+    elif move == 'left':
         return (col-1, row)
-    elif move == 'right' and col+1 < width:
+    # TODO add boundary check to avoid index out of bounds
+    elif move == 'right':
         return (col+1, row)
-
     raise Exception
 
 
@@ -60,6 +63,9 @@ def get_shortest_path_for_each(col, row, board, coords_list):
 # TODO consider generalizing function signature to any coord_dict_by_dist
 def get_safe_move_to_nearest_food(col, row, valid_moves, food_dict_by_dist):
     near_first = sorted(food_dict_by_dist)
+    if DEBUG:
+        for dist in near_first:
+            print "at dist:", dist, "food coords", food_dict_by_dist[dist]
 
     # TODO perhaps add logic to check if other snakes are nearer and stuff
     # get first coord corresponding to nearest food

@@ -71,7 +71,7 @@ def move():
     if prev_food_list != None:
         snakes_just_ate = find_snakes_that_just_ate(data, prev_food_list, board)
         for s in snakes_just_ate:
-            pass
+            if DEBUG: print "snakes_just_ate at:", snake_dict[s]['coords'][0]
     # insert info about which snakes ate last turn into data object
     data['ate_last_turn'] = snakes_just_ate
 

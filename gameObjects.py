@@ -77,10 +77,13 @@ class Board:
         losing_head_collisions = []
         for move in valid_moves:
             valid_pos = self.get_pos_from_move((col, row), move)
+            if valid_pos == None:
+                print "* UNEXPECTED: get_pos_from_move(a_valid_move) should never return None"
+                continue
             for adj in ['right', 'left', 'up', 'down']:
                 adj_pos = self.get_pos_from_move(valid_pos, adj)
-                # skip if this is our head
-                if adj_pos[0] == col and adj_pos[1] == row:
+                # skip if we are looking outside the board or if this is our head
+                if adj_pos == None or (adj_pos[0] == col and adj_pos[1] == row):
                     continue
 
                 adj_tile = self.safe_get_tile(adj_pos[0], adj_pos[1])
@@ -164,14 +167,14 @@ class Board:
         col, row = cur_pos[0], cur_pos[1]
         if move == 'up' and row-1 >= 0:
             return (col, row-1)
-        elif move == 'down' and row+1 < height:
+        elif move == 'down' and row+1 < self.height:
             return (col, row+1)
         elif move == 'left' and col-1 >= 0:
             return (col-1, row)
-        elif move == 'right' and col+1 < width:
+        elif move == 'right' and col+1 < self.width:
             return (col+1, row)
-
-        raise Exception
+        # None indicates that move is out of bounds
+        return None
 
     def print_board(self):
         board = self.board

@@ -12,7 +12,9 @@ def pick_move_to_food(data, board, snake_dict):
 
     # find safe moves first
     valid_moves = board.get_valid_moves(x, y, data['ate_last_turn'])
+    if DEBUG: print "valid moves:", valid_moves
     losing_head_collisions = board.find_losing_head_collisions(x, y, snake_id, snake_dict, data['ate_last_turn'])
+    if DEBUG: print "dangerous head collisions:", losing_head_collisions
 
     # TODO add a better heuristic for choosing which dangerous move to make
     # --> e.g. if the other snake might move towards other food instead
@@ -26,6 +28,7 @@ def pick_move_to_food(data, board, snake_dict):
 
     # find distances from snake head to each food bit
     food_dict_by_shortest_path = get_shortest_path_for_each(x, y, board, data['food'])
+    if DEBUG: print "food distances:", food_dict_by_shortest_path
 
     # find move towards food
     move_towards_food = get_safe_move_to_nearest_food(x, y, valid_moves, food_dict_by_shortest_path)
