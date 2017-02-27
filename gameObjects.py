@@ -1,8 +1,3 @@
-#
-#
-#
-
-#bassically a wrapper for the game data
 
 class Tile:
 
