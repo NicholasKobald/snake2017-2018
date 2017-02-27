@@ -26,14 +26,11 @@ def start_minmax(board, snake_info, us, food_list):
         cur = minmax(board, snake_info, us, food_list, 1)
         if cur>node_val:
             node_val = cur
-            print "The value of CUR at root is:", cur
-            print "updated our move from ROOT to", our_move
             move = our_move
         undo_move_set(board, current_moveset, dead_snakes, snake_info, food_list, 1)
     return move
 
 def minmax(board, snake_info, us, food_list, depth):
-    #TODO put more thought into basecase
     if depth==4 or len(snake_info)==1:
         return score_board(board, us, snake_info, food_list, depth)
 
@@ -104,7 +101,7 @@ def get_all_move_comb(board, snake_info, food_list):
         snake_moves = []
         head = snake_info[snake]['coords'][0]
         for valid_move in board.naive_get_valid_moves(head[0], head[1]):
-            new_x, new_y = get_tile_from_move(head, valid_move)
+            new_x, new_y = get_pos_from_move(head, valid_move)
             tile = board.get_tile(new_x, new_y)
             if tile.is_food():
                 snake_moves.append(dict(
@@ -121,8 +118,6 @@ def get_all_move_comb(board, snake_info, food_list):
         move_set.append(snake_moves)
     return itertools.product(*move_set)
 
-#movelist should be a list of keyvalue pairs,
-# { id: move} where move is a valid move.
 def get_board_from_moves(board, move_list, snake_info, food_list, us, depth):
     #map moves to snakes
     for move_info in move_list:
@@ -133,7 +128,6 @@ def get_board_from_moves(board, move_list, snake_info, food_list, us, depth):
         if len(board.naive_get_valid_moves(snake['coords'][0][0], snake['coords'][0][1])) == 0:
             dead[s_id] = snake
 
-    #we'll use this dead dict to place the snakes back in after recursing.
     for s_id in dead:
         del snake_info[s_id]
 
@@ -141,7 +135,7 @@ def get_board_from_moves(board, move_list, snake_info, food_list, us, depth):
 
 def enact_move(board, move_info, snake, food_list, depth):
     head = snake['coords'][0]
-    x, y = get_tile_from_move(head, move_info['move'])
+    x, y = get_pos_from_move(head, move_info['move'])
     tile = board.get_tile(x, y)
     if not snake['ate'][-1]: #list.peek()
         tail = snake['coords'].pop()
@@ -171,30 +165,11 @@ def enact_move(board, move_info, snake, food_list, depth):
         head=True
     ))
 
-
-#NOTE Yikes
 def score_board(board, us, snake_info, food_list, depth):
     if us not in snake_info:
         return -1000*depth_score[depth]
 
     if len(snake_info) == 1:
         return 1000*depth_score[depth]
-    #print_snake_data(snake_info[us])
-    #obvious loss/win conditions.
-    #print_future(board, snake_info, food_list)
-    #print "returning", snake_info[us]['eaten']
+
     return snake_info[us]['eaten']
-    """
-    our_snake = snake_info[us] #why i did this
-    length = len(our_snake['coords'])
-    head = our_snake['coords'][0]
-    num_moves = float(len(board.naive_naive_get_valid_moves(head[0], head[1])))
-    length_con = float(length)/100
-    node_val = num_moves + length_con
-    health = float(our_snake['health_points'])/100
-    #past a certain length (this should be a function of)
-    #board size, not cutting ourself off is important.
-    if length>5:
-        return (count_reachable(board, head)) + float(our_snake['eaten'])/health
-    return node_val
-    """

@@ -6,16 +6,20 @@
 import os
 import json
 import time
+import sys
 
 from flask import Flask
 from flask import request
 
 from shared import *
+from food_fetcher import *
 from duel import *
 from gameObjects import *
 
 
 OUR_SNAKE_NAME = '1'
+PREV_DATA_BY_GAME_ID = dict()
+DEBUG = True
 
 app = Flask(__name__)
 
@@ -25,19 +29,17 @@ def home():
 
 #Logic about which algorithm gets run,
 #and some basic parsing
-def pick_move(data):
-    snake_dict = create_snake_dict(data['snakes'])
-    #print "--- ORIGINAL BOARD FROM WHICH ALL OTHERS FOLLOW --- "
-    board = Board(data['height'], data['width'], snake_dict, data['food'])
-    #board.print_board()
-    #print "Num snakes:", len(snake_dict)
-    move = start_minmax(board, snake_dict, data['you'], data['food'])
-    if not move:
-        our_snake = snake_dict[data['you']]
-        x, y = get_head_coords(our_snake)
-        move = random.choice(board.get_valid_moves(x, y))
-        print "MINMAX FAILED. returning:", move
-    return move
+def pick_move(data, board, snake_dict, mode):
+    if mode == 'food-fetcher':
+        move = pick_move_to_food(data, board, snake_dict)
+        print "FOOD-FETCHER IS RETURNIGN", move
+        return move
+    elif mode == 'min-max':
+        move = start_minmax(board, snake_dict, data['you'], data['food'])
+        print "MINMAX IS RETURNING", move
+        return move
+    error_msg = 'No protocol set for mode=' +  mode
+    raise Exception(error_msg)
 
 #page to dump data
 @app.route('/hello')
@@ -45,14 +47,14 @@ def hello():
     return "Hello World!"
 
 def print_data(data):
+    print "DATA\n********************"
     for key in data:
         print key, ":", data[key]
 
 @app.route('/start', methods=['POST'])
 def start():
-    print "Got started pinged."
     data = request.get_json(force=True) #dict
-    #print_data(data)
+    PREV_DATA_BY_GAME_ID[data['game_id']] = dict(prev_food_list=None)
     response = dict(
         color='#369',
         name='master_ai',
@@ -64,10 +66,32 @@ def start():
 def move():
     start = time.time()
     data = request.get_json(force=True) #dict
-    print "Got pinged."
-    direction = pick_move(data)
+    print "\nPINGED\n********************"
+    # create Board object
+    snake_dict = create_snake_dict(data['snakes'])
+    board = Board(data['height'], data['width'], snake_dict, data['food'])
+
+    prev_food_list = PREV_DATA_BY_GAME_ID[data['game_id']]['prev_food_list']
+    snakes_just_ate = []
+    if prev_food_list != None:
+        snakes_just_ate = find_snakes_that_just_ate(data, prev_food_list, board)
+        for s in snakes_just_ate:
+            if DEBUG: print "snakes_just_ate at:", snake_dict[s]['coords'][0]
+    # insert info about which snakes ate last turn into data object
+    data['ate_last_turn'] = snakes_just_ate
+
+    PREV_DATA_BY_GAME_ID[data['game_id']]['prev_food_list'] = data['food'][:]
+
+    # TODO pick a default
+    if len(sys.argv) == 1:
+        mode = 'default'
+    else:
+        mode = sys.argv[1]
+
+    move = pick_move(data, board, snake_dict, mode)
+    print "MOVE PICKED ======== " + str(move) + "\n"
     response = {
-        'move':direction,
+        'move':move,
         'taunt':'Lets raise the ROOOF'
     }
     end = time.time()
@@ -75,7 +99,5 @@ def move():
     return json.dumps(response)
 
 if __name__ == '__main__':
-    #use 5000 if we're local, or whatever port
-    #heroku tells us to use.
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
