@@ -159,17 +159,17 @@ class Board:
             board[y][x].set_tile_type(dict(type='food'))
         return board
 
-    # computes position resulting from current positioin and move
+    # computes position resulting from current position and move
     # clunky, big, annoying to write... put it in a function!
     def get_pos_from_move(self, cur_pos, move):
         col, row = cur_pos[0], cur_pos[1]
-        if move == 'up':
+        if move == 'up' and row-1 >= 0:
             return (col, row-1)
-        elif move == 'down':
+        elif move == 'down' and row+1 < height:
             return (col, row+1)
-        elif move == 'left':
+        elif move == 'left' and col-1 >= 0:
             return (col-1, row)
-        elif move == 'right':
+        elif move == 'right' and col+1 < width:
             return (col+1, row)
 
         raise Exception
