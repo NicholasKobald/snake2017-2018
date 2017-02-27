@@ -18,7 +18,6 @@ class Tile:
             snake_id = self.get_snake_id()
             assert snake_id!=None
             safe_tail = snake_id not in ate_last_turn
-            if TILE_DEBUG print "* TAIL CHECK: ", snake_id, " ", safe_tail
             return safe_tail
         return (not self.is_snake())
 
