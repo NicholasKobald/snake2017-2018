@@ -8,7 +8,7 @@ import random
 from shared import *
 from gameObjects import *
 
-depth_score = [1000000, 5000, 250, 12, 6, 3, 2, 1]
+depth_score = [1000000, 5000, 250, 12, 6, 3, 2, 1, 0, 0, 0, 0, 0, 0, 0]
 
 def print_snake_data(snake):
     print " --- snake data --"
@@ -19,15 +19,10 @@ def print_snake_data(snake):
 def start_minmax(board, snake_info, us, food_list):
     all_move_combinations = get_all_move_comb(board, snake_info, food_list)
     node_val = float('-inf')
-    print " --- Prior to recursing --------"
-    print_future(board, snake_info, food_list)
-    print " ----- END PRIOR -------- "
     move = None
     for current_moveset in all_move_combinations:
         our_move = get_our_move_now(current_moveset, us)
         dead_snakes = get_board_from_moves(board, current_moveset, snake_info, food_list, us, 1)
-        print "RECURISNG ON MOVE", our_move
-        print_future(board, snake_info, food_list)
         cur = minmax(board, snake_info, us, food_list, 1)
         if cur>node_val:
             node_val = cur
@@ -36,9 +31,6 @@ def start_minmax(board, snake_info, us, food_list):
             move = our_move
         undo_move_set(board, current_moveset, dead_snakes, snake_info, food_list, 1)
 
-    print " --- AFTER RECURSING --------- "
-    print_future(board, snake_info, food_list)
-    print " ----- AFTERRR  -------- "
     return move
 
 def minmax(board, snake_info, us, food_list, depth):
@@ -46,9 +38,6 @@ def minmax(board, snake_info, us, food_list, depth):
     if depth==4 or us not in snake_info:
         return score_board(board, us, snake_info, food_list)
 
-    print " --- Prior to recursing AT DEPTH", depth, "--------"
-    print_future(board, snake_info, food_list)
-    print " ----- END PRIOR -------- "
 
     all_move_combinations = get_all_move_comb(board, snake_info, food_list)
     node_val = float('-inf')
@@ -62,9 +51,6 @@ def minmax(board, snake_info, us, food_list, depth):
             best = node_val
 
 
-    print " --- AFTER  recursing AT DEPTH", depth, "--------"
-    print_future(board, snake_info, food_list)
-    print " ----- AFTER RECURSING  -------- "
     return best
 
 def get_our_move_now(move_set, us):
@@ -199,10 +185,12 @@ def score_board(board, us, snake_info, food_list):
     if us not in snake_info:
         return float('-inf')
 
+    if len(snake_info) == 1:
+        return float('inf')
     #print_snake_data(snake_info[us])
     #obvious loss/win conditions.
     #print_future(board, snake_info, food_list)
-    print "returning", snake_info[us]['eaten']
+    #print "returning", snake_info[us]['eaten']
     return snake_info[us]['eaten']
     """
     our_snake = snake_info[us] #why i did this
