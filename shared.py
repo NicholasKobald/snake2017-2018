@@ -4,17 +4,18 @@ def get_head_coords(snake):
     head_x, head_y = snake['coords'][0][0], snake['coords'][0][1]
     return (head_x, head_y)
 
-# computes position resulting from current positioin and move
+
+# computes position resulting from current position and move
 # clunky, big, annoying to write... put it in a function!
 def get_pos_from_move(cur_pos, move):
     col, row = cur_pos[0], cur_pos[1]
-    if move == 'up':
+    if move == 'up' and row-1 >= 0:
         return (col, row-1)
-    elif move == 'down':
+    elif move == 'down' and row+1 < height:
         return (col, row+1)
-    elif move == 'left':
+    elif move == 'left' and col-1 >= 0:
         return (col-1, row)
-    elif move == 'right':
+    elif move == 'right' and col+1 < width:
         return (col+1, row)
 
     raise Exception
@@ -54,7 +55,6 @@ def get_shortest_path_for_each(col, row, board, coords_list):
             for move in valid_moves:
                 new_pos = get_pos_from_move((cur_pos['col'], cur_pos['row']), move)
                 queue.append({'col': new_pos[0], 'row': new_pos[1], 'path_len': cur_path_len+1})
-    print "shortest_to: " + str(dist_to)
     return dist_to
 
 # TODO consider generalizing function signature to any coord_dict_by_dist
@@ -96,7 +96,6 @@ def get_displacement_for_each(col, row, coord_list):
             distances[dist].append(item)
         else:
             distances[dist] = [item]
-    print "distances: " + str(distances)
     return distances
 
 def get_moves_from_id(snake_id, snake_list, board):
@@ -104,6 +103,19 @@ def get_moves_from_id(snake_id, snake_list, board):
     head = get_head_coords(snake)
     moves = board.get_valid_moves(head[0], head[1])
     return moves
+
+# returns IDs of all snakes that ate in the previous turn
+def find_snakes_that_just_ate(data, prev_food_list, board):
+    snakes_just_ate = []
+    for prev_food in prev_food_list:
+        # ignore foods that are still there from last turn
+        if prev_food in data['food']:
+            continue
+
+        tile = board.safe_get_tile(prev_food[0], prev_food[1])
+        if tile.is_snake():
+            snakes_just_ate.append(tile.get_snake_id())
+    return snakes_just_ate
 
 def create_snake_dict(snake_list):
     snake_dict = dict()

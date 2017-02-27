@@ -13,6 +13,8 @@ from food_fetcher import *
 from duel import *
 from gameObjects import *
 OUR_SNAKE_NAME = '1'
+PREV_DATA_BY_GAME_ID = dict()
+DEBUG = True
 
 app = Flask(__name__)
 
@@ -23,15 +25,10 @@ def home():
 
 #Logic about which algorithm gets run,
 #and some basic parsing
-def pick_move(data, mode):
+def pick_move(data, board, snake_dict, mode):
     if mode == 'food-fetcher':
-        return pick_move_to_food(data)
+        return pick_move_to_food(data, board, snake_dict)
     elif mode == 'min-max':
-        snake_dict = create_snake_dict(data['snakes'])
-        #print "--- ORIGINAL BOARD FROM WHICH ALL OTHERS FOLLOW --- "
-        board = Board(data['height'], data['width'], snake_dict, data['food'])
-        #board.print_board()
-        #print "Num snakes:", len(snake_dict)
         move = minmax(board, snake_dict, data['you'], data['food'], 0)
         print "returning", move['move']
         return move['move']
@@ -50,9 +47,9 @@ def print_data(data):
 
 @app.route('/start', methods=['POST'])
 def start():
-    print "Got started pinged."
     data = request.get_json(force=True) #dict
-    #print_data(data)
+    PREV_DATA_BY_GAME_ID[data['game_id']] = dict(prev_food_list=None)
+
     response = dict(
         color='#000',
         name='master_ai',
@@ -65,7 +62,20 @@ def move():
     start = time.time()
     data = request.get_json(force=True) #dict
     print "\nPINGED\n********************"
-    print_data(data)
+    # create Board object
+    snake_dict = create_snake_dict(data['snakes'])
+    board = Board(data['height'], data['width'], snake_dict, data['food'])
+
+    prev_food_list = PREV_DATA_BY_GAME_ID[data['game_id']]['prev_food_list']
+    snakes_just_ate = []
+    if prev_food_list != None:
+        snakes_just_ate = find_snakes_that_just_ate(data, prev_food_list, board)
+        for s in snakes_just_ate:
+            if DEBUG print "snakes_just_ate at:", snake_dict[s]['coords'][0]
+    # insert info about which snakes ate last turn into data object
+    data['ate_last_turn'] = snakes_just_ate
+
+    PREV_DATA_BY_GAME_ID[data['game_id']]['prev_food_list'] = data['food'][:]
 
     # TODO pick a default
     if len(sys.argv) == 1:
@@ -73,8 +83,7 @@ def move():
     else:
         mode = sys.argv[1]
 
-    print "Running in mode: ", mode
-    move = pick_move(data, mode)
+    move = pick_move(data, board, snake_dict, mode)
     print "MOVE PICKED ======== " + str(move) + "\n"
     response = {
         'move':move,
