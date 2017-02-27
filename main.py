@@ -3,15 +3,20 @@
 # N. Kobald - 2017-02-04
 #
 
-import os, json, sys
+import os
+import json
 import time
+import sys
 
-from flask import Flask, request
+from flask import Flask
+from flask import request
 
 from shared import *
 from food_fetcher import *
 from duel import *
 from gameObjects import *
+
+
 OUR_SNAKE_NAME = '1'
 PREV_DATA_BY_GAME_ID = dict()
 DEBUG = True
@@ -22,17 +27,18 @@ app = Flask(__name__)
 def home():
     return "Hello World"
 
-
 #Logic about which algorithm gets run,
 #and some basic parsing
 def pick_move(data, board, snake_dict, mode):
     if mode == 'food-fetcher':
-        return pick_move_to_food(data, board, snake_dict)
+        move = pick_move_to_food(data, board, snake_dict)
+        print "FOOD-FETCHER IS RETURNING", move
+        return move
     elif mode == 'min-max':
-        move = minmax(board, snake_dict, data['you'], data['food'], 0)
-        print "returning", move['move']
-        return move['move']
-    error_msg = 'No protocol set for mode=' + str(mode)
+        move = start_minmax(board, snake_dict, data['you'], data['food'])
+        print "MINMAX IS RETURNING", move
+        return move
+    error_msg = 'No protocol set for mode=' +  mode
     raise Exception(error_msg)
 
 #page to dump data
@@ -49,9 +55,8 @@ def print_data(data):
 def start():
     data = request.get_json(force=True) #dict
     PREV_DATA_BY_GAME_ID[data['game_id']] = dict(prev_food_list=None)
-
     response = dict(
-        color='#000',
+        color='#369',
         name='master_ai',
         taunt='My. Treat.'
     )
@@ -84,7 +89,6 @@ def move():
         mode = sys.argv[1]
 
     move = pick_move(data, board, snake_dict, mode)
-    print "MOVE PICKED ======== " + str(move) + "\n"
     response = {
         'move':move,
         'taunt':'Lets raise the ROOOF'
@@ -93,9 +97,6 @@ def move():
     print "Took", end - start, "seconds to compute move."
     return json.dumps(response)
 
-
 if __name__ == '__main__':
-    #use 5000 if we're local, or whatever port
-    #heroku tells us to use.
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)

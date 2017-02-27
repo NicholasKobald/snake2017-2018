@@ -1,15 +1,19 @@
 from gameObjects import *
 
+
+flip_dict = dict(
+    up='down',
+    left='right',
+    right='left',
+    down='up'
+)
+
 DEBUG = True
 
 def get_head_coords(snake):
     head_x, head_y = snake['coords'][0][0], snake['coords'][0][1]
     return (head_x, head_y)
 
-
-# computes position resulting from current position and move
-# clunky, big, annoying to write... put it in a function!
-# TODO add boundary check to avoid index out of bounds
 def get_pos_from_move(cur_pos, move):
     col, row = cur_pos[0], cur_pos[1]
     if move == 'up':
@@ -18,11 +22,9 @@ def get_pos_from_move(cur_pos, move):
         return (col, row+1)
     elif move == 'left':
         return (col-1, row)
-    # TODO add boundary check to avoid index out of bounds
     elif move == 'right':
         return (col+1, row)
     raise Exception
-
 
 # finds distance of shortest path from (col, row) to each pair of coords in coord_list
 # returns a dict where (key=dist, val=list of coordinates)
@@ -128,6 +130,9 @@ def create_snake_dict(snake_list):
     for snake in snake_list:
         snake_dict[snake['id']] = snake
         snake['eaten'] = 0
+        snake['ate'] = [False] #init with prev game info.
+        snake['old_tails'] = []
+        snake['food_eaten'] = []
         del snake['id'] #nolonger needed.
     return snake_dict
 

@@ -1,6 +1,5 @@
 #
 #
-#
 
 TILE_DEBUG = True
 
@@ -12,8 +11,16 @@ class Tile:
         else:
             self.data = data
 
+    def eat(self):
+        self.data['type'] = 'empty'
+
+    def throwup(self):
+        self.data['type'] = 'food'
+
+    def naive_is_safe(self):
+        return self.data['type'] != 'snake'
+
     def is_safe(self, ate_last_turn):
-        # TODO (if check_tails) add check for whether this snake's head is near food
         if self.is_tail():
             snake_id = self.get_snake_id()
             assert snake_id!=None
@@ -44,8 +51,6 @@ class Tile:
     def __str__(self):
         if self.data['type'] == 'snake' and self.data['head']:
             return 'h'
-        elif self.data['type'] == 'snake' and self.data['tail']:
-            return 't'
         return self.data['type'][:1]
 
 
@@ -67,6 +72,19 @@ class Board:
         if col > 0 and self.get_tile(col-1, row).is_safe(ate_last_turn):
             valid_moves.append('left')
         if row > 0 and self.get_tile(col, row-1).is_safe(ate_last_turn):
+            valid_moves.append('up')
+
+        return valid_moves
+
+    def naive_get_valid_moves(self, col, row):
+        valid_moves = []
+        if col < self.width-1 and self.get_tile(col+1, row).naive_is_safe():
+            valid_moves.append('right')
+        if row < self.height-1 and self.get_tile(col, row+1).naive_is_safe():
+            valid_moves.append('down')
+        if col > 0 and self.get_tile(col-1, row).naive_is_safe():
+            valid_moves.append('left')
+        if row > 0 and self.get_tile(col, row-1).naive_is_safe():
             valid_moves.append('up')
 
         return valid_moves
@@ -110,7 +128,6 @@ class Board:
 
         return losing_head_collisions
 
-
     def safe_get_tile(self, col, row):
         if self.not_valid_tile(row, col):
             return None
@@ -128,7 +145,6 @@ class Board:
     def create_board_from_data(self, snakes, food_list):
         board = []
         height, width = self.height, self.width
-
         # creates board of empty Tile objects
         for i in range(height):
             row = []
@@ -137,14 +153,11 @@ class Board:
                 tile=Tile()
                 row.append(tile)
             board.append(row)
-
         # encode snakes into board by setting Tile object type to 'snake'
         for s_id, snake in snakes.iteritems():
             for index, coord in enumerate(snake['coords']):
                 x, y = coord[0], coord[1]
                 at_head, at_tail = (index == 0), (index==len(snake['coords'])-1)
-                # TODO implement a more robust edge case treatment
-                # --> in early game, we may over-write tiles (snakes are stacked)
                 if board[y][x].is_head():
                     continue
                 else:
@@ -154,15 +167,11 @@ class Board:
                         head=at_head,
                         tail=at_tail
                     ))
-
-        # encode food into board by setting Tile object type to 'food'
         for food in food_list:
             x, y = food[0], food[1]
             board[y][x].set_tile_type(dict(type='food'))
         return board
 
-    # computes position resulting from current position and move
-    # clunky, big, annoying to write... put it in a function!
     def get_pos_from_move(self, cur_pos, move):
         col, row = cur_pos[0], cur_pos[1]
         if move == 'up' and row-1 >= 0:
