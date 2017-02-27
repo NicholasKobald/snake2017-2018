@@ -2,6 +2,8 @@
 #
 #
 
+TILE_DEBUG = True
+
 class Tile:
 
     def __init__(self, data=None):
@@ -10,8 +12,14 @@ class Tile:
         else:
             self.data = data
 
-    def is_safe(self, check_tails):
+    def is_safe(self, ate_last_turn):
         # TODO (if check_tails) add check for whether this snake's head is near food
+        if self.is_tail():
+            snake_id = self.get_snake_id()
+            assert snake_id!=None
+            safe_tail = snake_id not in ate_last_turn
+            if TILE_DEBUG print "* TAIL CHECK: ", snake_id, " ", safe_tail
+            return safe_tail
         return (not self.is_snake())
 
     def is_food(self):
@@ -31,6 +39,9 @@ class Tile:
     def is_head(self):
         return (self.is_snake() and self.data['head'])
 
+    def is_tail(self):
+        return (self.is_snake() and self.data['tail'])
+
     def __str__(self):
         if self.data['type'] == 'snake' and self.data['head']:
             return 'h'
@@ -47,22 +58,22 @@ class Board:
         self.board = self.create_board_from_data(snake_dict, food)      # expects a 2D array of Tile objects
 
     # returns list of moves that will not result in instant death (wall or snake)
-    def get_valid_moves(self, col, row, check_tails=False):
+    def get_valid_moves(self, col, row, ate_last_turn=[]):
         valid_moves = []
         # TODO add check for snake tails (may be safe!)
-        if col < self.width-1 and self.get_tile(col+1, row).is_safe(check_tails):
+        if col < self.width-1 and self.get_tile(col+1, row).is_safe(ate_last_turn):
             valid_moves.append('right')
-        if row < self.height-1 and self.get_tile(col, row+1).is_safe(check_tails):
+        if row < self.height-1 and self.get_tile(col, row+1).is_safe(ate_last_turn):
             valid_moves.append('down')
-        if col > 0 and self.get_tile(col-1, row).is_safe(check_tails):
+        if col > 0 and self.get_tile(col-1, row).is_safe(ate_last_turn):
             valid_moves.append('left')
-        if row > 0 and self.get_tile(col, row-1).is_safe(check_tails):
+        if row > 0 and self.get_tile(col, row-1).is_safe(ate_last_turn):
             valid_moves.append('up')
 
         return valid_moves
 
-    def find_losing_head_collisions(self, col, row, my_snake_id, snake_dict):
-        valid_moves = self.get_valid_moves(col, row, True)
+    def find_losing_head_collisions(self, col, row, my_snake_id, snake_dict, ate_last_turn):
+        valid_moves = self.get_valid_moves(col, row, ate_last_turn)
 
         losing_head_collisions = []
         for move in valid_moves:
@@ -83,9 +94,13 @@ class Board:
                     continue
                 enemy_snake, my_snake = snake_dict[enemy_snake_id], snake_dict[my_snake_id]
 
-                # remove moves that kill us via head-to-head collision
                 enemy_snake_len = len(enemy_snake['coords'])
+                if enemy_snake in ate_last_turn:
+                    enemy_snake_len += 1
+
                 my_snake_len = len(my_snake['coords'])
+                if my_snake in ate_last_turn:
+                    my_snake_len += 1
 
                 # ensure not to insert duplicates
                 if enemy_snake_len >= my_snake_len and move not in losing_head_collisions:
@@ -125,7 +140,7 @@ class Board:
         for s_id, snake in snakes.iteritems():
             for index, coord in enumerate(snake['coords']):
                 x, y = coord[0], coord[1]
-                at_head, at_tail = (index == 0), (index==len(snake)-1)
+                at_head, at_tail = (index == 0), (index==len(snake['coords'])-1)
                 # TODO implement a more robust edge case treatment
                 # --> in early game, we may over-write tiles (snakes are stacked)
                 if board[y][x].is_head():

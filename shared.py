@@ -103,6 +103,19 @@ def get_moves_from_id(snake_id, snake_list, board):
     moves = board.get_valid_moves(head[0], head[1])
     return moves
 
+# returns IDs of all snakes that ate in the previous turn
+def find_snakes_that_just_ate(data, prev_food_list, board):
+    snakes_just_ate = []
+    for prev_food in prev_food_list:
+        # ignore foods that are still there from last turn
+        if prev_food in data['food']:
+            continue
+
+        tile = board.safe_get_tile(prev_food[0], prev_food[1])
+        if tile.is_snake():
+            snakes_just_ate.append(tile.get_snake_id())
+    return snakes_just_ate
+
 def create_snake_dict(snake_list):
     snake_dict = dict()
     for snake in snake_list:

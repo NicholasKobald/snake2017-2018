@@ -1,22 +1,21 @@
 from gameObjects import *
 from shared import *
 
+
 DEBUG = True
 
-def pick_move_to_food(data):
-    snake_dict = create_snake_dict(data['snakes'])
-    board = Board(data['height'], data['width'], snake_dict, data['food'])
-
+def pick_move_to_food(data, board, snake_dict):
     # get our snake's head coords
     snake_id = data['you']
     snake_coords = get_head_coords(snake_dict[snake_id])
     x, y = snake_coords[0], snake_coords[1]
 
     # find safe moves first
-    valid_moves = board.get_valid_moves(x, y, True)
+    valid_moves = board.get_valid_moves(x, y, data['ate_last_turn'])
     if DEBUG: print "valid moves: ", valid_moves
-    losing_head_collisions = board.find_losing_head_collisions(x, y, snake_id, snake_dict)
+    losing_head_collisions = board.find_losing_head_collisions(x, y, snake_id, snake_dict, data['ate_last_turn'])
     if DEBUG: print "dangerous head collision moves: ", losing_head_collisions
+
     # TODO add a better heuristic for choosing which dangerous move to make
     # --> e.g. if the other snake might move towards other food instead
     for dangerous_move in losing_head_collisions:
