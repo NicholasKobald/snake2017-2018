@@ -32,7 +32,7 @@ def home():
 def pick_move(data, board, snake_dict, mode):
     if mode == 'food-fetcher':
         move = pick_move_to_food(data, board, snake_dict)
-        print "FOOD-FETCHER IS RETURNIGN", move
+        print "FOOD-FETCHER IS RETURNING", move
         return move
     elif mode == 'min-max':
         move = start_minmax(board, snake_dict, data['you'], data['food'])
@@ -89,7 +89,6 @@ def move():
         mode = sys.argv[1]
 
     move = pick_move(data, board, snake_dict, mode)
-    print "MOVE PICKED ======== " + str(move) + "\n"
     response = {
         'move':move,
         'taunt':'Lets raise the ROOOF'
