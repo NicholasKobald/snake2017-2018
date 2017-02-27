@@ -103,7 +103,7 @@ def get_all_move_comb(board, snake_info, food_list):
     for snake in snake_info:
         snake_moves = []
         head = snake_info[snake]['coords'][0]
-        for valid_move in board.get_valid_moves(head[0], head[1]):
+        for valid_move in board.naive_get_valid_moves(head[0], head[1]):
             new_x, new_y = get_tile_from_move(head, valid_move)
             tile = board.get_tile(new_x, new_y)
             if tile.is_food():
@@ -130,7 +130,7 @@ def get_board_from_moves(board, move_list, snake_info, food_list, us, depth):
     #who is a goner?
     dead = {}
     for s_id, snake in snake_info.iteritems():
-        if len(board.get_valid_moves(snake['coords'][0][0], snake['coords'][0][1])) == 0:
+        if len(board.naive_get_valid_moves(snake['coords'][0][0], snake['coords'][0][1])) == 0:
             dead[s_id] = snake
 
     #we'll use this dead dict to place the snakes back in after recursing.
@@ -188,7 +188,7 @@ def score_board(board, us, snake_info, food_list, depth):
     our_snake = snake_info[us] #why i did this
     length = len(our_snake['coords'])
     head = our_snake['coords'][0]
-    num_moves = float(len(board.get_valid_moves(head[0], head[1])))
+    num_moves = float(len(board.naive_naive_get_valid_moves(head[0], head[1])))
     length_con = float(length)/100
     node_val = num_moves + length_con
     health = float(our_snake['health_points'])/100
