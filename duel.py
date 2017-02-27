@@ -8,7 +8,7 @@ import random
 from shared import *
 from gameObjects import *
 
-depth_score = [1000000, 5000, 250, 12, 6, 3, 2, 1, 0, 0, 0, 0, 0, 0, 0]
+depth_score = [10000, 5000, 250, 12, 6, 3, 2, 1, 0, 0, 0, 0, 0, 0, 0]
 
 def print_snake_data(snake):
     print " --- snake data --"
@@ -34,8 +34,8 @@ def start_minmax(board, snake_info, us, food_list):
 
 def minmax(board, snake_info, us, food_list, depth):
     #TODO put more thought into basecase
-    if depth==4 or us not in snake_info:
-        return score_board(board, us, snake_info, food_list)
+    if depth==5 or len(snake_info)==1:
+        return score_board(board, us, snake_info, food_list, depth)
 
     all_move_combinations = get_all_move_comb(board, snake_info, food_list)
     node_val = float('-inf')
@@ -173,12 +173,12 @@ def enact_move(board, move_info, snake, food_list, depth):
 
 
 #NOTE Yikes
-def score_board(board, us, snake_info, food_list):
+def score_board(board, us, snake_info, food_list, depth):
     if us not in snake_info:
-        return float('-inf')
+        return -1000*depth_score[depth]
 
-    if len(snake_info) == 1 and us in snake_info:
-        return float('inf')
+    if len(snake_info) == 1:
+        return 1000*depth_score[depth]
     #print_snake_data(snake_info[us])
     #obvious loss/win conditions.
     #print_future(board, snake_info, food_list)
