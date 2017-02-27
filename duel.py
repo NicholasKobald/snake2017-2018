@@ -30,14 +30,12 @@ def start_minmax(board, snake_info, us, food_list):
             print "updated our move from ROOT to", our_move
             move = our_move
         undo_move_set(board, current_moveset, dead_snakes, snake_info, food_list, 1)
-
     return move
 
 def minmax(board, snake_info, us, food_list, depth):
     #TODO put more thought into basecase
     if depth==4 or us not in snake_info:
         return score_board(board, us, snake_info, food_list)
-
 
     all_move_combinations = get_all_move_comb(board, snake_info, food_list)
     node_val = float('-inf')
@@ -49,8 +47,6 @@ def minmax(board, snake_info, us, food_list, depth):
         undo_move_set(board, current_moveset, dead_snakes, snake_info, food_list, depth)
         if node_val > best:
             best = node_val
-
-
     return best
 
 def get_our_move_now(move_set, us):
@@ -64,8 +60,6 @@ def undo_move_set(board, prev_moveset, dead_snakes, snake_info, food_list, depth
 
     for move in prev_moveset:
         undo_move(move, snake_info[move['snake']], food_list, board, depth)
-
-
 
 def undo_move(move, snake, food_list, board, depth):
     head_tile = board.get_tile(snake['coords'][0][0], snake['coords'][0][1])
@@ -96,7 +90,6 @@ def undo_move(move, snake, food_list, board, depth):
             head=False
         ))
 
-
 def print_future(board, snake_info, food_list):
     print " ------------ BEGIN DATA ------------ "
     board.print_board()
@@ -125,7 +118,7 @@ def get_all_move_comb(board, snake_info, food_list):
                     ate=False,
                     snake=snake
                 ))
-        #random.shuffle(snake_moves)
+        random.shuffle(snake_moves)
         move_set.append(snake_moves)
     return itertools.product(*move_set)
 
@@ -185,7 +178,7 @@ def score_board(board, us, snake_info, food_list):
     if us not in snake_info:
         return float('-inf')
 
-    if len(snake_info) == 1:
+    if len(snake_info) == 1 and us in snake_info:
         return float('inf')
     #print_snake_data(snake_info[us])
     #obvious loss/win conditions.

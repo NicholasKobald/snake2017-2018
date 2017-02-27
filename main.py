@@ -29,6 +29,11 @@ def pick_move(data):
     #board.print_board()
     #print "Num snakes:", len(snake_dict)
     move = start_minmax(board, snake_dict, data['you'], data['food'])
+    if not move:
+        our_snake = snake_dict[data['you']]
+        x, y = get_head_coords(our_snake)
+        move = random.choice(board.get_valid_moves(x, y))
+        print "MINMAX FAILED. returning:", move
     return move
 
 #page to dump data
