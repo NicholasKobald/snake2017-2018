@@ -118,7 +118,6 @@ def get_all_move_comb(board, snake_info, food_list):
                     ate=False,
                     snake=snake
                 ))
-        random.shuffle(snake_moves)
         move_set.append(snake_moves)
     return itertools.product(*move_set)
 
