@@ -53,6 +53,14 @@ class Tile:
             return 'h'
         return self.data['type'][:1]
 
+    def dist_down_snake(self, d):
+        assert self.is_snake()
+        data['dist'] = d
+
+    def turns_till_safe(self):
+        return data['dist']
+
+
 
 class Board:
 
@@ -195,6 +203,6 @@ class Board:
                     row += '  |'
                 else:
                     row += (str(self.get_tile(j, i))) + ' |'
-
+                    
             print row
             print '-'*self.width*3
