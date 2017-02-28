@@ -5,44 +5,74 @@ from shared import *
 DEBUG = True
 
 def pick_move_to_food(data, board, snake_dict):
-    # get our snake's head coords
     my_snake_id = data['you']
     snake_coords = get_head_coords(snake_dict[my_snake_id])
     x, y = snake_coords[0], snake_coords[1]
 
-    # find safe moves first
     valid_moves = board.get_valid_moves(x, y, data['ate_last_turn'])
     if DEBUG: print "valid moves:", valid_moves
+
     losing_head_collisions = board.find_losing_head_collisions(x, y, my_snake_id, snake_dict, data['ate_last_turn'])
     if DEBUG: print "dangerous head collisions:", losing_head_collisions
 
     # TODO add a better heuristic for choosing which dangerous move to make
-    # --> e.g. if the other snake might move towards other food instead
+    # --> e.g. consider whether other snake might move to other food instead
     for dangerous_move in losing_head_collisions:
-        if len(valid_moves) > 1:
-            assert dangerous_move in valid_moves
-            valid_moves.remove(dangerous_move)
-            assert dangerous_move not in valid_moves
-        else:
+        if len(valid_moves) <= 1:
             break
+        assert dangerous_move in valid_moves
+        valid_moves.remove(dangerous_move)
+        assert dangerous_move not in valid_moves
 
-    # find distances from snake head to each food bit
+    moves_to_food = find_best_moves_to_food(data, board, valid_moves, snake_dict)
+    if DEBUG: print "moves_to_food:", moves_to_food
+    return moves_to_food[0]
+
+# returns a list ordered by BEST->2nd-BEST moves towards food
+# favours moves that approach most of: nearest cluster, largest cluster, nearest food
+def find_best_moves_to_food(data, board, valid_moves, snake_dict):
+    my_snake_id = data['you']
+    snake_coords = get_head_coords(snake_dict[my_snake_id])
+    x, y = snake_coords[0], snake_coords[1]
+
     food_by_closest_snakes = find_closest_snakes(board, data['food'], snake_dict)
-    if DEBUG: print "food distances:", food_by_closest_snakes
 
-    # find move towards food
-    moves_towards_food = group_nearest_food_by_moves(x, y, my_snake_id, valid_moves, food_by_closest_snakes)
-    if DEBUG: print "moves_towards_food", moves_towards_food
-    moves_towards_food_clusters = prefer_food_clusters(moves_towards_food)
-    if DEBUG: print "moves towards clusters", moves_towards_food_clusters
+    moves_to_food = group_nearest_food_by_moves(x, y, my_snake_id, valid_moves, food_by_closest_snakes)
+    if DEBUG: print "\nmoves_to_food", moves_to_food, "\n"
 
-    # TODO improve move picking logic
-    if moves_towards_food_clusters == []:
-        if len(move_towards_food) == 0:
-            # TODO add more intelligent behavior (not just pick some valid move)
-            move = valid_moves[0]
-        else:
-            move = move_towards_food[move_towards_food.keys()[0]]
-    else:
-        move = moves_towards_food_clusters[0]
-    return move
+    moves_to_biggest_clusters = prefer_biggest_food_clusters(moves_to_food)
+    if DEBUG: print "moves to big clusters", moves_to_biggest_clusters
+
+    moves_to_nearest_clusters = prefer_nearby_food_clusters(moves_to_food)
+    if DEBUG: print "move to near clusters", moves_to_nearest_clusters
+
+    moves_to_closest_food = prefer_nearest_food(moves_to_food)
+    if DEBUG: print "move to closest food", moves_to_closest_food
+
+    most_pop_moves, second_pop_moves = [], []
+    highest_pop_count, second_pop_count = 0, 0
+    for move in valid_moves:
+        pop_count = 0
+        if move in moves_to_biggest_clusters:
+            pop_count += 1
+        if move in moves_to_nearest_clusters:
+            pop_count += 1
+        if move in moves_to_closest_food:
+            pop_count += 1
+
+        if pop_count > highest_pop_count:
+            # bump 1st down to 2nd place
+            assert (highest_pop_count > second_pop_count or highest_pop_count == 0)
+            second_pop_count = highest_pop_count
+            second_pop_moves = most_pop_moves
+            highest_pop_count = pop_count
+            most_pop_moves = [move]
+        elif pop_count == highest_pop_count:
+            most_pop_moves.append(move)
+
+        elif pop_count > second_pop_count:
+            second_pop_count = pop_count
+            second_pop_moves = [move]
+        elif pop_count == second_pop_count:
+            second_pop_moves.append(move)
+    return (most_pop_moves + second_pop_moves)

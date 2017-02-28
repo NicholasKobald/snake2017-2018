@@ -95,7 +95,33 @@ def extract_closest_food_by_snake_id(food_dict_by_closest_snakes, snake_id):
             food.append(temp_dict)
     return food
 
-def prefer_food_clusters(move_dict):
+def prefer_nearest_food(move_dict):
+    moves_to_nearest_food, cur_nearest_food_dist = [], float('inf')
+    for move, path_lengths in move_dict.iteritems():
+        for food_dist in path_lengths:
+            if food_dist < cur_nearest_food_dist:
+                cur_nearest_food_dist = food_dist
+                if DEBUG: "min is now:", food_dist
+                moves_to_nearest_food = [move]
+            elif food_dist == cur_nearest_food_dist:
+                if move not in moves_to_nearest_food:
+                    moves_to_nearest_food.append(move)
+            if DEBUG: "moves to nearest food:", moves_to_nearest_food
+    return moves_to_nearest_food
+
+
+def prefer_nearby_food_clusters(move_dict):
+    moves_to_nearest_clusters, cur_nearest_cluster_dist = [], float('inf')
+    for move, path_lengths in move_dict.iteritems():
+        ave_dist = int(round(sum(path_lengths) / (len(path_lengths))))
+        if ave_dist < cur_nearest_cluster_dist:
+            cur_nearest_cluster_dist = ave_dist
+            moves_to_nearest_clusters = [move]
+        elif ave_dist == cur_nearest_cluster_dist:
+            moves_to_nearest_clusters.append(move)
+    return moves_to_nearest_clusters
+
+def prefer_biggest_food_clusters(move_dict):
     moves_to_biggest_cluster, cur_biggest_cluster_size = [], 0
     for move, path_lengths in move_dict.iteritems():
         cur_cluster_size = len(path_lengths)
