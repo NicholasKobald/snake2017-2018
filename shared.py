@@ -26,67 +26,116 @@ def get_pos_from_move(cur_pos, move):
         return (col+1, row)
     raise Exception
 
-# finds distance of shortest path from (col, row) to each pair of coords in coord_list
-# returns a dict where (key=dist, val=list of coordinates)
-def get_shortest_path_for_each(col, row, board, coords_list):
+# for each (col, row) in coords_list, finds snake(s) with shortest path to it
+def find_closest_snakes(board, coords_list, snake_dict):
     dist_to = dict()
+    for cur_snake_id, cur_snake in snake_dict.iteritems():
+        # perform BFS to compute min path from (col, row) to every item in coords_list
+        for coords in coords_list:
+            queue = [dict(col=cur_snake['coords'][0][0], row=cur_snake['coords'][0][1], path_len=0)]
+            # init entire board to False i.e. not visited
+            visited = [ [False]*board.width for i in range(board.height) ]
+            while len(queue) > 0:
+                cur_pos = queue.pop(0)
+                cur_col, cur_row = cur_pos['col'], cur_pos['row']
+                cur_path_len = cur_pos['path_len']
 
-    # perform BFS to compute min path from (col, row) to every item in coords_list
-    for coords in coords_list:
-        queue = [dict(col=col, row=row, path_len=0)]
-        # init entire board to False i.e. not visited
-        visited = [ [False]*board.width for i in range(board.height) ]
-        while len(queue) > 0:
-            cur_pos = queue.pop(0)
-            cur_col, cur_row = cur_pos['col'], cur_pos['row']
-            cur_path_len = cur_pos['path_len']
+                if visited[cur_col][cur_row]:
+                    continue
+                visited[cur_col][cur_row] = True
 
-            if visited[cur_col][cur_row]:
-                continue
-            visited[cur_col][cur_row] = True
+                # have we reached the destination?
+                if cur_col == coords[0] and cur_row == coords[1]:
+                    # TODO COMMENT
+                    coord_key_str = coords_to_key_str(coords)
+                    if coord_key_str in dist_to:
+                        closest_snake_path_len = dist_to[coord_key_str][0]['path_len']
+                        if cur_path_len < closest_snake_path_len:
+                            dist_to[coord_key_str] = [dict(path_len=cur_path_len, snake_id=cur_snake_id)]
+                        elif cur_path_len == closest_snake_path_len:
+                            dist_to[coord_key_str].append(dict(path_len=cur_path_len, snake_id=cur_snake_id))
 
-            # have we reached the destination?
-            if cur_col == coords[0] and cur_row == coords[1]:
-                # now add to list of foods that are 'cur_path_len' moves away
-                if cur_path_len in dist_to:
-                    dist_to[cur_path_len].append(coords)
-                # create that list if necessary
-                else:
-                    dist_to[cur_path_len] = [coords]
-                break
+                    # create that list if necessary
+                    else:
+                        dist_to[coord_key_str] = [dict(path_len=cur_path_len, snake_id=cur_snake_id)]
+                    break
 
-            # o.w. continue searching
-            valid_moves = board.get_valid_moves(cur_col, cur_row)
-            for move in valid_moves:
-                new_pos = get_pos_from_move((cur_pos['col'], cur_pos['row']), move)
-                queue.append({'col': new_pos[0], 'row': new_pos[1], 'path_len': cur_path_len+1})
+                # o.w. continue searching
+                valid_moves = board.get_valid_moves(cur_col, cur_row)
+                for move in valid_moves:
+                    new_pos = get_pos_from_move((cur_pos['col'], cur_pos['row']), move)
+                    queue.append({'col': new_pos[0], 'row': new_pos[1], 'path_len': cur_path_len+1})
     return dist_to
 
-# TODO consider generalizing function signature to any coord_dict_by_dist
-def get_safe_move_to_nearest_food(col, row, valid_moves, food_dict_by_dist):
-    near_first = sorted(food_dict_by_dist)
-    if DEBUG:
-        for dist in near_first:
-            print "at dist:", dist, "food coords", food_dict_by_dist[dist]
+def coords_to_key_str(coords):
+    col, row = coords[0], coords[1]
+    key_str = str(col) + ":" + str(row)
+    return key_str
 
-    # TODO perhaps add logic to check if other snakes are nearer and stuff
-    # get first coord corresponding to nearest food
-    for dist in near_first:
-        # 'food' is a list of length 2 containing the food's coordinates
-        for food in food_dict_by_dist[dist]:
-            col_of_nearest, row_of_nearest = food[0], food[1]
-            if col < col_of_nearest:
-                if "right" in valid_moves:
-                    return "right"
-            if col > col_of_nearest:
-                if "left" in valid_moves:
-                    return "left"
-            if row < row_of_nearest:
-                if "down" in valid_moves:
-                    return "down"
-            if row > row_of_nearest:
-                if "up" in valid_moves:
-                    return "up"
+def key_str_to_coords(key_str):
+    str_coords = key_str.split(':')
+    assert len(str_coords) == 2
+    coords = (int(str_coords[0]), int(str_coords[1]))
+    return coords
+
+def extract_closest_food_by_snake_id(food_dict_by_closest_snakes, snake_id):
+    food = []
+    # iterate over each food bit to see if specified snake is closest to it
+    for food_coord_key_str, closest_snakes_list in food_dict_by_closest_snakes.iteritems():
+        other_snakes = []
+        temp_dict = None
+        # check if snake_id is one of the closest snakes
+        for closest_snake in closest_snakes_list:
+            if snake_id == closest_snake['snake_id']:
+                temp_dict = dict(coords=key_str_to_coords(food_coord_key_str), dist=closest_snake['path_len'])
+            else:
+                other_snakes.append(closest_snake['snake_id'])
+        if temp_dict != None:
+            temp_dict['tied_with'] = other_snakes
+            food.append(temp_dict)
+    return food
+
+def prefer_food_clusters(move_dict):
+    moves_to_biggest_cluster, cur_biggest_cluster_size = [], 0
+    for move, path_lengths in move_dict.iteritems():
+        cur_cluster_size = len(path_lengths)
+        if cur_biggest_cluster_size < cur_cluster_size:
+            cur_biggest_cluster_size = cur_cluster_size
+            moves_to_biggest_cluster = [move]
+        elif cur_biggest_cluster_size == cur_cluster_size:
+            moves_to_biggest_cluster.append(move)
+    return moves_to_biggest_cluster
+
+def group_nearest_food_by_moves(my_snake_col, my_snake_row, my_snake_id, valid_moves, food_dict_by_closest_snakes):
+    closest_food_to_my_snake = extract_closest_food_by_snake_id(food_dict_by_closest_snakes, my_snake_id)
+    moves_towards_food = dict()
+    for closest_food_dict in closest_food_to_my_snake:
+        coords_of_nearest = closest_food_dict['coords']
+        col_of_nearest, row_of_nearest = coords_of_nearest[0], coords_of_nearest[1]
+        path_len = closest_food_dict['dist']
+
+        # TODO consider improving logic -- use BFS to find first move in shortest path
+        for move in valid_moves:
+            if move_approaches_target(move, (my_snake_col, my_snake_row), coords_of_nearest):
+                if move in moves_towards_food:
+                    moves_towards_food[move].append(path_len)
+                else:
+                    moves_towards_food[move] = [path_len]
+    return moves_towards_food
+
+# returns True if given move brings cur_pos closer to dest_pos (Euclidean dist)
+def move_approaches_target(move, cur_pos, dest_pos):
+    cur_col, cur_row = cur_pos[0], cur_pos[1]
+    dest_col, dest_row = dest_pos[0], dest_pos[1]
+    if move == 'right':
+        return (cur_col < dest_col)
+    elif move == 'left':
+        return (cur_col > dest_col)
+    elif move == 'down':
+        return (cur_row < dest_row)
+    elif move == 'up':
+        return (cur_row > dest_row)
+    print "* PROVIDED INVALID MOVE to move_approaches_target"
     return None
 
 # NOTE: should probs use get_shortest_path_for_each() instead
