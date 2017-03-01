@@ -40,7 +40,7 @@ def pick_move_to_food(start_time, data, board, snake_dict):
                 best = section_size
                 alt_move = move
 
-        print "SAFE COMPONENT TIME:", time.time() - start_times
+        print "SAFE COMPONENT TIME:", time.time() - start_time
         return alt_move
     return moves_to_food[0]
 
