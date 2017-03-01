@@ -54,14 +54,14 @@ def find_best_moves_to_food(start_time, data, board, valid_moves, snake_dict):
     food_by_closest_snakes = find_closest_snakes(board, data['food'], snake_dict)
     print "SNAKES TO FOOD BFS TIME:", time.time() - start_time
     moves_to_food = group_nearest_food_by_moves(x, y, my_snake_id, valid_moves, food_by_closest_snakes)
-    print "GROUP FOOD BY MOVE TIME:", time.time() - start_times
+    print "GROUP FOOD BY MOVE TIME:", time.time() - start_time
 
     moves_to_biggest_clusters = prefer_biggest_food_clusters(moves_to_food)
-    print "BIG CLUSTER FOOD TIME:", time.time() - start_times
+    print "BIG CLUSTER FOOD TIME:", time.time() - start_time
     moves_to_nearest_clusters = prefer_nearby_food_clusters(moves_to_food)
-    print "NEAR CLUSTER FOOD TIME:", time.time() - start_times
+    print "NEAR CLUSTER FOOD TIME:", time.time() - start_time
     moves_to_closest_food = prefer_nearest_food(moves_to_food)
-    print "NEAR BIT FOOD TIME:", time.time() - start_times
+    print "NEAR BIT FOOD TIME:", time.time() - start_time
 
     most_pop_moves, second_pop_moves = [], []
     highest_pop_count, second_pop_count = 0, 0
