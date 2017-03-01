@@ -204,7 +204,7 @@ def find_path_out(board, x, y, visited, depth, component):
 
 def check_exit(board, x, y, component, depth):
     s = set()
-    for move in ['up', 'down', 'left', 'right']
+    for move in ['up', 'down', 'left', 'right']:
         s.add(board.get_pos_from_move([x, y], move))
 
     for x, y in s:
