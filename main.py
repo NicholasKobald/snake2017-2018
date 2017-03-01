@@ -84,7 +84,7 @@ def move():
 
     # TODO pick a default
     if len(sys.argv) == 1:
-        mode = 'default'
+        mode = 'food-fetcher'
     else:
         mode = sys.argv[1]
 
