@@ -31,9 +31,9 @@ def home():
 
 #Logic about which algorithm gets run,
 #and some basic parsing
-def pick_move(data, board, snake_dict, mode):
+def pick_move(start_time, data, board, snake_dict, mode):
     if mode == 'food-fetcher':
-        move = pick_move_to_food(data, board, snake_dict)
+        move = pick_move_to_food(start_time, data, board, snake_dict)
         print "\n* FOOD-FETCHER MOVE =====", move, "*"
         return move
     elif mode == 'min-max':
@@ -66,7 +66,7 @@ def start():
 
 @app.route('/move', methods=['POST'])
 def move():
-    start = time.time()
+    start_time = time.time()
     data = request.get_json(force=True) #dict
     print "\nPINGED\n********************"
     # create Board object
@@ -88,13 +88,13 @@ def move():
     else:
         mode = sys.argv[1]
 
-    move = pick_move(data, board, snake_dict, mode)
+    move = pick_move(start_time, data, board, snake_dict, mode)
     response = {
         'move':move,
         'taunt':'Lets raise the ROOOF'
     }
-    end = time.time()
-    print "Took", end - start, "seconds to compute move."
+    end_time = time.time()
+    print "Took", end_time - start_time, "seconds to compute move."
     return json.dumps(response)
 
 if __name__ == '__main__':
