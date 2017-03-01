@@ -21,6 +21,8 @@ OUR_SNAKE_NAME = '1'
 PREV_DATA_BY_GAME_ID = dict()
 DEBUG = True
 
+taunts = ['10% LUCK, 20% SSSSLITHER']
+
 app = Flask(__name__)
 
 @app.route('/')
