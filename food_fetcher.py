@@ -10,10 +10,8 @@ def pick_move_to_food(data, board, snake_dict):
     x, y = snake_coords[0], snake_coords[1]
 
     valid_moves = board.get_valid_moves(x, y, data['ate_last_turn'])
-    if DEBUG: print "valid moves:", valid_moves
 
     losing_head_collisions = board.find_losing_head_collisions(x, y, my_snake_id, snake_dict, data['ate_last_turn'])
-    if DEBUG: print "dangerous head collisions:", losing_head_collisions
 
     # TODO add a better heuristic for choosing which dangerous move to make
     # --> e.g. consider whether other snake might move to other food instead
@@ -25,7 +23,6 @@ def pick_move_to_food(data, board, snake_dict):
         assert dangerous_move not in valid_moves
 
     moves_to_food = find_best_moves_to_food(data, board, valid_moves, snake_dict)
-    if DEBUG: print "moves_to_food:", moves_to_food
     return moves_to_food[0]
 
 # returns a list ordered by BEST->2nd-BEST moves towards food
@@ -36,18 +33,11 @@ def find_best_moves_to_food(data, board, valid_moves, snake_dict):
     x, y = snake_coords[0], snake_coords[1]
 
     food_by_closest_snakes = find_closest_snakes(board, data['food'], snake_dict)
-
     moves_to_food = group_nearest_food_by_moves(x, y, my_snake_id, valid_moves, food_by_closest_snakes)
-    if DEBUG: print "\nmoves_to_food", moves_to_food, "\n"
 
     moves_to_biggest_clusters = prefer_biggest_food_clusters(moves_to_food)
-    if DEBUG: print "moves to big clusters", moves_to_biggest_clusters
-
     moves_to_nearest_clusters = prefer_nearby_food_clusters(moves_to_food)
-    if DEBUG: print "move to near clusters", moves_to_nearest_clusters
-
     moves_to_closest_food = prefer_nearest_food(moves_to_food)
-    if DEBUG: print "move to closest food", moves_to_closest_food
 
     most_pop_moves, second_pop_moves = [], []
     highest_pop_count, second_pop_count = 0, 0
