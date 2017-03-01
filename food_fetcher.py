@@ -23,6 +23,7 @@ def pick_move_to_food(data, board, snake_dict):
         valid_moves.remove(dangerous_move)
 
     moves_to_food = find_best_moves_to_food(data, board, valid_moves, snake_dict)
+    
     candidate_move = moves_to_food[0]
     new_head = get_pos_from_move([x, y], candidate_move)
     section_size = count_reachable(board, new_head)
@@ -46,18 +47,11 @@ def find_best_moves_to_food(data, board, valid_moves, snake_dict):
     x, y = snake_coords[0], snake_coords[1]
 
     food_by_closest_snakes = find_closest_snakes(board, data['food'], snake_dict)
-
     moves_to_food = group_nearest_food_by_moves(x, y, my_snake_id, valid_moves, food_by_closest_snakes)
-    if DEBUG: print "\nmoves_to_food", moves_to_food, "\n"
 
     moves_to_biggest_clusters = prefer_biggest_food_clusters(moves_to_food)
-    if DEBUG: print "moves to big clusters", moves_to_biggest_clusters
-
     moves_to_nearest_clusters = prefer_nearby_food_clusters(moves_to_food)
-    if DEBUG: print "move to near clusters", moves_to_nearest_clusters
-
     moves_to_closest_food = prefer_nearest_food(moves_to_food)
-    if DEBUG: print "move to closest food", moves_to_closest_food
 
     most_pop_moves, second_pop_moves = [], []
     highest_pop_count, second_pop_count = 0, 0
