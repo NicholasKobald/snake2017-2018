@@ -32,11 +32,11 @@ def home():
 def pick_move(data, board, snake_dict, mode):
     if mode == 'food-fetcher':
         move = pick_move_to_food(data, board, snake_dict)
-        print "FOOD-FETCHER IS RETURNING", move
+        print "\n* FOOD-FETCHER MOVE =====", move, "*"
         return move
     elif mode == 'min-max':
         move = start_minmax(board, snake_dict, data['you'], data['food'])
-        print "MINMAX IS RETURNING", move
+        print "\n* MIN-MAX MOVE =====", move, "*"
         return move
     error_msg = 'No protocol set for mode=' +  mode
     raise Exception(error_msg)
