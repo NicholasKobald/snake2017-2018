@@ -56,7 +56,7 @@ def start():
     data = request.get_json(force=True) #dict
     PREV_DATA_BY_GAME_ID[data['game_id']] = dict(prev_food_list=None)
     response = dict(
-        color='#369',
+        color='#FFF',
         name='master_ai',
         taunt='My. Treat.'
     )

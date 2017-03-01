@@ -1,6 +1,8 @@
 from gameObjects import *
 from shared import *
 
+import random
+
 
 DEBUG = True
 
@@ -18,11 +20,23 @@ def pick_move_to_food(data, board, snake_dict):
     for dangerous_move in losing_head_collisions:
         if len(valid_moves) <= 1:
             break
-        assert dangerous_move in valid_moves
         valid_moves.remove(dangerous_move)
-        assert dangerous_move not in valid_moves
 
     moves_to_food = find_best_moves_to_food(data, board, valid_moves, snake_dict)
+    
+    candidate_move = moves_to_food[0]
+    new_head = get_pos_from_move([x, y], candidate_move)
+    section_size = count_reachable(board, new_head)
+    if section_size < len(snake_dict[my_snake_id]['coords']) + board.width/2:
+        best = -50000
+        for move in valid_moves:
+            new_head = get_pos_from_move([x, y], move)
+            section_size = count_reachable(board, new_head)
+            if section_size>best:
+                best = section_size
+                alt_move = move
+
+        return alt_move
     return moves_to_food[0]
 
 # returns a list ordered by BEST->2nd-BEST moves towards food
@@ -59,7 +73,6 @@ def find_best_moves_to_food(data, board, valid_moves, snake_dict):
             most_pop_moves = [move]
         elif pop_count == highest_pop_count:
             most_pop_moves.append(move)
-
         elif pop_count > second_pop_count:
             second_pop_count = pop_count
             second_pop_moves = [move]
