@@ -26,6 +26,28 @@ def get_pos_from_move(cur_pos, move):
         return (col+1, row)
     raise Exception
 
+def get_new_byfood_dict(food_coord_key_str, by_food, cur_info, cur_snake_id):
+    new_snake_info = dict(snake_id=cur_snake_id,
+                          path_len=cur_info['path_len'],
+                          coords=cur_info['coords'])
+    # TODO settle ties by snake length
+    by_food[food_coord_key_str].append(new_snake_info)
+    return by_food
+
+def get_new_bysnake_dict(snake_id, by_snake, snake_coords, food_coord, path_len, other_snake_info):
+    other_snakes = []
+    for other_snake in other_snake_info:
+        other_snakes.append(other_snake['snake_id'])
+    new_food_info = dict(coords=food_coord,
+                         path_len=path_len,
+                         tied_with=other_snakes)
+    if snake_id in by_snake:
+        by_snake[snake_id]['food_info'].append(new_food_info)
+    else:
+        by_snake[snake_id] = dict(food_info=[new_food_info],
+                                      coords=snake_coords)
+    return by_snake
+
 # iterates over coords_list to find closest snake(s) using BFS
 def find_closest_snakes(board, coords_list, snake_dict):
     by_food = dict() # key=coord_key_str, val=[{snake_id, path_len, coords}]
@@ -49,24 +71,16 @@ def find_closest_snakes(board, coords_list, snake_dict):
             if board.get_tile(cur_col, cur_row).is_head():
                 working_min_path_len = cur_path_len
                 cur_snake_id = board.get_tile(cur_col, cur_row).get_snake_id()
-
-                new_snake_info = dict(snake_id=cur_snake_id,
-                                      path_len=cur_path_len,
-                                      coords=[cur_col, cur_row])
-                other_snakes = []
-                for other_snake in by_food[food_coord_key_str]:
-                    other_snakes.append(other_snake['snake_id'])
-                by_food[food_coord_key_str].append(new_snake_info)
-
-                # TODO resolve ties by snake length
-                new_food_info = dict(coords=food_coord,
-                                     path_len=cur_path_len,
-                                     tied_with=other_snakes)
-                if cur_snake_id in by_snake:
-                    by_snake[cur_snake_id]['food_info'].append(new_food_info)
-                else:
-                    by_snake[cur_snake_id] = dict(food_info=[new_food_info],
-                                                  coords=[cur_col, cur_row])
+                by_food = get_new_byfood_dict(food_coord_key_str,
+                                              by_food,
+                                              cur_info,
+                                              cur_snake_id)
+                by_snake = get_new_bysnake_dict(cur_snake_id,
+                                                by_snake,
+                                                cur_info['coords'],
+                                                food_coord,
+                                                cur_path_len,
+                                                by_food[food_coord_key_str])
                 continue # at working_min_path_len, anything from here is longer
 
             valid_moves = board.get_valid_moves(cur_col, cur_row)

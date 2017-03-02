@@ -4,8 +4,9 @@ from shared import *
 import random
 import time
 
-
 DEBUG = True
+
+get_latency = lambda start_time: int(round((time.time()-start_time) * 1000))
 
 def pick_move_to_food(start_time, data, board, snake_dict):
     my_snake_id = data['you']
@@ -13,10 +14,10 @@ def pick_move_to_food(start_time, data, board, snake_dict):
     x, y = snake_coords[0], snake_coords[1]
 
     valid_moves = board.get_valid_moves(x, y, data['ate_last_turn'])
-    print "VALID MOVES TIME:", time.time() - start_time
+    print "VALID MOVES TIME:", get_latency(start_time), "ms"
 
     losing_head_collisions = board.find_losing_head_collisions(x, y, my_snake_id, snake_dict, data['ate_last_turn'])
-    print "HEAD COLLISIONS TIME:", time.time() - start_time
+    print "HEAD COLLISIONS TIME:", get_latency(start_time), "ms"
 
     # TODO add a better heuristic for choosing which dangerous move to make
     # --> e.g. consider whether other snake might move to other food instead
@@ -26,7 +27,7 @@ def pick_move_to_food(start_time, data, board, snake_dict):
         valid_moves.remove(dangerous_move)
 
     moves_to_food = find_best_moves_to_food(start_time, data, board, valid_moves, snake_dict)
-    print "ALL FOOD TIME:", time.time() - start_time
+    print "ALL FOOD TIME:", get_latency(start_time), "ms"
 
     candidate_move = moves_to_food[0]
     new_head = get_pos_from_move([x, y], candidate_move)
@@ -40,7 +41,7 @@ def pick_move_to_food(start_time, data, board, snake_dict):
                 best = section_size
                 alt_move = move
 
-        print "SAFE COMPONENT TIME:", time.time() - start_time
+        print "SAFE COMPONENT TIME:", get_latency(start_time), "ms"
         return alt_move
     return moves_to_food[0]
 
@@ -52,7 +53,7 @@ def find_best_moves_to_food(start_time, data, board, valid_moves, snake_dict):
     x, y = snake_coords[0], snake_coords[1]
 
     closest_food_and_snakes = find_closest_snakes(board, data['food'], snake_dict)
-    print "SNAKES TO FOOD BFS TIME:", time.time() - start_time
+    print "SNAKES TO FOOD BFS TIME:", get_latency(start_time), "ms"
     snakes_by_food = closest_food_and_snakes['by_food']
     foods_by_snake = closest_food_and_snakes['by_snake']
 
@@ -62,14 +63,14 @@ def find_best_moves_to_food(start_time, data, board, valid_moves, snake_dict):
 
     food_info_list = foods_by_snake[my_snake_id]
     moves_to_food = group_nearest_food_by_moves(valid_moves, food_info_list)
-    print "GROUP FOOD BY MOVE TIME:", time.time() - start_time
+    print "GROUP FOOD BY MOVE TIME:", get_latency(start_time), "ms"
 
     moves_to_biggest_clusters = prefer_biggest_food_clusters(moves_to_food)
-    print "BIG CLUSTER FOOD TIME:", time.time() - start_time
+    print "BIG CLUSTER FOOD TIME:", get_latency(start_time), "ms"
     moves_to_nearest_clusters = prefer_nearby_food_clusters(moves_to_food)
-    print "NEAR CLUSTER FOOD TIME:", time.time() - start_time
+    print "NEAR CLUSTER FOOD TIME:", get_latency(start_time), "ms"
     moves_to_closest_food = prefer_nearest_food(moves_to_food)
-    print "NEAR BIT FOOD TIME:", time.time() - start_time
+    print "NEAR BIT FOOD TIME:", get_latency(start_time), "ms"
 
     most_pop_moves, second_pop_moves = [], []
     highest_pop_count, second_pop_count = 0, 0
