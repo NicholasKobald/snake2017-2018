@@ -31,7 +31,7 @@ def start_minmax(board, snake_info, us, food_list):
     return move
 
 def minmax(board, snake_info, us, food_list, depth):
-    if depth==3 or len(snake_info)==1:
+    if depth==4 or len(snake_info)==1:
         return score_board(board, us, snake_info, food_list, depth)
 
     all_move_combinations = get_all_move_comb(board, snake_info, food_list)

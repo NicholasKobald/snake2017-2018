@@ -32,7 +32,7 @@ def home():
 #Logic about which algorithm gets run,
 #and some basic parsing
 def pick_move(start_time, data, board, snake_dict, mode):
-    if mode == 'min-max' or len(data['snakes']) == 2:
+    if mode == 'min-max':
         move = start_minmax(board, snake_dict, data['you'], data['food'])
         print "\n* MIN-MAX MOVE =====", move, "*"
         return move
