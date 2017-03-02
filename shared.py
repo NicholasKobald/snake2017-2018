@@ -26,45 +26,42 @@ def get_pos_from_move(cur_pos, move):
         return (col+1, row)
     raise Exception
 
-# for each (col, row) in coords_list, finds snake(s) with shortest path to it
+# iterates over coords_list to find closest snake(s) using BFS
 def find_closest_snakes(board, coords_list, snake_dict):
-    dist_to = dict()
-    for cur_snake_id, cur_snake in snake_dict.iteritems():
-        # perform BFS to compute min path from (col, row) to every item in coords_list
-        for coords in coords_list:
-            queue = [dict(col=cur_snake['coords'][0][0], row=cur_snake['coords'][0][1], path_len=0)]
-            # init entire board to False i.e. not visited
-            visited = [ [False]*board.width for i in range(board.height) ]
-            while len(queue) > 0:
-                cur_pos = queue.pop(0)
-                cur_col, cur_row = cur_pos['col'], cur_pos['row']
-                cur_path_len = cur_pos['path_len']
+    dist_to = dict() # key=coord_key_str, val=[{snake_id, path_len}]
+    for food_coord in coords_list:
+        food_coord_key_str = coords_to_key_str(food_coord)
+        dist_to[food_coord_key_str] = [] # to be filled during BFS
 
-                if visited[cur_col][cur_row]:
-                    continue
-                visited[cur_col][cur_row] = True
+        visited = [ [False]*board.width for i in range(board.height) ]
+        queue = [dict(coords=food_coord, path_len=0)]
+        working_min_path_len = float('inf') # we stop our search once beyond this
+        while len(queue) > 0:
+            cur_info = queue.pop(0)
+            cur_pos, cur_path_len = cur_info['coords'], cur_info['path_len']
+            # cancels need for path_len comparison when we find snake_head
+            if cur_path_len > working_min_path_len: continue
+            cur_col, cur_row = cur_pos[0], cur_pos[1]
 
-                # have we reached the destination?
-                if cur_col == coords[0] and cur_row == coords[1]:
-                    # TODO COMMENT
-                    coord_key_str = coords_to_key_str(coords)
-                    if coord_key_str in dist_to:
-                        closest_snake_path_len = dist_to[coord_key_str][0]['path_len']
-                        if cur_path_len < closest_snake_path_len:
-                            dist_to[coord_key_str] = [dict(path_len=cur_path_len, snake_id=cur_snake_id)]
-                        elif cur_path_len == closest_snake_path_len:
-                            dist_to[coord_key_str].append(dict(path_len=cur_path_len, snake_id=cur_snake_id))
+            # have we reached our dest?
+            if board.get_tile(cur_col, cur_row).is_head():
+                working_min_path_len = cur_path_len
+                snake_id = board.get_tile(cur_col, cur_row).get_snake_id()
+                cur_snake_list = dist_to[food_coord_key_str]
 
-                    # create that list if necessary
-                    else:
-                        dist_to[coord_key_str] = [dict(path_len=cur_path_len, snake_id=cur_snake_id)]
-                    break
+                new_snake = dict(snake_id=snake_id, path_len=cur_path_len)
+                dist_to[food_coord_key_str].append(new_snake)
+                continue # at working_min_path_len, anything from here is longer
 
-                # o.w. continue searching
-                valid_moves = board.get_valid_moves(cur_col, cur_row)
-                for move in valid_moves:
-                    new_pos = get_pos_from_move((cur_pos['col'], cur_pos['row']), move)
-                    queue.append({'col': new_pos[0], 'row': new_pos[1], 'path_len': cur_path_len+1})
+            valid_moves = board.get_valid_moves(cur_col, cur_row)
+            for move in ['up', 'down', 'right', 'left']:
+                pos = board.get_pos_from_move(cur_pos, move)
+                if pos == None or visited[pos[0]][pos[1]]: continue
+                # enqueue cell if unoccupied or containing snake head
+                if move in valid_moves or board.get_tile(pos[0], pos[1]).is_head():
+                    if cur_path_len+1 <= working_min_path_len:
+                        queue.append(dict(coords=pos, path_len=(cur_path_len+1)))
+                        visited[pos[0]][pos[1]] = True
     return dist_to
 
 def coords_to_key_str(coords):

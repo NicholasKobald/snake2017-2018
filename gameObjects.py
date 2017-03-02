@@ -203,6 +203,5 @@ class Board:
                     row += '  |'
                 else:
                     row += (str(self.get_tile(j, i))) + ' |'
-                    
             print row
             print '-'*self.width*3
