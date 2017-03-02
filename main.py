@@ -21,7 +21,7 @@ OUR_SNAKE_NAME = '1'
 PREV_DATA_BY_GAME_ID = dict()
 DEBUG = True
 
-taunts = ['10% LUCK, 20% SSSSLITHER']
+taunts = ["10% LUCK, 20% SSSSLITHER", "I look like.. MOM'S SPAGHETTI"]
 
 app = Flask(__name__)
 
