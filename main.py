@@ -32,13 +32,13 @@ def home():
 #Logic about which algorithm gets run,
 #and some basic parsing
 def pick_move(start_time, data, board, snake_dict, mode):
-    if mode == 'food-fetcher':
-        move = pick_move_to_food(start_time, data, board, snake_dict)
-        print "\n* FOOD-FETCHER MOVE =====", move, "*"
-        return move
-    elif mode == 'min-max':
+    if mode == 'min-max' or len(data['snakes']) == 2:
         move = start_minmax(board, snake_dict, data['you'], data['food'])
         print "\n* MIN-MAX MOVE =====", move, "*"
+        return move
+    elif mode == 'food-fetcher':
+        move = pick_move_to_food(start_time, data, board, snake_dict)
+        print "\n* FOOD-FETCHER MOVE =====", move, "*"
         return move
     error_msg = 'No protocol set for mode=' +  mode
     raise Exception(error_msg)
