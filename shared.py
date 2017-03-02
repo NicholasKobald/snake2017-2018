@@ -142,6 +142,24 @@ def prefer_biggest_food_clusters(move_dict):
             moves_to_biggest_cluster.append(move)
     return moves_to_biggest_cluster
 
+def confirm_closest(board, snake_id, comp_snake_ids):
+    comp_snake_ids.append(snake_id)
+    longest_snake_id = find_longest_snake(board, comp_snake_ids)
+    return (longest_snake_id == snake_id)
+
+def find_longest_snake(board, snake_ids):
+    cur_longest_snake = snake_ids[0]
+    cur_longest_len = board.get_snake_len_by_id(cur_longest_snake)
+    for temp_snake_id in snake_ids:
+        if temp_snake_id == cur_longest_snake: continue
+        other_snake_len = board.get_snake_len_by_id(temp_snake_id)
+        if other_snake_len > cur_longest_len:
+            cur_longest_len = other_snake_len
+            cur_longest_snake = other_snake_len
+        elif other_snake_len == cur_longest_len:
+            cur_longest_snake = None
+    return cur_longest_snake
+
 def group_nearest_food_by_moves(valid_moves, snake_food_info):
     moves_towards_food = dict()
     food_info_list = snake_food_info['food_info']

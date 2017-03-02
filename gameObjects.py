@@ -68,6 +68,7 @@ class Board:
         self.height = height
         self.width = width
         self.board = self.create_board_from_data(snake_dict, food)      # expects a 2D array of Tile objects
+        self.snake_dict = snake_dict
 
     # returns list of moves that will not result in instant death (wall or snake)
     def get_valid_moves(self, col, row, ate_last_turn=[]):
@@ -83,6 +84,16 @@ class Board:
             valid_moves.append('up')
 
         return valid_moves
+
+    def get_snake_len_by_id(self, snake_id):
+        return (len(self.snake_dict[snake_id]['coords']))
+
+    def get_snake_len_by_coords(self, coords):
+        snake_id = self.get_tile(coords[0], coords[1]).get_snake_id()
+        if snake_id == None:
+            return -1
+        else:
+            return (len(self.snake_dict[snake_id]['coords']))
 
     def naive_get_valid_moves(self, col, row):
         valid_moves = []

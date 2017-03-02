@@ -62,6 +62,12 @@ def find_best_moves_to_food(start_time, data, board, valid_moves, snake_dict):
         return valid_moves
 
     food_info_list = foods_by_snake[my_snake_id]
+    for food_info in food_info_list['food_info']:
+        if confirm_closest(board, my_snake_id, food_info['tied_with']):
+            continue
+        else:
+            food_info_list['food_info'].remove(food_info)
+
     moves_to_food = group_nearest_food_by_moves(valid_moves, food_info_list)
     print "GROUP FOOD BY MOVE TIME:", get_latency(start_time), "ms"
 
