@@ -35,12 +35,18 @@ def get_new_byfood_dict(food_coord_key_str, by_food, cur_info, cur_snake_id):
     return by_food
 
 def get_new_bysnake_dict(snake_id, by_snake, snake_coords, food_coord, path_len, other_snake_info):
-    other_snakes = []
+    tied_with = []
     for other_snake in other_snake_info:
-        other_snakes.append(other_snake['snake_id'])
-    new_food_info = dict(coords=food_coord,
-                         path_len=path_len,
-                         tied_with=other_snakes)
+        if other_snake['snake_id'] == snake_id: continue
+        tied_with.append(other_snake['snake_id'])
+
+        for food_info in by_snake[other_snake['snake_id']]['food_info']:
+            # make 'tied_with' relation reflexive (as it should be)
+            if food_info['coords'] == food_coord and \
+                snake_id not in food_info['tied_with']:
+                food_info['tied_with'].append(snake_id)
+
+    new_food_info = dict(coords=food_coord, path_len=path_len, tied_with=tied_with)
     if snake_id in by_snake:
         by_snake[snake_id]['food_info'].append(new_food_info)
     else:
@@ -51,7 +57,7 @@ def get_new_bysnake_dict(snake_id, by_snake, snake_coords, food_coord, path_len,
 # iterates over coords_list to find closest snake(s) using BFS
 def find_closest_snakes(board, coords_list, snake_dict):
     by_food = dict() # key=coord_key_str, val=[{snake_id, path_len, coords}]
-    by_snake = dict() # key=snake_id, val=[{coords, path_len, tied_with}], coords
+    by_snake = dict() # key=snake_id, val={food_info=[{[coords], path_len, [tied_with]}], coords}
     for food_coord in coords_list:
         food_coord_key_str = coords_to_key_str(food_coord)
         by_food[food_coord_key_str] = []
@@ -148,16 +154,19 @@ def confirm_closest(board, snake_id, comp_snake_ids):
     return (longest_snake_id == snake_id)
 
 def find_longest_snake(board, snake_ids):
+    if len(snake_ids) < 1: return None
     cur_longest_snake = snake_ids[0]
     cur_longest_len = board.get_snake_len_by_id(cur_longest_snake)
-    for temp_snake_id in snake_ids:
-        if temp_snake_id == cur_longest_snake: continue
-        other_snake_len = board.get_snake_len_by_id(temp_snake_id)
+    for other_snake_id in snake_ids:
+        if other_snake_id == cur_longest_snake: continue
+        other_snake_len = board.get_snake_len_by_id(other_snake_id)
         if other_snake_len > cur_longest_len:
             cur_longest_len = other_snake_len
-            cur_longest_snake = other_snake_len
+            cur_longest_snake = other_snake_id
         elif other_snake_len == cur_longest_len:
             cur_longest_snake = None
+    assert (cur_longest_snake == None or \
+            cur_longest_len == board.get_snake_len_by_id(cur_longest_snake))
     return cur_longest_snake
 
 def group_nearest_food_by_moves(valid_moves, snake_food_info):

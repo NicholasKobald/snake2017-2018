@@ -88,13 +88,6 @@ class Board:
     def get_snake_len_by_id(self, snake_id):
         return (len(self.snake_dict[snake_id]['coords']))
 
-    def get_snake_len_by_coords(self, coords):
-        snake_id = self.get_tile(coords[0], coords[1]).get_snake_id()
-        if snake_id == None:
-            return -1
-        else:
-            return (len(self.snake_dict[snake_id]['coords']))
-
     def naive_get_valid_moves(self, col, row):
         valid_moves = []
         if col < self.width-1 and self.get_tile(col+1, row).naive_is_safe():

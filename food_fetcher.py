@@ -45,6 +45,19 @@ def pick_move_to_food(start_time, data, board, snake_dict):
         return alt_move
     return moves_to_food[0]
 
+def remove_losing_ties_by_snake_len(board, my_snake_id, food_info_list):
+    to_remove = []
+    for food_info in food_info_list:
+        if confirm_closest(board, my_snake_id, food_info['tied_with']):
+            continue
+        else:
+            to_remove.append(food_info)
+    print "* checked ties for snake length"
+    for elem in to_remove:
+        food_info_list.remove(elem)
+        print "* removed:", elem
+    return food_info_list
+
 # returns a list ordered by BEST->2nd-BEST moves towards food
 # favours moves that approach most of: nearest cluster, largest cluster, nearest food
 def find_best_moves_to_food(start_time, data, board, valid_moves, snake_dict):
@@ -61,14 +74,12 @@ def find_best_moves_to_food(start_time, data, board, valid_moves, snake_dict):
         # TODO IMPLEMENT LOGIC FOR NO NEAR FOOD!!
         return valid_moves
 
-    food_info_list = foods_by_snake[my_snake_id]
-    for food_info in food_info_list['food_info']:
-        if confirm_closest(board, my_snake_id, food_info['tied_with']):
-            continue
-        else:
-            food_info_list['food_info'].remove(food_info)
+    food_info_dict = foods_by_snake[my_snake_id]
+    food_info_dict['food_info'] = remove_losing_ties_by_snake_len(
+                                        board, my_snake_id,
+                                        food_info_dict['food_info'])
 
-    moves_to_food = group_nearest_food_by_moves(valid_moves, food_info_list)
+    moves_to_food = group_nearest_food_by_moves(valid_moves, food_info_dict)
     print "GROUP FOOD BY MOVE TIME:", get_latency(start_time), "ms"
 
     moves_to_biggest_clusters = prefer_biggest_food_clusters(moves_to_food)
