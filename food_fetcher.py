@@ -53,7 +53,15 @@ def find_best_moves_to_food(start_time, data, board, valid_moves, snake_dict):
 
     closest_food_and_snakes = find_closest_snakes(board, data['food'], snake_dict)
     print "SNAKES TO FOOD BFS TIME:", time.time() - start_time
-    moves_to_food = group_nearest_food_by_moves(x, y, my_snake_id, valid_moves, closest_food_and_snakes['by_food'])
+    snakes_by_food = closest_food_and_snakes['by_food']
+    foods_by_snake = closest_food_and_snakes['by_snake']
+
+    if my_snake_id not in foods_by_snake:
+        # TODO IMPLEMENT LOGIC FOR NO NEAR FOOD!!
+        return valid_moves
+
+    food_info_list = foods_by_snake[my_snake_id]
+    moves_to_food = group_nearest_food_by_moves(valid_moves, food_info_list)
     print "GROUP FOOD BY MOVE TIME:", time.time() - start_time
 
     moves_to_biggest_clusters = prefer_biggest_food_clusters(moves_to_food)

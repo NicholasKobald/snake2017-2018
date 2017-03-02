@@ -28,13 +28,14 @@ def get_pos_from_move(cur_pos, move):
 
 # iterates over coords_list to find closest snake(s) using BFS
 def find_closest_snakes(board, coords_list, snake_dict):
-    by_food = dict() # key=coord_key_str, val=[{snake_id, path_len}]
-    by_snake = dict() # key=snake_id, val=[{coords, path_len, tied_with}]
+    by_food = dict() # key=coord_key_str, val=[{snake_id, path_len, coords}]
+    by_snake = dict() # key=snake_id, val=[{coords, path_len, tied_with}], coords
     for food_coord in coords_list:
         food_coord_key_str = coords_to_key_str(food_coord)
         by_food[food_coord_key_str] = []
 
         visited = [ [False]*board.width for i in range(board.height) ]
+        # TODO add 'first_move' key to indicate first move towards food_coords
         queue = [dict(coords=food_coord, path_len=0)]
         working_min_path_len = float('inf') # we stop our search once beyond this
         while len(queue) > 0:
@@ -49,18 +50,23 @@ def find_closest_snakes(board, coords_list, snake_dict):
                 working_min_path_len = cur_path_len
                 cur_snake_id = board.get_tile(cur_col, cur_row).get_snake_id()
 
-                new_snake_info = dict(snake_id=cur_snake_id, path_len=cur_path_len)
+                new_snake_info = dict(snake_id=cur_snake_id,
+                                      path_len=cur_path_len,
+                                      coords=[cur_col, cur_row])
                 other_snakes = []
                 for other_snake in by_food[food_coord_key_str]:
                     other_snakes.append(other_snake['snake_id'])
                 by_food[food_coord_key_str].append(new_snake_info)
 
                 # TODO resolve ties by snake length
-                new_food_info = dict(coords=food_coord, path_len=cur_path_len, tied_with=other_snakes)
+                new_food_info = dict(coords=food_coord,
+                                     path_len=cur_path_len,
+                                     tied_with=other_snakes)
                 if cur_snake_id in by_snake:
-                    by_snake[cur_snake_id].append(new_food_info)
+                    by_snake[cur_snake_id]['food_info'].append(new_food_info)
                 else:
-                    by_snake[cur_snake_id] = [new_food_info]
+                    by_snake[cur_snake_id] = dict(food_info=[new_food_info],
+                                                  coords=[cur_col, cur_row])
                 continue # at working_min_path_len, anything from here is longer
 
             valid_moves = board.get_valid_moves(cur_col, cur_row)
@@ -84,23 +90,6 @@ def key_str_to_coords(key_str):
     assert len(str_coords) == 2
     coords = (int(str_coords[0]), int(str_coords[1]))
     return coords
-
-def extract_closest_food_by_snake_id(food_dict_by_closest_snakes, snake_id):
-    food = []
-    # iterate over each food bit to see if specified snake is closest to it
-    for food_coord_key_str, closest_snakes_list in food_dict_by_closest_snakes.iteritems():
-        other_snakes = []
-        temp_dict = None
-        # check if snake_id is one of the closest snakes
-        for closest_snake in closest_snakes_list:
-            if snake_id == closest_snake['snake_id']:
-                temp_dict = dict(coords=key_str_to_coords(food_coord_key_str), dist=closest_snake['path_len'])
-            else:
-                other_snakes.append(closest_snake['snake_id'])
-        if temp_dict != None:
-            temp_dict['tied_with'] = other_snakes
-            food.append(temp_dict)
-    return food
 
 def prefer_nearest_food(move_dict):
     moves_to_nearest_food, cur_nearest_food_dist = [], float('inf')
@@ -139,17 +128,13 @@ def prefer_biggest_food_clusters(move_dict):
             moves_to_biggest_cluster.append(move)
     return moves_to_biggest_cluster
 
-def group_nearest_food_by_moves(my_snake_col, my_snake_row, my_snake_id, valid_moves, food_dict_by_closest_snakes):
-    closest_food_to_my_snake = extract_closest_food_by_snake_id(food_dict_by_closest_snakes, my_snake_id)
+def group_nearest_food_by_moves(valid_moves, snake_food_info):
     moves_towards_food = dict()
-    for closest_food_dict in closest_food_to_my_snake:
-        coords_of_nearest = closest_food_dict['coords']
-        col_of_nearest, row_of_nearest = coords_of_nearest[0], coords_of_nearest[1]
-        path_len = closest_food_dict['dist']
-
-        # TODO consider improving logic -- use BFS to find first move in shortest path
+    food_info_list = snake_food_info['food_info']
+    for food_info in food_info_list:
+        food_coords, path_len = food_info['coords'], food_info['path_len']
         for move in valid_moves:
-            if move_approaches_target(move, (my_snake_col, my_snake_row), coords_of_nearest):
+            if move_approaches_target(move, snake_food_info['coords'], food_coords):
                 if move in moves_towards_food:
                     moves_towards_food[move].append(path_len)
                 else:
