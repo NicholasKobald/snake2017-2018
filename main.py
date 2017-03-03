@@ -21,6 +21,8 @@ OUR_SNAKE_NAME = '1'
 PREV_DATA_BY_GAME_ID = dict()
 DEBUG = True
 
+taunts = ["10% LUCK, 20% SSSSLITHER", "I look like.. MOM'S SPAGHETTI"]
+
 app = Flask(__name__)
 
 @app.route('/')
@@ -29,14 +31,14 @@ def home():
 
 #Logic about which algorithm gets run,
 #and some basic parsing
-def pick_move(data, board, snake_dict, mode):
-    if mode == 'food-fetcher':
-        move = pick_move_to_food(data, board, snake_dict)
-        print "\n* FOOD-FETCHER MOVE =====", move, "*"
-        return move
-    elif mode == 'min-max':
+def pick_move(start_time, data, board, snake_dict, mode):
+    if mode == 'min-max':
         move = start_minmax(board, snake_dict, data['you'], data['food'])
         print "\n* MIN-MAX MOVE =====", move, "*"
+        return move
+    elif mode == 'food-fetcher':
+        move = pick_move_to_food(start_time, data, board, snake_dict)
+        print "\n* FOOD-FETCHER MOVE =====", move, "*"
         return move
     error_msg = 'No protocol set for mode=' +  mode
     raise Exception(error_msg)
@@ -64,7 +66,7 @@ def start():
 
 @app.route('/move', methods=['POST'])
 def move():
-    start = time.time()
+    start_time = time.time()
     data = request.get_json(force=True) #dict
     print "\nPINGED\n********************"
     # create Board object
@@ -75,8 +77,6 @@ def move():
     snakes_just_ate = []
     if prev_food_list != None:
         snakes_just_ate = find_snakes_that_just_ate(data, prev_food_list, board)
-        for s in snakes_just_ate:
-            if DEBUG: print "snakes_just_ate at:", snake_dict[s]['coords'][0]
     # insert info about which snakes ate last turn into data object
     data['ate_last_turn'] = snakes_just_ate
 
@@ -84,17 +84,17 @@ def move():
 
     # TODO pick a default
     if len(sys.argv) == 1:
-        mode = 'default'
+        mode = 'food-fetcher'
     else:
         mode = sys.argv[1]
 
-    move = pick_move(data, board, snake_dict, mode)
+    move = pick_move(start_time, data, board, snake_dict, mode)
     response = {
         'move':move,
         'taunt':'Lets raise the ROOOF'
     }
-    end = time.time()
-    print "Took", end - start, "seconds to compute move."
+    end_time = time.time()
+    print "Took", end_time - start_time, "seconds to compute move."
     return json.dumps(response)
 
 if __name__ == '__main__':

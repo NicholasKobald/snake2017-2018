@@ -26,46 +26,99 @@ def get_pos_from_move(cur_pos, move):
         return (col+1, row)
     raise Exception
 
-# for each (col, row) in coords_list, finds snake(s) with shortest path to it
+def get_new_bydest_dict(dest_coord_key_str, by_dest, cur_info, cur_snake_id):
+    new_snake_info = dict(snake_id=cur_snake_id,
+                          path_len=cur_info['path_len'],
+                          coords=cur_info['coords'])
+    # TODO settle ties by snake length
+    by_dest[dest_coord_key_str].append(new_snake_info)
+    return by_dest
+
+def get_new_bysnake_dict(snake_id, by_snake, snake_coords, dest_coord, path_len, other_snake_info):
+    tied_with = []
+    for other_snake in other_snake_info:
+        if other_snake['snake_id'] == snake_id: continue
+        tied_with.append(other_snake['snake_id'])
+
+        for dest_info in by_snake[other_snake['snake_id']]['dest_info']:
+            # make 'tied_with' relation reflexive (as it should be)
+            if dest_info['coords'] == dest_coord and \
+                snake_id not in dest_info['tied_with']:
+                dest_info['tied_with'].append(snake_id)
+
+    new_dest_info = dict(coords=dest_coord, path_len=path_len, tied_with=tied_with)
+    if snake_id in by_snake:
+        by_snake[snake_id]['dest_info'].append(new_dest_info)
+    else:
+        by_snake[snake_id] = dict(dest_info=[new_dest_info],
+                                      coords=snake_coords)
+    return by_snake
+
+# iterates over coords_list to find closest snake(s) using BFS
 def find_closest_snakes(board, coords_list, snake_dict):
-    dist_to = dict()
-    for cur_snake_id, cur_snake in snake_dict.iteritems():
-        # perform BFS to compute min path from (col, row) to every item in coords_list
-        for coords in coords_list:
-            queue = [dict(col=cur_snake['coords'][0][0], row=cur_snake['coords'][0][1], path_len=0)]
-            # init entire board to False i.e. not visited
-            visited = [ [False]*board.width for i in range(board.height) ]
-            while len(queue) > 0:
-                cur_pos = queue.pop(0)
-                cur_col, cur_row = cur_pos['col'], cur_pos['row']
-                cur_path_len = cur_pos['path_len']
+    '''
+    We are building two dictionaries:
+    1) 'by_dest': { coord_key_str: [{
+                        snake_id: 'snake-007',
+                        path_len: 7,
+                        coords: [0,7]
+                    },
+                    ...
+                    ]
+        }
+    2) 'by_snake': { snake_id: [{
+                        dest_info: {
+                            coords: [1,1],
+                            path_len: 7,
+                            tied_with: ['snake-006']
+                        },
+                        coords: [0, 7]
+                    },
+                    ...
+                    ]
+        }
+    '''
+    by_dest, by_snake = dict(), dict()
+    for dest_coord in coords_list:
+        dest_coord_key_str = coords_to_key_str(dest_coord)
+        by_dest[dest_coord_key_str] = []
 
-                if visited[cur_col][cur_row]:
-                    continue
-                visited[cur_col][cur_row] = True
+        visited = [ [False]*board.width for i in range(board.height) ]
+        queue = [dict(coords=dest_coord, path_len=0)]
+        working_min_path_len = float('inf') # we stop our search once beyond this
+        while len(queue) > 0:
+            cur_info = queue.pop(0)
+            cur_pos, cur_path_len = cur_info['coords'], cur_info['path_len']
+            # cancels need for path_len comparison when we find snake_head
+            if cur_path_len > working_min_path_len: continue
+            cur_col, cur_row = cur_pos[0], cur_pos[1]
 
-                # have we reached the destination?
-                if cur_col == coords[0] and cur_row == coords[1]:
-                    # TODO COMMENT
-                    coord_key_str = coords_to_key_str(coords)
-                    if coord_key_str in dist_to:
-                        closest_snake_path_len = dist_to[coord_key_str][0]['path_len']
-                        if cur_path_len < closest_snake_path_len:
-                            dist_to[coord_key_str] = [dict(path_len=cur_path_len, snake_id=cur_snake_id)]
-                        elif cur_path_len == closest_snake_path_len:
-                            dist_to[coord_key_str].append(dict(path_len=cur_path_len, snake_id=cur_snake_id))
+            # have we reached our dest?
+            if board.get_tile(cur_col, cur_row).is_head():
+                working_min_path_len = cur_path_len
+                cur_snake_id = board.get_tile(cur_col, cur_row).get_snake_id()
+                by_dest = get_new_bydest_dict(dest_coord_key_str,
+                                              by_dest,
+                                              cur_info,
+                                              cur_snake_id)
+                by_snake = get_new_bysnake_dict(cur_snake_id,
+                                                by_snake,
+                                                cur_info['coords'],
+                                                dest_coord,
+                                                cur_path_len,
+                                                by_dest[dest_coord_key_str])
+                continue # at working_min_path_len, anything from here is longer
 
-                    # create that list if necessary
-                    else:
-                        dist_to[coord_key_str] = [dict(path_len=cur_path_len, snake_id=cur_snake_id)]
-                    break
-
-                # o.w. continue searching
-                valid_moves = board.get_valid_moves(cur_col, cur_row)
-                for move in valid_moves:
-                    new_pos = get_pos_from_move((cur_pos['col'], cur_pos['row']), move)
-                    queue.append({'col': new_pos[0], 'row': new_pos[1], 'path_len': cur_path_len+1})
-    return dist_to
+            valid_moves = board.get_valid_moves(cur_col, cur_row)
+            for move in ['up', 'down', 'right', 'left']:
+                pos = board.get_pos_from_move(cur_pos, move)
+                if pos == None or visited[pos[0]][pos[1]]: continue
+                # enqueue cell if unoccupied or containing snake head
+                if move in valid_moves or board.get_tile(pos[0], pos[1]).is_head():
+                    if cur_path_len+1 <= working_min_path_len:
+                        queue.append(dict(coords=pos, path_len=(cur_path_len+1)))
+                        visited[pos[0]][pos[1]] = True
+    return dict(by_dest=by_dest, by_snake=by_snake)
 
 def coords_to_key_str(coords):
     col, row = coords[0], coords[1]
@@ -77,23 +130,6 @@ def key_str_to_coords(key_str):
     assert len(str_coords) == 2
     coords = (int(str_coords[0]), int(str_coords[1]))
     return coords
-
-def extract_closest_food_by_snake_id(food_dict_by_closest_snakes, snake_id):
-    food = []
-    # iterate over each food bit to see if specified snake is closest to it
-    for food_coord_key_str, closest_snakes_list in food_dict_by_closest_snakes.iteritems():
-        other_snakes = []
-        temp_dict = None
-        # check if snake_id is one of the closest snakes
-        for closest_snake in closest_snakes_list:
-            if snake_id == closest_snake['snake_id']:
-                temp_dict = dict(coords=key_str_to_coords(food_coord_key_str), dist=closest_snake['path_len'])
-            else:
-                other_snakes.append(closest_snake['snake_id'])
-        if temp_dict != None:
-            temp_dict['tied_with'] = other_snakes
-            food.append(temp_dict)
-    return food
 
 def prefer_nearest_food(move_dict):
     moves_to_nearest_food, cur_nearest_food_dist = [], float('inf')
@@ -132,17 +168,34 @@ def prefer_biggest_food_clusters(move_dict):
             moves_to_biggest_cluster.append(move)
     return moves_to_biggest_cluster
 
-def group_nearest_food_by_moves(my_snake_col, my_snake_row, my_snake_id, valid_moves, food_dict_by_closest_snakes):
-    closest_food_to_my_snake = extract_closest_food_by_snake_id(food_dict_by_closest_snakes, my_snake_id)
-    moves_towards_food = dict()
-    for closest_food_dict in closest_food_to_my_snake:
-        coords_of_nearest = closest_food_dict['coords']
-        col_of_nearest, row_of_nearest = coords_of_nearest[0], coords_of_nearest[1]
-        path_len = closest_food_dict['dist']
+def confirm_closest(board, snake_id, comp_snake_ids):
+    comp_snake_ids.append(snake_id)
+    longest_snake_id = find_longest_snake(board, comp_snake_ids)
+    return (longest_snake_id == snake_id)
 
-        # TODO consider improving logic -- use BFS to find first move in shortest path
+def find_longest_snake(board, snake_ids):
+    if len(snake_ids) < 1: return None
+    cur_longest_snake = snake_ids[0]
+    cur_longest_len = board.get_snake_len_by_id(cur_longest_snake)
+    for other_snake_id in snake_ids:
+        if other_snake_id == cur_longest_snake: continue
+        other_snake_len = board.get_snake_len_by_id(other_snake_id)
+        if other_snake_len > cur_longest_len:
+            cur_longest_len = other_snake_len
+            cur_longest_snake = other_snake_id
+        elif other_snake_len == cur_longest_len:
+            cur_longest_snake = None
+    assert (cur_longest_snake == None or \
+            cur_longest_len == board.get_snake_len_by_id(cur_longest_snake))
+    return cur_longest_snake
+
+def group_nearest_food_by_moves(valid_moves, snake_food_info):
+    moves_towards_food = dict()
+    food_info_list = snake_food_info['dest_info']
+    for food_info in food_info_list:
+        food_coords, path_len = food_info['coords'], food_info['path_len']
         for move in valid_moves:
-            if move_approaches_target(move, (my_snake_col, my_snake_row), coords_of_nearest):
+            if move_approaches_target(move, snake_food_info['coords'], food_coords):
                 if move in moves_towards_food:
                     moves_towards_food[move].append(path_len)
                 else:
