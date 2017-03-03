@@ -88,30 +88,22 @@ def find_best_moves_to_food(start_time, data, board, valid_moves, snake_dict):
     print "NEAR CLUSTER FOOD TIME:", get_latency(start_time), "ms"
     moves_to_closest_food = prefer_nearest_food(moves_to_food)
     print "NEAR BIT FOOD TIME:", get_latency(start_time), "ms"
+    return prioritize_valid_moves(valid_moves, moves_to_biggest_clusters,
+        moves_to_nearest_clusters, moves_to_closest_food)
 
-    most_pop_moves, second_pop_moves = [], []
-    highest_pop_count, second_pop_count = 0, 0
+def prioritize_valid_moves(valid_moves, to_big_clusters,
+                           to_near_clusters, to_close_food):
+    num_occurrences = [[], [], [], []]
     for move in valid_moves:
         pop_count = 0
-        if move in moves_to_biggest_clusters:
-            pop_count += 1
-        if move in moves_to_nearest_clusters:
-            pop_count += 1
-        if move in moves_to_closest_food:
-            pop_count += 1
+        if move in to_big_clusters: pop_count += 1
+        if move in to_near_clusters: pop_count += 1
+        if move in to_close_food:     pop_count += 1
+        priority_index = (pop_count * (-1)) - 1
+        num_occurrences[priority_index].append(move)
 
-        if pop_count > highest_pop_count:
-            # bump 1st down to 2nd place
-            assert (highest_pop_count > second_pop_count or highest_pop_count == 0)
-            second_pop_count = highest_pop_count
-            second_pop_moves = most_pop_moves
-            highest_pop_count = pop_count
-            most_pop_moves = [move]
-        elif pop_count == highest_pop_count:
-            most_pop_moves.append(move)
-        elif pop_count > second_pop_count:
-            second_pop_count = pop_count
-            second_pop_moves = [move]
-        elif pop_count == second_pop_count:
-            second_pop_moves.append(move)
-    return (most_pop_moves + second_pop_moves)
+    most_occur_first = []
+    for moves in num_occurrences:
+        most_occur_first += moves
+    print most_occur_first
+    return most_occur_first
