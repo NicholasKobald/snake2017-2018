@@ -23,10 +23,16 @@ def pick_move_to_food(data, board, snake_dict):
         valid_moves.remove(dangerous_move)
 
     moves_to_food = find_best_moves_to_food(data, board, valid_moves, snake_dict)
+
     candidate_move = moves_to_food[0]
     new_head = get_pos_from_move([x, y], candidate_move)
+    if is_component_safe(board new):
+        return candidate_move
+    else:
+        pass 
+    """
     section_size = count_reachable(board, new_head)
-    if section_size < len(snake_dict[my_snake_id]['coords']) + board.width/2:
+    if section_size < len(snake_dict[my_snake_id]['coords']) - data['turn']/100:
         best = -50000
         for move in valid_moves:
             new_head = get_pos_from_move([x, y], move)
@@ -36,6 +42,7 @@ def pick_move_to_food(data, board, snake_dict):
                 alt_move = move
 
         return alt_move
+    """
     return moves_to_food[0]
 
 # returns a list ordered by BEST->2nd-BEST moves towards food
