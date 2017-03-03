@@ -22,9 +22,8 @@ def pick_move_to_food(start_time, data, board, snake_dict):
     # TODO add a better heuristic for choosing which dangerous move to make
     # --> e.g. consider whether other snake might move to other food instead
     for dangerous_move in losing_head_collisions:
-        if len(valid_moves) <= 1:
-            break
-        valid_moves.remove(dangerous_move)
+        if len(valid_moves) <= 1: break
+        if dangerous_move in valid_moves: valid_moves.remove(dangerous_move)
 
     prioritized_moves = prioritize_moves_by_food(start_time, data, board, valid_moves, snake_dict)
     print "ALL FOOD TIME:", get_latency(start_time), "ms"
@@ -76,7 +75,7 @@ def remove_moves_to_unsafe_components(moves, snake_coords, board, snake_len):
     # notice: order of move removal corresponds to the order of move insertion
     for unsafe_move in unsafe_moves:
         if len(moves) == 1: break # leave at least 1 move
-        moves.remove(unsafe_move)
+        if unsafe_move in moves: moves.remove(unsafe_move)
 
 def remove_losing_ties_by_snake_len(board, my_snake_id, food_info_list):
     to_remove = []
@@ -86,7 +85,7 @@ def remove_losing_ties_by_snake_len(board, my_snake_id, food_info_list):
         else:
             to_remove.append(food_info)
     for elem in to_remove:
-        food_info_list.remove(elem)
+        if elem in food_info_list: food_info_list.remove(elem)
     return food_info_list
 
 # returns: (1) permuted valid_moves prioritized best->worst
