@@ -1,8 +1,11 @@
+import random
+import time
+
 from gameObjects import *
 from shared import *
 
-import random
-import time
+from safety import label_board
+from safety import score_components
 
 DEBUG = True
 
@@ -26,13 +29,19 @@ def pick_move_to_food(start_time, data, board, snake_dict):
             break
         valid_moves.remove(dangerous_move)
 
+
+
     moves_to_food = find_best_moves_to_food(start_time, data, board, valid_moves, snake_dict)
-    print "ALL FOOD TIME:", get_latency(start_time), "ms"
 
     candidate_move = moves_to_food[0]
     new_head = get_pos_from_move([x, y], candidate_move)
+    label_board(board, snake_dict)
+    board.print_computed_components()
+
+
+    """
     section_size = count_reachable(board, new_head)
-    if section_size < len(snake_dict[my_snake_id]['coords']) + board.width/2:
+    if section_size < len(snake_dict[my_snake_id]['coords']) - data['turn']/100:
         best = -50000
         for move in valid_moves:
             new_head = get_pos_from_move([x, y], move)
@@ -43,6 +52,7 @@ def pick_move_to_food(start_time, data, board, snake_dict):
 
         print "SAFE COMPONENT TIME:", get_latency(start_time), "ms"
         return alt_move
+    """
     return moves_to_food[0]
 
 def remove_losing_ties_by_snake_len(board, my_snake_id, food_info_list):

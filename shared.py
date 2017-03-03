@@ -214,7 +214,6 @@ def move_approaches_target(move, cur_pos, dest_pos):
         return (cur_row < dest_row)
     elif move == 'up':
         return (cur_row > dest_row)
-    print "* PROVIDED INVALID MOVE to move_approaches_target"
     return None
 
 # NOTE: should probs use get_shortest_path_for_each() instead
@@ -320,7 +319,8 @@ def find_path_out(board, x, y, visited, depth, component):
     if check_exit(board, x, y, component, depth):
         return True
 
-    for move in board.get_valid_moves(x, y):
+
+    for move in ['up', 'down', 'left', 'right']:
         to_x, to_y = get_pos_from_move(head, move)
         if not visited[board.width * to_x + to_y]:
             visited[board.width * to_x + to_y] = True
@@ -329,9 +329,10 @@ def find_path_out(board, x, y, visited, depth, component):
 def check_exit(board, x, y, component, depth):
     s = set()
     for move in ['up', 'down', 'left', 'right']:
-        s.add(board.get_pos_from_move([x, y], move))
+        m = board.get_pos_from_move([x, y], move)
+        if m:
+            s.add(m)
 
     for x, y in s:
-        if not component[board.width * x + y] \
-            and board.get_tile(x, y).turns_till_safe() < depth:
+        if not component[board.width * x + y] and board.get_tile(x, y).turns_till_safe() < depth:
             return True
