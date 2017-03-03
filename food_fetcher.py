@@ -22,28 +22,60 @@ def pick_move_to_food(start_time, data, board, snake_dict):
     # TODO add a better heuristic for choosing which dangerous move to make
     # --> e.g. consider whether other snake might move to other food instead
     for dangerous_move in losing_head_collisions:
-        if len(valid_moves) <= 1:
-            break
-        valid_moves.remove(dangerous_move)
+        if len(valid_moves) <= 1: break
+        if dangerous_move in valid_moves: valid_moves.remove(dangerous_move)
 
-    moves_to_food = find_best_moves_to_food(start_time, data, board, valid_moves, snake_dict)
+    prioritized_moves = prioritize_moves_by_food(start_time, data, board, valid_moves, snake_dict)
     print "ALL FOOD TIME:", get_latency(start_time), "ms"
 
-    candidate_move = moves_to_food[0]
-    new_head = get_pos_from_move([x, y], candidate_move)
-    section_size = count_reachable(board, new_head)
-    if section_size < len(snake_dict[my_snake_id]['coords']) + board.width/2:
-        best = -50000
-        for move in valid_moves:
-            new_head = get_pos_from_move([x, y], move)
-            section_size = count_reachable(board, new_head)
-            if section_size>best:
-                best = section_size
-                alt_move = move
+    if prioritized_moves == None:
+        prioritized_moves = prioritize_moves_backup(valid_moves, snake_coords,
+                                                board.width, board.height)
 
-        print "SAFE COMPONENT TIME:", get_latency(start_time), "ms"
-        return alt_move
-    return moves_to_food[0]
+    remove_moves_to_unsafe_components(prioritized_moves, snake_coords, board,
+                             len(snake_dict[my_snake_id]['coords']))
+    print "SAFE COMPONENT TIME:", get_latency(start_time), "ms"
+    return prioritized_moves[0]
+
+# prefer moves that near us to the centre
+def prioritize_moves_backup(valid_moves, snake_coords, board_width, board_height):
+    preferred_moves, other_moves = [], []
+    centre_x, centre_y = (board_width/2)-1, (board_height/2)-1
+    max_dist_to_centre = abs(snake_coords[0]-centre_x) + abs(snake_coords[1]-centre_y)
+    for move in valid_moves:
+        pos = get_pos_from_move(snake_coords, move)
+        dist_to_centre = abs(pos[0]-centre_x) + abs(pos[1]-centre_y)
+        if dist_to_centre < max_dist_to_centre:
+            preferred_moves.append(move)
+        else:
+            other_moves.append(move)
+    prioritized_moves = preferred_moves + other_moves
+    return prioritized_moves
+
+
+def remove_moves_to_unsafe_components(moves, snake_coords, board, snake_len):
+    unsafe_moves = []
+    smallest_component_size = float('inf')
+    largest_component_size = float('-inf')
+    preferred_move = None
+    for move in moves:
+        new_head = get_pos_from_move(snake_coords, move)
+        component_size = count_reachable(board, new_head)
+        if component_size < snake_len: # this is a dead end!
+            if component_size > largest_component_size:
+                largest_component_size = component_size
+                preferred_move = move
+            if component_size < smallest_component_size:
+                smallest_component_size = component_size
+                unsafe_moves.insert(0, move)
+            else:
+                unsafe_moves.append(move)
+    if preferred_move != None and preferred_move not in unsafe_moves:
+        unsafe_moves.append(preferred_move) # never removed
+    # notice: order of move removal corresponds to the order of move insertion
+    for unsafe_move in unsafe_moves:
+        if len(moves) == 1: break # leave at least 1 move
+        if unsafe_move in moves: moves.remove(unsafe_move)
 
 def remove_losing_ties_by_snake_len(board, my_snake_id, food_info_list):
     to_remove = []
@@ -52,15 +84,14 @@ def remove_losing_ties_by_snake_len(board, my_snake_id, food_info_list):
             continue
         else:
             to_remove.append(food_info)
-    print "* checked ties for snake length"
     for elem in to_remove:
-        food_info_list.remove(elem)
-        print "* removed:", elem
+        if elem in food_info_list: food_info_list.remove(elem)
     return food_info_list
 
-# returns a list ordered by BEST->2nd-BEST moves towards food
+# returns: (1) permuted valid_moves prioritized best->worst
+#          (2) None if no foods are closest to us
 # favours moves that approach most of: nearest cluster, largest cluster, nearest food
-def find_best_moves_to_food(start_time, data, board, valid_moves, snake_dict):
+def prioritize_moves_by_food(start_time, data, board, valid_moves, snake_dict):
     my_snake_id = data['you']
     snake_coords = get_head_coords(snake_dict[my_snake_id])
     x, y = snake_coords[0], snake_coords[1]
@@ -71,8 +102,7 @@ def find_best_moves_to_food(start_time, data, board, valid_moves, snake_dict):
     foods_by_snake = closest_food_and_snakes['by_snake']
 
     if my_snake_id not in foods_by_snake:
-        # TODO IMPLEMENT LOGIC FOR NO NEAR FOOD!!
-        return valid_moves
+        return None
 
     food_info_dict = foods_by_snake[my_snake_id]
     food_info_dict['dest_info'] = remove_losing_ties_by_snake_len(
@@ -105,5 +135,4 @@ def prioritize_valid_moves(valid_moves, to_big_clusters,
     most_occur_first = []
     for moves in num_occurrences:
         most_occur_first += moves
-    print most_occur_first
     return most_occur_first
