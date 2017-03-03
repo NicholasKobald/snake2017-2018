@@ -27,8 +27,8 @@ See https://stemboltq.github.io/battle_snake/ for request format.
 
 After setting up docker run with
 
-    docker run -d -p 4000:4000 --net=host stembolt/battle_snake
-		
+    sudo docker run -d -p 4000:4000 --net=host stembolt/battle_snake
+
 insure snake server(s) themselves are on a PUBLIC port, ie
 
 	0.0.0.0.whatever

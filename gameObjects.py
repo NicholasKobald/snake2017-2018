@@ -23,7 +23,6 @@ class Tile:
     def is_safe(self, ate_last_turn):
         if self.is_tail():
             snake_id = self.get_snake_id()
-            assert snake_id!=None
             safe_tail = snake_id not in ate_last_turn
             return safe_tail
         return (not self.is_snake())
@@ -53,14 +52,23 @@ class Tile:
             return 'h'
         return self.data['type'][:1]
 
-    def dist_down_snake(self, d):
-        assert self.is_snake()
-        data['dist'] = d
 
+    #following two functions used for safety computations
     def turns_till_safe(self):
-        return data['dist']
+        if 'dist' in self.data:
+            return self.data['dist']
+
+    def turns_till_head(self):
+        if 'threat_dist' in self.data:
+            return self.data['threat_dist']
 
 
+    def dist_down_snake(self, d):
+        if self.is_snake():
+            self.data['dist'] = d
+
+    def set_threat_time(self, t):
+        self.data['threat_dist'] = t
 
 class Board:
 
@@ -72,7 +80,7 @@ class Board:
     # returns list of moves that will not result in instant death (wall or snake)
     def get_valid_moves(self, col, row, ate_last_turn=[]):
         valid_moves = []
-        # TODO add check for snake tails (may be safe!)
+
         if col < self.width-1 and self.get_tile(col+1, row).is_safe(ate_last_turn):
             valid_moves.append('right')
         if row < self.height-1 and self.get_tile(col, row+1).is_safe(ate_last_turn):
@@ -99,8 +107,8 @@ class Board:
 
     def find_losing_head_collisions(self, col, row, my_snake_id, snake_dict, ate_last_turn):
         valid_moves = self.get_valid_moves(col, row, ate_last_turn)
-
         losing_head_collisions = []
+
         for move in valid_moves:
             valid_pos = self.get_pos_from_move((col, row), move)
             if valid_pos == None:
@@ -192,6 +200,15 @@ class Board:
             return (col+1, row)
         # None indicates that move is out of bounds
         return None
+    def print_computed_components(self):
+        board = self.board
+        for i in range(self.height):
+            row = ''
+            for j in range(self.width):
+                if self.get_tile(j, i).turns_till_safe():
+                    print j, i, "safe in:", self.get_tile(j, i).turns_till_safe()
+                if self.get_tile(j, i).turns_till_head():
+                    print "Threat at", j, i, "val:", self.get_tile(j, i).turns_till_head()
 
     def print_board(self):
         board = self.board
@@ -203,6 +220,6 @@ class Board:
                     row += '  |'
                 else:
                     row += (str(self.get_tile(j, i))) + ' |'
-                    
+
             print row
             print '-'*self.width*3
