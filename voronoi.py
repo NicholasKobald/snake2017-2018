@@ -23,7 +23,7 @@ def label_board_voronoi(board, snake_dict):
         tile = board.get_tile(x, y)
         tile.set_voronoi_tile(s_id, 0)
         my_tup = [x, y]
-        queue.append(dict(from_tuple=my_tup, dist=0, move=None))
+        queue.append(dict(from_tuple=my_tup, dist=0, s_id=s_id, move=None))
 
     #jumpstart the que values.
     for i in range(len(snake_dict)):
@@ -34,14 +34,15 @@ def label_board_voronoi(board, snake_dict):
         parent_tile = board.get_tile(p_x, p_y)
         parent_list = tile.get_voronoi_data() #this is a list of dicts
         parent_info = parent_list[0]
+        parent_id = cur['s_id']
         children_list, moves_used = get_children(board, dist+1, [p_x, p_y], parent_info['snake_id'])
         for index, child in enumerate(children_list):
             init_mov = moves_used[index]
             x, y = child
             tile = board.get_tile(x, y)
-            tile.set_voronoi_tile(parent_info['snake_id'], dist+1, init_mov)
-            voronoi_data[parent_info['snake_id']][init_mov] += 1
-            queue.append(dict(from_tuple=[x, y], dist=dist+1, move=init_mov))
+            tile.set_voronoi_tile(parent_id, dist+1, init_mov)
+            voronoi_data[parent_id][init_mov] += 1
+            queue.append(dict(from_tuple=[x, y], dist=dist+1, s_id=parent_id, move=init_mov))
 
     while queue:
         cur = queue.pop(0)
@@ -51,13 +52,14 @@ def label_board_voronoi(board, snake_dict):
         parent_tile = board.get_tile(p_x, p_y)
         parent_list = tile.get_voronoi_data() #this is a list of dicts
         parent_info = parent_list[0]
+        parent_id = cur['s_id']
         children_list, moves_used = get_children(board, dist+1, [p_x, p_y], parent_info['snake_id'])
         for index, child in enumerate(children_list):
             x, y = child
             tile = board.get_tile(x, y)
-            tile.set_voronoi_tile(parent_info['snake_id'], dist+1, init_mov)
-            voronoi_data[parent_info['snake_id']][init_mov] += 1
-            queue.append(dict(from_tuple=[x, y], dist=dist+1, move=init_mov))
+            tile.set_voronoi_tile(parent_id, dist+1, init_mov)
+            voronoi_data[parent_id][init_mov] += 1
+            queue.append(dict(from_tuple=[x, y], dist=dist+1, s_id=parent_id, move=init_mov))
 
     return voronoi_data
 
