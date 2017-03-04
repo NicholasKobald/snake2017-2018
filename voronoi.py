@@ -1,5 +1,13 @@
+def init_voronoi(board):
+    for i in range(board.width):
+        for j in range(board.height):
+            tile = board.get_tile(i, j)
+            tile.init_voronoi_list()
+
+
 
 def label_board_voronoi(board, snake_dict):
+    init_voronoi(board)
     queue = []
 
     #init que and voironoi info
@@ -10,19 +18,46 @@ def label_board_voronoi(board, snake_dict):
         queue.append([x, y])
 
     while queue:
-        
-        cur = queue.pop()
+        cur = queue.pop(0)
         p_x, p_y =  cur
         parent_tile = board.get_tile(p_x, p_y)
-        parent_info = tile.get_voronoi_data()
+        parent_list = tile.get_voronoi_data() #this is a list of dicts
+        parent_info = parent_list[0]
+        print " ------------ LOOOOOOP ----------- "
+        print "On parent", p_x, p_y
+        for child in get_children(board, parent_info['path_len']+1, [p_x, p_y], parent_info['snake_id']):
+            x, y = child
+            tile = board.get_tile(x, y)
+            tile.set_voronoi_tile(parent_info['snake_id'], parent_info['path_len']+1)
+            queue.append([x, y])
+            print "Setting", x, y, "to", parent_info['path_len']+1
+        print " ------------------- END ------------- "
 
-        for move in ['up', 'down', 'left', 'right']:
-            pos = board.get_pos_from_move(cur, move)
-            if pos != None:
-                x, y = pos
-                tile = board.get_tile(x, y)
-                tile.set_voronoi_tile(parent_info['snake_ids'], parent_info['path_len']+1)
-                queue.append([x, y])
+def get_children(board, path_len, cur, snake_id):
+    children_list = []
+    for move in ['up', 'down', 'left', 'right']:
+        pos = board.get_pos_from_move(cur, move)
+        if pos != None:
+            x, y = pos
+            tile = board.get_tile(x, y)
+            #has been set.
+            v_data = tile.get_voronoi_data()
+            if len(v_data) > 0:
+                v_data = v_data[0]
+                cur_best = v_data['path_len']
+                assert(path_len >= cur_best)
+                if path_len == cur_best and snake_id != v_data['snake_id']:
+                    children_list.append(pos)
+            else:
+                children_list.append(pos)
+
+    return children_list
+
+
+
+
+
+
 
 
 def find_closest_snakes(board, snake_dict):
