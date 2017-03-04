@@ -11,6 +11,7 @@ get_latency = lambda start_time: int(round((time.time()-start_time) * 1000))
 
 def pick_move_to_food(start_time, data, board, snake_dict):
     my_snake_id = data['you']
+    our_snake_coords = snake_dict[my_snake_id]['coords']
     snake_coords = get_head_coords(snake_dict[my_snake_id])
     x, y = snake_coords[0], snake_coords[1]
 
@@ -33,10 +34,17 @@ def pick_move_to_food(start_time, data, board, snake_dict):
         prioritized_moves = prioritize_moves_backup(valid_moves, snake_coords,
                                                 board.width, board.height)
 
-    
+
+
     voronoi_data = label_board_voronoi(board, snake_dict)
-    max_val = 0
-    voronoi_move = None
+
+    prioritized_moves_list = []
+    for move in prioritized_moves:
+        move_to_voronoi = dict()
+        move_to_voronoi['move'] = move
+        move_to_voronoi['val'] = voronoi_data[my_snake_id][move]
+        prioritized_moves_list.append(move_to_voronoi)
+
     for snake, move_dict in voronoi_data.iteritems():
         print "snake", snake
         for move, val in move_dict.iteritems():
@@ -46,11 +54,10 @@ def pick_move_to_food(start_time, data, board, snake_dict):
             print move, "got val", val
 
 
+    for info in prioritized_moves_list:
+        if info['val'] > len(our_snake_coords):
+            return info['move']
 
-
-
-    remove_moves_to_unsafe_components(prioritized_moves, snake_coords, board,
-                             len(snake_dict[my_snake_id]['coords']))
     print "SAFE COMPONENT TIME:", get_latency(start_time), "ms"
     return prioritized_moves[0], voronoi_move
 
