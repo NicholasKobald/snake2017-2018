@@ -78,7 +78,6 @@ def get_children(board, path_len, cur, snake_id):
                 cur_best = v_data['path_len']
                 assert(path_len >= cur_best)
                 if path_len == cur_best and snake_id != v_data['snake_id']:
-                    print "Contested Zone."
                     children_list.append(pos)
                     moves_used.append(move)
             else:
@@ -89,12 +88,11 @@ def get_children(board, path_len, cur, snake_id):
 
 def safe_in_time(board, pos, path_len):
     tile = board.get_tile(pos[0], pos[1])
-    print tile.data
     if not tile.is_snake():
         return True
 
     #off by 1?
-    return path_len > tile.turns_till_safe()
+    return path_len > tile.turns_till_safe() + 5
 
 
 

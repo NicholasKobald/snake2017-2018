@@ -11,7 +11,10 @@ get_latency = lambda start_time: int(round((time.time()-start_time) * 1000))
 
 def pick_move_to_food(start_time, data, board, snake_dict):
     my_snake_id = data['you']
-    our_snake_coords = snake_dict[my_snake_id]['coords']
+    our_snake_coords_len = len(snake_dict[my_snake_id]['coords'])
+    if not count_reachable_fixed(board, snake_dict[my_snake_id]['coords'][0], our_snake_coords_len):
+        return get_maximizing_component_size_move(board, snake_dict, snake_dict[my_snake_id])
+
     snake_coords = get_head_coords(snake_dict[my_snake_id])
     x, y = snake_coords[0], snake_coords[1]
 
@@ -45,6 +48,7 @@ def pick_move_to_food(start_time, data, board, snake_dict):
         move_to_voronoi['val'] = voronoi_data[my_snake_id][move]
         prioritized_moves_list.append(move_to_voronoi)
 
+    """
     for snake, move_dict in voronoi_data.iteritems():
         print "snake", snake
         for move, val in move_dict.iteritems():
@@ -52,14 +56,19 @@ def pick_move_to_food(start_time, data, board, snake_dict):
                 voronoi_move = move
                 max_val = val
             print move, "got val", val
+    """
 
 
+    board.print_voronoi_board_moves()
     for info in prioritized_moves_list:
-        if info['val'] > len(our_snake_coords):
+        print "value of", info['move'], "is", info['val']
+        print "snake_length", our_snake_coords_len
+        if info['val'] > our_snake_coords_len + 10:
+            print "Used voronoi and food!!"
             return info['move']
 
     print "SAFE COMPONENT TIME:", get_latency(start_time), "ms"
-    return prioritized_moves[0], voronoi_move
+    return prioritized_moves[0]
 
 # prefer moves that near us to the centre
 def prioritize_moves_backup(valid_moves, snake_coords, board_width, board_height):
@@ -75,6 +84,22 @@ def prioritize_moves_backup(valid_moves, snake_coords, board_width, board_height
             other_moves.append(move)
     prioritized_moves = preferred_moves + other_moves
     return prioritized_moves
+
+def get_maximizing_component_size_move(board, snake_dict, our_snake):
+    head = our_snake['coords'][0]
+    valid_moves = board.get_valid_moves(head[0], head[1])
+    best = 0
+    our_move = None
+    for move in valid_moves:
+        new_head = get_pos_from_move(head, move)
+        val = count_reachable(board, new_head)
+        if val>best:
+            our_move = move
+            best = val
+
+    return our_move
+
+
 
 
 def remove_moves_to_unsafe_components(moves, snake_coords, board, snake_len):

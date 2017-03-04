@@ -288,6 +288,25 @@ def count_reachable(board, head):
 
     return count
 
+#YES IFF WE'RE IN A COMPONENT SMALELR THAN US.
+def count_reachable_fixed(board, head, length_goal):
+    component_size = 0
+    visited = [0] * board.width * board.height
+    count, que = 0, [head]
+    while que:
+        component_size += 1
+        if component_size == length_goal:
+            return True
+        head, count = que.pop(), count+1
+        valid_moves = board.get_valid_moves(head[0], head[1])
+        for move in valid_moves:
+            tile = get_pos_from_move(head, move)
+            if not visited[board.width * tile[0] + tile[1]]:
+                visited[board.width * tile[0] + tile[1]] = True
+                que.append(tile)
+
+    return False
+
 #must be called before 'is component safe'
 def label_turns_until_safe(board, snake_dict):
     for snake in snake_dict:
