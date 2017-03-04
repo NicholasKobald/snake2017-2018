@@ -73,6 +73,7 @@ class Tile:
 
     def is_voronoi_set(self):
         return 'voronoi_info' in self.data
+        
 
 class Board:
 

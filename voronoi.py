@@ -54,7 +54,6 @@ def get_children(board, path_len, cur, snake_id):
 
     return children_list
 
-def analyze_voronoi(board):
     
 
 
