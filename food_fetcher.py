@@ -13,6 +13,7 @@ def pick_move_to_food(start_time, data, board, snake_dict):
     my_snake_id = data['you']
     our_snake_coords_len = len(snake_dict[my_snake_id]['coords'])
     if not count_reachable_fixed(board, snake_dict[my_snake_id]['coords'][0], our_snake_coords_len):
+        print "IN COMPONENT:TRIED TO MAXIMIZE TIME"
         return get_maximizing_component_size_move(board, snake_dict, snake_dict[my_snake_id])
 
     snake_coords = get_head_coords(snake_dict[my_snake_id])
@@ -40,7 +41,7 @@ def pick_move_to_food(start_time, data, board, snake_dict):
 
 
     voronoi_data = label_board_voronoi(board, snake_dict)
-
+    print voronoi_data
     prioritized_moves_list = []
     for move in prioritized_moves:
         move_to_voronoi = dict()
@@ -50,21 +51,20 @@ def pick_move_to_food(start_time, data, board, snake_dict):
 
     """
     for snake, move_dict in voronoi_data.iteritems():
-        print "snake", snake
+        print " -------SNAKE----------- "
+        print snake
         for move, val in move_dict.iteritems():
-            if val>max_val:
-                voronoi_move = move
-                max_val = val
             print move, "got val", val
+        print " ---------SNAKE END----------- "
     """
 
-
-    board.print_voronoi_board_moves()
+    #board.print_voronoi_board()
+    #board.print_voronoi_board_moves()
     for info in prioritized_moves_list:
         print "value of", info['move'], "is", info['val']
         print "snake_length", our_snake_coords_len
         if int(info['val']) > our_snake_coords_len + 10:
-            print "Used voronoi and food!!"
+            print "Used voronoi and food!! WITH A VALUE OF:", info['val']
             return info['move']
 
     #finally, pick the maximum
@@ -75,7 +75,7 @@ def pick_move_to_food(start_time, data, board, snake_dict):
         if val>cur_max:
             cur_max = val
             our_move = info['move']
-    print "RETURNED BACKUP MAXIMUM."
+    print "RETURNED BACKUP MAXIMUM.", our_move
     return our_move
     print "SAFE COMPONENT TIME:", get_latency(start_time), "ms"
     return prioritized_moves[0]
