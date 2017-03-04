@@ -4,8 +4,6 @@ def init_voronoi(board):
             tile = board.get_tile(i, j)
             tile.init_voronoi_list()
 
-
-
 def label_board_voronoi(board, snake_dict):
     init_voronoi(board)
     queue = []
@@ -56,11 +54,8 @@ def get_children(board, path_len, cur, snake_id):
 
     return children_list
 
-
-
-
-
-
+def analyze_voronoi(board):
+    
 
 
 def find_closest_snakes(board, snake_dict):

@@ -220,16 +220,17 @@ class Board:
                 if len(vor_list) > 1:
                     row += 'C |'
                 else:
+                    vor_info = vor_list[0]
                     num = vor_info['path_len']
                     if num<9:
                         vor_info = vor_list[0]
                         row += str(num) + ' |'
                     else:
                         vor_info = vor_list[0]
-                        row += str(num) + ' |'
+                        row += str(num) + '|'
 
             print row
-            print '-'*self.width
+            print '-'*self.width*3
 
     def print_board(self):
         board = self.board
