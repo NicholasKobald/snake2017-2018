@@ -6,6 +6,7 @@ TILE_DEBUG = True
 class Tile:
 
     def __init__(self, data=None):
+        self.data['voronoi_info'] = []
         if data == None:
             self.data = dict(type='empty')
         else:
@@ -54,13 +55,23 @@ class Tile:
         return self.data['type'][:1]
 
     def dist_down_snake(self, d):
-        assert self.is_snake()
         data['dist'] = d
 
     def turns_till_safe(self):
-        return data['dist']
+        if 'dist' in self.data:
+            return data['dist']
 
+    def set_voronoi_tile(self, snake_id, path_len):
+        self.data['voronoi_info'].append(dict(
+            snake_id=snake_id,
+            path_len=path_len
+        ))
 
+    def get_voronoi_data():
+        return self.data['voronoi_info']
+
+    def is_voronoi_set():
+        return 'voronoi_info' in self.data
 
 class Board:
 
@@ -167,6 +178,7 @@ class Board:
             board.append(row)
         # encode snakes into board by setting Tile object type to 'snake'
         for s_id, snake in snakes.iteritems():
+            s_len = len(snake['coords'])
             for index, coord in enumerate(snake['coords']):
                 x, y = coord[0], coord[1]
                 at_head, at_tail = (index == 0), (index==len(snake['coords'])-1)
@@ -177,7 +189,8 @@ class Board:
                         type='snake',
                         snake_id=s_id,
                         head=at_head,
-                        tail=at_tail
+                        tail=at_tail,
+                        til_empty=s_len - index
                     ))
         for food in food_list:
             x, y = food[0], food[1]
@@ -208,4 +221,10 @@ class Board:
                 else:
                     row += (str(self.get_tile(j, i))) + ' |'
             print row
-            print '-'*self.width*3
+            print '-'*self.width
+
+    def log_tail_safety(self):
+        for i in range(self.height):
+            row = ''
+            for j in range(self.width):
+                space_val = str(self.get_tile(j, i))

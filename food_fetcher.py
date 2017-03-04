@@ -1,5 +1,6 @@
 from gameObjects import *
 from shared import *
+from voronoi import label_board_voronoi
 
 import random
 import time
