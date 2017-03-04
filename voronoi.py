@@ -14,30 +14,36 @@ def label_board_voronoi(board, snake_dict):
         tile = board.get_tile(x, y)
         tile.set_voronoi_tile(s_id, 0)
         my_tup = [x, y]
-        queue.append(dict(from_tuple=my_tup, dist=0))
+        queue.append(dict(from_tuple=my_tup, dist=0, move=None))
+
 
     while queue:
         cur = queue.pop(0)
         p_x, p_y =  cur['from_tuple']
         dist = cur['dist']
+        init_mov = cur['move']
         parent_tile = board.get_tile(p_x, p_y)
         parent_list = tile.get_voronoi_data() #this is a list of dicts
         parent_info = parent_list[0]
         print " ------------ LOOOOOOP ----------- "
         print "On parent", p_x, p_y
-        for child in get_children(board, dist+1, [p_x, p_y], parent_info['snake_id']):
+        children_list, moves_used = get_children(board, dist+1, [p_x, p_y], parent_info['snake_id'])
+        for index, child in enumerate(children_list):
+            if init_mov == None:
+                init_mov = moves_used[index]
             x, y = child
             tile = board.get_tile(x, y)
-            tile.set_voronoi_tile(parent_info['snake_id'], dist+1)
-            queue.append(dict(from_tuple=[x, y], dist=dist+1))
+            tile.set_voronoi_tile(parent_info['snake_id'], dist+1, init_mov)
+            queue.append(dict(from_tuple=[x, y], dist=dist+1, move=init_mov))
             print "Setting", x, y, "to", parent_info['path_len']+1
         print " ------------------- END ------------- "
 
 def get_children(board, path_len, cur, snake_id):
     children_list = []
+    moves_used = []
     for move in ['up', 'down', 'left', 'right']:
         pos = board.get_pos_from_move(cur, move)
-        if pos != None:
+        if pos != None and safe_in_time(board, pos, path_len):
             x, y = pos
             tile = board.get_tile(x, y)
             #has been set.
@@ -47,14 +53,25 @@ def get_children(board, path_len, cur, snake_id):
                 cur_best = v_data['path_len']
                 assert(path_len >= cur_best)
                 if path_len == cur_best and snake_id != v_data['snake_id']:
-                    print "ADDED A CHILD HERE."
+                    print "Contested Zone."
                     children_list.append(pos)
+                    moves_used.append(move)
             else:
                 children_list.append(pos)
+                moves_used.append(move)
 
-    return children_list
+    return children_list, moves_used
 
-    
+def safe_in_time(board, pos, path_len):
+    tile = board.get_tile(pos[0], pos[1])
+    print tile.data
+    if not tile.is_snake():
+        return True
+
+    #off by 1?
+    return path_len > tile.turns_till_safe()
+
+
 
 
 def find_closest_snakes(board, snake_dict):

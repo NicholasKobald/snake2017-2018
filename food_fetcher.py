@@ -34,6 +34,7 @@ def pick_move_to_food(start_time, data, board, snake_dict):
                                                 board.width, board.height)
     label_board_voronoi(board, snake_dict)
     board.print_voronoi_board()
+    board.print_voronoi_board_moves()
     remove_moves_to_unsafe_components(prioritized_moves, snake_coords, board,
                              len(snake_dict[my_snake_id]['coords']))
     print "SAFE COMPONENT TIME:", get_latency(start_time), "ms"

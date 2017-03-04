@@ -56,16 +56,17 @@ class Tile:
         data['dist'] = d
 
     def turns_till_safe(self):
-        if 'dist' in self.data:
-            return data['dist']
+        if 'til_empty' in self.data:
+            return self.data['til_empty']
 
     def init_voronoi_list(self):
         self.data['voronoi_info'] = []
 
-    def set_voronoi_tile(self, snake_id, path_len):
+    def set_voronoi_tile(self, snake_id, path_len, move=None):
         self.data['voronoi_info'].append(dict(
             snake_id=snake_id,
-            path_len=path_len
+            path_len=path_len,
+            move=move
         ))
 
     def get_voronoi_data(self):
@@ -73,7 +74,7 @@ class Tile:
 
     def is_voronoi_set(self):
         return 'voronoi_info' in self.data
-        
+
 
 class Board:
 
@@ -218,18 +219,43 @@ class Board:
             row = ''
             for x in range(self.width):
                 vor_list = self.get_tile(x, y).get_voronoi_data()
-                if len(vor_list) > 1:
-                    row += 'C |'
-                else:
-                    vor_info = vor_list[0]
-                    num = vor_info['path_len']
-                    if num<9:
-                        vor_info = vor_list[0]
-                        row += str(num) + ' |'
+                if vor_list:
+                    if len(vor_list) > 1:
+                        row += 'C |'
                     else:
                         vor_info = vor_list[0]
-                        row += str(num) + '|'
+                        num = vor_info['path_len']
+                        if num<9:
+                            vor_info = vor_list[0]
+                            row += str(num) + ' |'
+                        else:
+                            vor_info = vor_list[0]
+                            row += str(num) + '|'
+                else:
+                    row+= '  |'
+            print row
+            print '-'*self.width*3
 
+    def print_voronoi_board_moves(self):
+        print "\n\n"
+        for y in range(self.height):
+            row = ''
+            for x in range(self.width):
+                vor_list = self.get_tile(x, y).get_voronoi_data()
+                if vor_list:
+                    if len(vor_list) > 1:
+                        row += 'C |'
+                    else:
+                        var_info = vor_list[0]
+                        if var_info['move']:
+                            vor_info = vor_list[0]
+                            num = vor_info['move'][0]
+                            vor_info = vor_list[0]
+                            row += str(num) + ' |'
+                        else:
+                            row += '  |'
+                else:
+                    row+= '  |'
             print row
             print '-'*self.width*3
 
@@ -245,6 +271,7 @@ class Board:
                     row += (str(self.get_tile(j, i))) + ' |'
             print row
             print '-'*self.width
+
 
     def log_tail_safety(self):
         for i in range(self.height):
