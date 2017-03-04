@@ -220,17 +220,16 @@ class Board:
                 if len(vor_list) > 1:
                     row += 'C |'
                 else:
-                    vor_info = vor_list[0]
                     num = vor_info['path_len']
                     if num<9:
                         vor_info = vor_list[0]
                         row += str(num) + ' |'
                     else:
                         vor_info = vor_list[0]
-                        row += str(num) + '|'
+                        row += str(num) + ' |'
 
             print row
-            print '-'*self.width*3
+            print '-'*self.width
 
     def print_board(self):
         board = self.board
@@ -239,11 +238,11 @@ class Board:
             for j in range(self.width):
                 space_val = str(self.get_tile(j, i))
                 if space_val == 'e':
-                    row += '|'
+                    row += '  |'
                 else:
-                    row += (str(self.get_tile(j, i))) + '|'
+                    row += (str(self.get_tile(j, i))) + ' |'
             print row
-            print '-'*self.width*3
+            print '-'*self.width
 
     def log_tail_safety(self):
         for i in range(self.height):

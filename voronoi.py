@@ -15,21 +15,23 @@ def label_board_voronoi(board, snake_dict):
         x, y = snake['coords'][0]
         tile = board.get_tile(x, y)
         tile.set_voronoi_tile(s_id, 0)
-        queue.append([x, y])
+        my_tup = [x, y]
+        queue.append(dict(from_tuple=my_tup, dist=0))
 
     while queue:
         cur = queue.pop(0)
-        p_x, p_y =  cur
+        p_x, p_y =  cur['from_tuple']
+        dist = cur['dist']
         parent_tile = board.get_tile(p_x, p_y)
         parent_list = tile.get_voronoi_data() #this is a list of dicts
         parent_info = parent_list[0]
         print " ------------ LOOOOOOP ----------- "
         print "On parent", p_x, p_y
-        for child in get_children(board, parent_info['path_len']+1, [p_x, p_y], parent_info['snake_id']):
+        for child in get_children(board, dist+1, [p_x, p_y], parent_info['snake_id']):
             x, y = child
             tile = board.get_tile(x, y)
-            tile.set_voronoi_tile(parent_info['snake_id'], parent_info['path_len']+1)
-            queue.append([x, y])
+            tile.set_voronoi_tile(parent_info['snake_id'], dist+1)
+            queue.append(dict(from_tuple=[x, y], dist=dist+1))
             print "Setting", x, y, "to", parent_info['path_len']+1
         print " ------------------- END ------------- "
 
@@ -47,6 +49,7 @@ def get_children(board, path_len, cur, snake_id):
                 cur_best = v_data['path_len']
                 assert(path_len >= cur_best)
                 if path_len == cur_best and snake_id != v_data['snake_id']:
+                    print "ADDED A CHILD HERE."
                     children_list.append(pos)
             else:
                 children_list.append(pos)
