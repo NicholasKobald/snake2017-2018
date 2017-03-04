@@ -63,10 +63,20 @@ def pick_move_to_food(start_time, data, board, snake_dict):
     for info in prioritized_moves_list:
         print "value of", info['move'], "is", info['val']
         print "snake_length", our_snake_coords_len
-        if info['val'] > our_snake_coords_len + 10:
+        if int(info['val']) > our_snake_coords_len + 10:
             print "Used voronoi and food!!"
             return info['move']
 
+    #finally, pick the maximum
+    cur_max = float('-inf')
+    our_move = None
+    for info in prioritized_moves_list:
+        val = info['val']
+        if val>cur_max:
+            cur_max = val
+            our_move = info['move']
+    print "RETURNED BACKUP MAXIMUM."
+    return our_move
     print "SAFE COMPONENT TIME:", get_latency(start_time), "ms"
     return prioritized_moves[0]
 
