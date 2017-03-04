@@ -32,13 +32,27 @@ def pick_move_to_food(start_time, data, board, snake_dict):
     if prioritized_moves == None:
         prioritized_moves = prioritize_moves_backup(valid_moves, snake_coords,
                                                 board.width, board.height)
-    label_board_voronoi(board, snake_dict)
-    board.print_voronoi_board()
-    board.print_voronoi_board_moves()
+
+    
+    voronoi_data = label_board_voronoi(board, snake_dict)
+    max_val = 0
+    voronoi_move = None
+    for snake, move_dict in voronoi_data.iteritems():
+        print "snake", snake
+        for move, val in move_dict.iteritems():
+            if val>max_val:
+                voronoi_move = move
+                max_val = val
+            print move, "got val", val
+
+
+
+
+
     remove_moves_to_unsafe_components(prioritized_moves, snake_coords, board,
                              len(snake_dict[my_snake_id]['coords']))
     print "SAFE COMPONENT TIME:", get_latency(start_time), "ms"
-    return prioritized_moves[0]
+    return prioritized_moves[0], voronoi_move
 
 # prefer moves that near us to the centre
 def prioritize_moves_backup(valid_moves, snake_coords, board_width, board_height):

@@ -1,3 +1,5 @@
+import random
+
 def init_voronoi(board):
     for i in range(board.width):
         for j in range(board.height):
@@ -8,6 +10,13 @@ def label_board_voronoi(board, snake_dict):
     init_voronoi(board)
     queue = []
 
+    voronoi_data = dict()
+
+    for s_id, snake in snake_dict.iteritems():
+        voronoi_data[s_id] = dict()
+        for m in ['up', 'down', 'left', 'right']:
+            voronoi_data[s_id][m] = 0
+
     #init que and voironoi info
     for s_id, snake in snake_dict.iteritems():
         x, y = snake['coords'][0]
@@ -16,6 +25,23 @@ def label_board_voronoi(board, snake_dict):
         my_tup = [x, y]
         queue.append(dict(from_tuple=my_tup, dist=0, move=None))
 
+    #jumpstart the que values.
+    for i in range(len(snake_dict)):
+        cur = queue.pop(0)
+        p_x, p_y =  cur['from_tuple']
+        dist = cur['dist']
+        init_mov = cur['move']
+        parent_tile = board.get_tile(p_x, p_y)
+        parent_list = tile.get_voronoi_data() #this is a list of dicts
+        parent_info = parent_list[0]
+        children_list, moves_used = get_children(board, dist+1, [p_x, p_y], parent_info['snake_id'])
+        for index, child in enumerate(children_list):
+            init_mov = moves_used[index]
+            x, y = child
+            tile = board.get_tile(x, y)
+            tile.set_voronoi_tile(parent_info['snake_id'], dist+1, init_mov)
+            voronoi_data[parent_info['snake_id']][init_mov] += 1
+            queue.append(dict(from_tuple=[x, y], dist=dist+1, move=init_mov))
 
     while queue:
         cur = queue.pop(0)
@@ -25,23 +51,22 @@ def label_board_voronoi(board, snake_dict):
         parent_tile = board.get_tile(p_x, p_y)
         parent_list = tile.get_voronoi_data() #this is a list of dicts
         parent_info = parent_list[0]
-        print " ------------ LOOOOOOP ----------- "
-        print "On parent", p_x, p_y
         children_list, moves_used = get_children(board, dist+1, [p_x, p_y], parent_info['snake_id'])
         for index, child in enumerate(children_list):
-            if init_mov == None:
-                init_mov = moves_used[index]
             x, y = child
             tile = board.get_tile(x, y)
             tile.set_voronoi_tile(parent_info['snake_id'], dist+1, init_mov)
+            voronoi_data[parent_info['snake_id']][init_mov] += 1
             queue.append(dict(from_tuple=[x, y], dist=dist+1, move=init_mov))
-            print "Setting", x, y, "to", parent_info['path_len']+1
-        print " ------------------- END ------------- "
+
+    return voronoi_data
 
 def get_children(board, path_len, cur, snake_id):
     children_list = []
     moves_used = []
-    for move in ['up', 'down', 'left', 'right']:
+    my_move_list =  ['up', 'down', 'left', 'right']
+    random.shuffle(my_move_list)
+    for move in my_move_list:
         pos = board.get_pos_from_move(cur, move)
         if pos != None and safe_in_time(board, pos, path_len):
             x, y = pos

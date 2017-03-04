@@ -37,9 +37,9 @@ def pick_move(start_time, data, board, snake_dict, mode):
         print "\n* MIN-MAX MOVE =====", move, "*"
         return move
     elif mode == 'food-fetcher':
-        move = pick_move_to_food(start_time, data, board, snake_dict)
+        move, voronoi_move = pick_move_to_food(start_time, data, board, snake_dict)
         print "\n* FOOD-FETCHER MOVE =====", move, "*"
-        return move
+        return voronoi_move
     error_msg = 'No protocol set for mode=' +  mode
     raise Exception(error_msg)
 
