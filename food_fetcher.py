@@ -57,6 +57,7 @@ def pick_move_to_food(start_time, data, board, snake_dict):
             print move, "got val", val
         print " ---------SNAKE END----------- "
     """
+    print "OUR ID", my_snake_id
 
     #board.print_voronoi_board()
     #board.print_voronoi_board_moves()

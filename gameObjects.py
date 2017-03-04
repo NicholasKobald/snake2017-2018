@@ -63,6 +63,9 @@ class Tile:
         self.data['voronoi_info'] = []
 
     def set_voronoi_tile(self, snake_id, path_len, move=None):
+        if len(self.data['voronoi_info']) > 0:
+            if path_len > self.data['voronoi_info'][0]['path_len']:
+                print "This is INVALID."
         self.data['voronoi_info'].append(dict(
             snake_id=snake_id,
             path_len=path_len,
