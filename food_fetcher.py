@@ -131,9 +131,14 @@ def compute_cutoff(turn, snake_len, hp):
 def find_first_move_in_path_out(board, cur_pos, prioritized_moves):
     for move in prioritized_moves:
         new_pos = board.get_pos_from_move(cur_pos, move)
-        if has_path_out(board, new_pos, 1, set()):
+        visited = set()
+        visited.add(cur_pos)
+        visited.add(new_pos)
+        if has_path_out(board, new_pos, 1, visited):
             print move, " has path out"
             return move
+        visited.remove(cur_pos)
+        visited.remove(new_pos)
     return None
 
 def has_path_out(board, cur_pos, path_len, visited):
