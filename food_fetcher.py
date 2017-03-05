@@ -44,13 +44,10 @@ def pick_move_to_food(start_time, data, board, snake_dict):
             return surivival_move
         #return get_maximizing_component_size_move(board, snake_dict, snake_dict[my_snake_id])
     voronoi_data = label_board_voronoi(board, snake_dict)
-    print "voronoi_data", voronoi_data
     voronoi_move_info = dict() # e.g. key=move, value=component_size
     for move in prioritized_moves:
         voronoi_move_info[move] = voronoi_data[my_snake_id][move]
 
-    print "voronoi_move_info", voronoi_move_info
-    print "OUR ID", my_snake_id
     cutoff = compute_cutoff(our_snake_coords_len, data['turn'], snake_dict[my_snake_id]['health_points'])
     #board.print_voronoi_board()
     #board.print_voronoi_board_moves()
@@ -67,20 +64,18 @@ def pick_move_to_food(start_time, data, board, snake_dict):
     turn_coef = min(3, turn_coef)
     # remove all dangerous moves intelligently
     hp_important = 100 - snake_dict[my_snake_id]['health_points']
-    our_cutoff = our_snake_coords_len - (hp_important * turn_coef)
+    our_cutoff = our_snake_coords_len
     alt_move = None
     voronoi_max = float('-inf')
 
     candidate_move = prioritized_moves[0]
 
     if voronoi_move_info[candidate_move] > our_cutoff:
-        print "ACCEPTED FOOD-FETCHER"
         return candidate_move
 
     for move in prioritized_moves:
         cur_val = voronoi_move_info[move]
         if cur_val > voronoi_max:
-            print "WE OVERRULED WITH VAL", cur_val, "WITH MOVE", move
             voronoi_max = cur_val
             alt_move = move
 
@@ -158,7 +153,6 @@ def find_first_move_in_path_out(board, cur_pos, prioritized_moves):
         visited.add(cur_pos)
         visited.add(new_pos)
         if has_path_out(board, new_pos, 1, visited):
-            print move, " has path out"
             return move
         visited.remove(cur_pos)
         visited.remove(new_pos)
@@ -167,7 +161,6 @@ def find_first_move_in_path_out(board, cur_pos, prioritized_moves):
 def has_path_out(board, cur_pos, path_len, visited):
     valid_moves = board.get_valid_moves(cur_pos[0], cur_pos[1])
     if has_open_adj_tile(board, path_len, cur_pos):
-        print "YES exit from ", cur_pos, " path_len", path_len
         return True
 
     for move in valid_moves:
