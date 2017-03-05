@@ -48,17 +48,19 @@ def pick_move_to_food(start_time, data, board, snake_dict):
     voronoi_move_info = dict() # e.g. key=move, value=component_size
     for move in prioritized_moves:
         voronoi_move_info[move] = voronoi_data[my_snake_id][move]
+
     print "voronoi_move_info", voronoi_move_info
     print "OUR ID", my_snake_id
 
     #board.print_voronoi_board()
     #board.print_voronoi_board_moves()
+
     dangerous_moves = []
     cur_min_component_size = float('inf')
     # remove all dangerous moves intelligently
     for move in prioritized_moves:
         component_size = voronoi_move_info[move]
-        if component_size < our_snake_coords_len:
+        if component_size < our_snake_coords_len + board.width:
             if component_size < cur_min_component_size:
                 cur_min_component_size = component_size
                 dangerous_moves.insert(0, move)
@@ -68,6 +70,7 @@ def pick_move_to_food(start_time, data, board, snake_dict):
         if len(prioritized_moves) == 1: break
         prioritized_moves.remove(d_move)
     #print "SAFE COMPONENT TIME:", get_latency(start_time), "ms"
+
     return prioritized_moves[0]
 
     # find first move towards exit
@@ -89,12 +92,11 @@ def has_path_out(board, cur_pos, path_len, visited):
     if has_open_adj_tile(board, path_len, cur_pos):
         print "YES exit from ", cur_pos, " path_len", path_len
         return True
-    else:
-        print "NO exit from", cur_pos, " path_len", path_len
+
     for move in valid_moves:
         cur_path_len = path_len
-        if move not in visited:
-            new_pos = board.get_pos_from_move(cur_pos, move)
+        new_pos = board.get_pos_from_move(cur_pos, move)
+        if new_pos not in visited:
             visited.add(new_pos)
             return has_path_out(board, new_pos, path_len+1, visited)
     return False
