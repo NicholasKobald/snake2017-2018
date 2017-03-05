@@ -193,7 +193,7 @@ class Board:
             for index, coord in enumerate(snake['coords']):
                 x, y = coord[0], coord[1]
                 at_head, at_tail = (index == 0), (index==len(snake['coords'])-1)
-                if board[y][x].is_head():
+                if board[y][x].is_snake():
                     continue
                 else:
                     board[y][x].set_tile_type(dict(

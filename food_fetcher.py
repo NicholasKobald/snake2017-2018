@@ -17,8 +17,6 @@ def pick_move_to_food(start_time, data, board, snake_dict):
     x, y = snake_coords[0], snake_coords[1]
 
     valid_moves = board.get_valid_moves(x, y, data['ate_last_turn'])
-    if data['turn'] < 4:
-        return valid_moves[0]
     #print "VALID MOVES TIME:", get_latency(start_time), "ms"
 
     losing_head_collisions = board.find_losing_head_collisions(x, y, my_snake_id, snake_dict, data['ate_last_turn'])
