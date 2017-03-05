@@ -58,8 +58,8 @@ def start():
     data = request.get_json(force=True) #dict
     PREV_DATA_BY_GAME_ID[data['game_id']] = dict(prev_food_list=None)
     response = dict(
-        color='#FFF',
-        name='master_ai',
+        color='#369',
+        name='Bennett',
         taunt='My. Treat.'
     )
     return json.dumps(response)
@@ -80,7 +80,6 @@ def move():
         snakes_just_ate = find_snakes_that_just_ate(data, prev_food_list, board)
     # insert info about which snakes ate last turn into data object
     data['ate_last_turn'] = snakes_just_ate
-
     PREV_DATA_BY_GAME_ID[data['game_id']]['prev_food_list'] = data['food'][:]
 
     # TODO pick a default

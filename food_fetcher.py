@@ -51,17 +51,27 @@ def pick_move_to_food(start_time, data, board, snake_dict):
 
     print "voronoi_move_info", voronoi_move_info
     print "OUR ID", my_snake_id
-
+    cutoff = compute_cutoff(our_snake_coords_len, data['turn'], snake_dict[my_snake_id]['health_points'])
     #board.print_voronoi_board()
     #board.print_voronoi_board_moves()
+    #return weight_voronoi_versus_food(board,
+    #    prioritized_moves,
+    #    voronoi_move_info,
+    #    snake_dict[my_snake_id]['coords'][0],
+    #    our_snake_coords_len
+    #)
 
     dangerous_moves = []
     cur_min_component_size = float('inf')
+    turn_coef = max(1, float(data['turn'])/100)
     # remove all dangerous moves intelligently
+    hp_important = 100 - snake_dict[my_snake_id]['health_points']
+    print "turn_coef is", turn_coef
     for move in prioritized_moves:
         component_size = voronoi_move_info[move]
-        if component_size < our_snake_coords_len + board.width:
+        if component_size < our_snake_coords_len*turn_coef - hp_important * turn_coef:
             if component_size < cur_min_component_size:
+                print "voronoi influenced shit!"
                 cur_min_component_size = component_size
                 dangerous_moves.insert(0, move)
             else:
@@ -69,14 +79,53 @@ def pick_move_to_food(start_time, data, board, snake_dict):
     for d_move in dangerous_moves:
         if len(prioritized_moves) == 1: break
         prioritized_moves.remove(d_move)
-    #print "SAFE COMPONENT TIME:", get_latency(start_time), "ms"
 
+    print "RETURNING NOW", prioritized_moves[0]
     return prioritized_moves[0]
+    #print "SAFE COMPONENT TIME:", get_latency(start_time), "ms"
+    """
 
     # find first move towards exit
     #for move in prioritized_moves:
     #    if find_path_out(prioritized_moves) != None:
     #        return surivival_move
+    """
+
+#returns one move. THE MOVE.
+def weight_voronoi_versus_food(board, prioritized_moves, voronoi_data, head, my_len):
+    best_food_move = prioritized_moves[0]
+    size_of_best = voronoi_data[best_food_move]
+    if len(prioritized_moves) == 1:
+        print "RRETURNED FF MOVE."
+        return prioritized_moves[0]
+
+    best_diff = float('-inf')
+    candidate_replacement = None
+    for move in prioritized_moves[1:]:
+        x, y= get_pos_from_move(head, move)
+        tile = board.get_tile(x, y)
+        if tile.is_food():
+            size_of_option = voronoi_data[move]
+            diff = size_of_option - size_of_best
+            if diff < my_len:
+                return move
+
+
+    print "returned FF choice"
+    return prioritized_moves[0]
+
+
+
+def compute_cutoff(turn, snake_len, hp):
+    hp_val = 5
+    if hp < 10:
+        hp_coef = 5
+    elif hp<50:
+        hp_coef = 2
+    elif hp<=100:
+        hp_coef = 1
+
+    return (snake_len) + 2*hp_coef
 
 
 def find_first_move_in_path_out(board, cur_pos, prioritized_moves):
