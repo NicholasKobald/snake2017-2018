@@ -67,8 +67,22 @@ def pick_move_to_food(start_time, data, board, snake_dict):
     turn_coef = min(3, turn_coef)
     # remove all dangerous moves intelligently
     hp_important = 100 - snake_dict[my_snake_id]['health_points']
-    our_cutoff = our_snake_coords_len*turn_coef - hp_important*turn_coef
+    our_cutoff = our_snake_coords_len
+    alt_move = None
+    voronoi_max = float('-inf')
 
+    candidate_move = prioritized_moves[0]
+
+    if voronoi_move_info[candidate_move] > our_cutoff:
+        return candidate_move
+
+    for move in prioritized_moves:
+        cur_val = voronoi_move_info[move]
+        if cur_val > voronoi_max:
+            voronoi_max = cur_val
+            alt_move = move
+
+    return move
 
 
 
