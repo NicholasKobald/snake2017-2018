@@ -92,11 +92,8 @@ def safe_in_time(board, pos, path_len):
     tile = board.get_tile(pos[0], pos[1])
     if not tile.is_snake():
         return True
-
-    #off by 1?
-    return path_len > tile.turns_till_safe() + 5
-
-
+    # snake_len = tile.get_snake_len(tile.get_snake_id())
+    return tile.turns_till_safe() < path_len + 1
 
 
 def find_closest_snakes(board, snake_dict):

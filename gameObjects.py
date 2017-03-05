@@ -33,6 +33,9 @@ class Tile:
     def set_tile_type(self, tile_data):
         self.data = tile_data
 
+    def get_tile_data(self):
+        return self.data
+
     def is_snake(self):
         return (self.data['type'] == 'snake')
 
@@ -58,6 +61,8 @@ class Tile:
     def turns_till_safe(self):
         if 'til_empty' in self.data:
             return self.data['til_empty']
+        else:
+            return 0
 
     def init_voronoi_list(self):
         self.data['voronoi_info'] = []
@@ -261,6 +266,20 @@ class Board:
                     row+= '  |'
             print row
             print '-'*self.width*3
+
+    def print_til_empty(self):
+        board = self.board
+        for i in range(self.height):
+            row = ''
+            for j in range(self.width):
+                tile_data = self.get_tile(j, i).get_tile_data()
+                if 'til_empty' not in tile_data:
+                    row += '  |'
+                else:
+                    row += str(tile_data['til_empty']) + ' |'
+            print row
+            print '-'*self.width
+
 
     def print_board(self):
         board = self.board

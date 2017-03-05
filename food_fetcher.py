@@ -12,18 +12,15 @@ get_latency = lambda start_time: int(round((time.time()-start_time) * 1000))
 def pick_move_to_food(start_time, data, board, snake_dict):
     my_snake_id = data['you']
     our_snake_coords_len = len(snake_dict[my_snake_id]['coords'])
-    if not count_reachable_fixed(board, snake_dict[my_snake_id]['coords'][0], our_snake_coords_len):
-        print "IN COMPONENT:TRIED TO MAXIMIZE TIME"
-        return get_maximizing_component_size_move(board, snake_dict, snake_dict[my_snake_id])
 
     snake_coords = get_head_coords(snake_dict[my_snake_id])
     x, y = snake_coords[0], snake_coords[1]
 
     valid_moves = board.get_valid_moves(x, y, data['ate_last_turn'])
-    print "VALID MOVES TIME:", get_latency(start_time), "ms"
+    #print "VALID MOVES TIME:", get_latency(start_time), "ms"
 
     losing_head_collisions = board.find_losing_head_collisions(x, y, my_snake_id, snake_dict, data['ate_last_turn'])
-    print "HEAD COLLISIONS TIME:", get_latency(start_time), "ms"
+    #print "HEAD COLLISIONS TIME:", get_latency(start_time), "ms"
 
     # TODO add a better heuristic for choosing which dangerous move to make
     # --> e.g. consider whether other snake might move to other food instead
@@ -32,54 +29,88 @@ def pick_move_to_food(start_time, data, board, snake_dict):
         if dangerous_move in valid_moves: valid_moves.remove(dangerous_move)
 
     prioritized_moves = prioritize_moves_by_food(start_time, data, board, valid_moves, snake_dict)
-    print "ALL FOOD TIME:", get_latency(start_time), "ms"
+    #print "ALL FOOD TIME:", get_latency(start_time), "ms"
 
     if prioritized_moves == None:
         prioritized_moves = prioritize_moves_backup(valid_moves, snake_coords,
                                                 board.width, board.height)
 
-
-
+    if not count_reachable_fixed(board, snake_dict[my_snake_id]['coords'][0], our_snake_coords_len):
+        print "IN COMPONENT:TRIED TO MAXIMIZE TIME"
+        surivival_move = find_first_move_in_path_out(board, (x,y), prioritized_moves)
+        if surivival_move == None:
+            return prioritized_moves[0]
+        else:
+            return surivival_move
+        #return get_maximizing_component_size_move(board, snake_dict, snake_dict[my_snake_id])
     voronoi_data = label_board_voronoi(board, snake_dict)
-    print voronoi_data
-    prioritized_moves_list = []
+    print "voronoi_data", voronoi_data
+    voronoi_move_info = dict() # e.g. key=move, value=component_size
     for move in prioritized_moves:
-        move_to_voronoi = dict()
-        move_to_voronoi['move'] = move
-        move_to_voronoi['val'] = voronoi_data[my_snake_id][move]
-        prioritized_moves_list.append(move_to_voronoi)
-
-    """
-    for snake, move_dict in voronoi_data.iteritems():
-        print " -------SNAKE----------- "
-        print snake
-        for move, val in move_dict.iteritems():
-            print move, "got val", val
-        print " ---------SNAKE END----------- "
-    """
+        voronoi_move_info[move] = voronoi_data[my_snake_id][move]
+    print "voronoi_move_info", voronoi_move_info
     print "OUR ID", my_snake_id
 
     #board.print_voronoi_board()
     #board.print_voronoi_board_moves()
-    for info in prioritized_moves_list:
-        print "value of", info['move'], "is", info['val']
-        print "snake_length", our_snake_coords_len
-        if int(info['val']) > our_snake_coords_len + 10:
-            print "Used voronoi and food!! WITH A VALUE OF:", info['val']
-            return info['move']
-
-    #finally, pick the maximum
-    cur_max = float('-inf')
-    our_move = None
-    for info in prioritized_moves_list:
-        val = info['val']
-        if val>cur_max:
-            cur_max = val
-            our_move = info['move']
-    print "RETURNED BACKUP MAXIMUM.", our_move
-    return our_move
-    print "SAFE COMPONENT TIME:", get_latency(start_time), "ms"
+    dangerous_moves = []
+    cur_min_component_size = float('inf')
+    # remove all dangerous moves intelligently
+    for move in prioritized_moves:
+        component_size = voronoi_move_info[move]
+        if component_size < our_snake_coords_len:
+            if component_size < cur_min_component_size:
+                cur_min_component_size = component_size
+                dangerous_moves.insert(0, move)
+            else:
+                dangerous_moves.append(move)
+    for d_move in dangerous_moves:
+        if len(prioritized_moves) == 1: break
+        prioritized_moves.remove(d_move)
+    #print "SAFE COMPONENT TIME:", get_latency(start_time), "ms"
     return prioritized_moves[0]
+
+    # find first move towards exit
+    #for move in prioritized_moves:
+    #    if find_path_out(prioritized_moves) != None:
+    #        return surivival_move
+
+
+def find_first_move_in_path_out(board, cur_pos, prioritized_moves):
+    for move in prioritized_moves:
+        new_pos = board.get_pos_from_move(cur_pos, move)
+        if has_path_out(board, new_pos, 1, set()):
+            print move, " has path out"
+            return move
+    return None
+
+def has_path_out(board, cur_pos, path_len, visited):
+    valid_moves = board.get_valid_moves(cur_pos[0], cur_pos[1])
+    if has_open_adj_tile(board, path_len, cur_pos):
+        print "YES exit from ", cur_pos, " path_len", path_len
+        return True
+    else:
+        print "NO exit from", cur_pos, " path_len", path_len
+    for move in valid_moves:
+        cur_path_len = path_len
+        if move not in visited:
+            new_pos = board.get_pos_from_move(cur_pos, move)
+            visited.add(new_pos)
+            return has_path_out(board, new_pos, path_len+1, visited)
+    return False
+
+def has_open_adj_tile(board, path_len, cur_pos):
+    adj_tiles = []
+    for move in ['up', 'down', 'left', 'right']:
+        pos = board.get_pos_from_move(cur_pos, move)
+        if pos != None:
+            tile = board.get_tile(pos[0], pos[1])
+            adj_tiles.append(tile)
+    for tile in adj_tiles:
+        l_bound = tile.turns_till_safe()
+        if l_bound > 0 and l_bound < path_len + 1: return True
+    return False
+
 
 # prefer moves that near us to the centre
 def prioritize_moves_backup(valid_moves, snake_coords, board_width, board_height):
@@ -157,7 +188,7 @@ def prioritize_moves_by_food(start_time, data, board, valid_moves, snake_dict):
     x, y = snake_coords[0], snake_coords[1]
 
     closest_food_and_snakes = find_closest_snakes(board, data['food'], snake_dict)
-    print "SNAKES TO FOOD BFS TIME:", get_latency(start_time), "ms"
+    #print "SNAKES TO FOOD BFS TIME:", get_latency(start_time), "ms"
     snakes_by_food = closest_food_and_snakes['by_dest']
     foods_by_snake = closest_food_and_snakes['by_snake']
 
@@ -170,14 +201,14 @@ def prioritize_moves_by_food(start_time, data, board, valid_moves, snake_dict):
                                         food_info_dict['dest_info'])
 
     moves_to_food = group_nearest_food_by_moves(valid_moves, food_info_dict)
-    print "GROUP FOOD BY MOVE TIME:", get_latency(start_time), "ms"
+    #print "GROUP FOOD BY MOVE TIME:", get_latency(start_time), "ms"
 
     moves_to_biggest_clusters = prefer_biggest_food_clusters(moves_to_food)
-    print "BIG CLUSTER FOOD TIME:", get_latency(start_time), "ms"
+    #print "BIG CLUSTER FOOD TIME:", get_latency(start_time), "ms"
     moves_to_nearest_clusters = prefer_nearby_food_clusters(moves_to_food)
-    print "NEAR CLUSTER FOOD TIME:", get_latency(start_time), "ms"
+    #print "NEAR CLUSTER FOOD TIME:", get_latency(start_time), "ms"
     moves_to_closest_food = prefer_nearest_food(moves_to_food)
-    print "NEAR BIT FOOD TIME:", get_latency(start_time), "ms"
+    #print "NEAR BIT FOOD TIME:", get_latency(start_time), "ms"
     return prioritize_valid_moves(valid_moves, moves_to_biggest_clusters,
         moves_to_nearest_clusters, moves_to_closest_food)
 

@@ -72,6 +72,7 @@ def move():
     # create Board object
     snake_dict = create_snake_dict(data['snakes'])
     board = Board(data['height'], data['width'], snake_dict, data['food'])
+    # board.print_til_empty()
 
     prev_food_list = PREV_DATA_BY_GAME_ID[data['game_id']]['prev_food_list']
     snakes_just_ate = []
