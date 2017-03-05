@@ -64,12 +64,19 @@ def pick_move_to_food(start_time, data, board, snake_dict):
     dangerous_moves = []
     cur_min_component_size = float('inf')
     turn_coef = max(1, float(data['turn'])/100)
+    turn_coef = min(3, turn_coef)
     # remove all dangerous moves intelligently
     hp_important = 100 - snake_dict[my_snake_id]['health_points']
+    our_cutoff = our_snake_coords_len*turn_coef - hp_important*turn_coef
+
+
+
+
+    """
     print "turn_coef is", turn_coef
     for move in prioritized_moves:
         component_size = voronoi_move_info[move]
-        if component_size < our_snake_coords_len*turn_coef - hp_important * turn_coef:
+        if component_size < our_snake_coords_len:
             if component_size < cur_min_component_size:
                 print "voronoi influenced shit!"
                 cur_min_component_size = component_size
@@ -89,7 +96,7 @@ def pick_move_to_food(start_time, data, board, snake_dict):
     #for move in prioritized_moves:
     #    if find_path_out(prioritized_moves) != None:
     #        return surivival_move
-    """
+
 
 #returns one move. THE MOVE.
 def weight_voronoi_versus_food(board, prioritized_moves, voronoi_data, head, my_len):
