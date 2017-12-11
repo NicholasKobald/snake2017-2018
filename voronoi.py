@@ -1,10 +1,12 @@
 import random
 
+
 def init_voronoi(board):
     for i in range(board.width):
         for j in range(board.height):
             tile = board.get_tile(i, j)
             tile.init_voronoi_list()
+
 
 def label_board_voronoi(board, snake_dict):
     init_voronoi(board)

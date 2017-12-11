@@ -1,21 +1,14 @@
-#
-#
-# N. Kobald - 2017-02-04
-#
-
 import os
 import json
-import time
 import sys
+from datetime import time
 
 from flask import Flask
 from flask import request
 
-from shared import *
-from food_fetcher import *
-from duel import *
-from gameObjects import *
-
+from snake2017.food_fetcher import pick_move_to_food, find_snakes_that_just_ate
+from snake2017.gameObjects import Board
+from snake2017.shared import create_snake_dict
 
 OUR_SNAKE_NAME = '1'
 PREV_DATA_BY_GAME_ID = dict()
@@ -29,29 +22,23 @@ app = Flask(__name__)
 def home():
     return "Hello World"
 
-#Logic about which algorithm gets run,
-#and some basic parsing
-def pick_move(start_time, data, board, snake_dict, mode):
-    if mode == 'min-max':
-        move = start_minmax(board, snake_dict, data['you'], data['food'])
-        print "\n* MIN-MAX MOVE =====", move, "*"
-        return move
-    elif mode == 'food-fetcher':
-        move = pick_move_to_food(start_time, data, board, snake_dict)
-        print "\n* FOOD-FETCHER MOVE =====", move, "*"
-        return move
-    error_msg = 'No protocol set for mode=' +  mode
-    raise Exception(error_msg)
+def pick_move(start_time, data, board, snake_dict, mode=None):
+    move = pick_move_to_food(start_time, data, board, snake_dict)
+    print "\n* FOOD-FETCHER MOVE =====", move, "*"
+    return move
+
 
 #page to dump data
 @app.route('/hello')
 def hello():
     return "Hello World!"
 
+
 def print_data(data):
     print "DATA\n********************"
     for key in data:
         print key, ":", data[key]
+
 
 @app.route('/start', methods=['POST'])
 def start():
@@ -64,10 +51,11 @@ def start():
     )
     return json.dumps(response)
 
+
 @app.route('/move', methods=['POST'])
 def move():
     start_time = time.time()
-    data = request.get_json(force=True) #dict
+    data = request.get_json(force=True) # dict
     print "\nPINGED\n********************"
     # create Board object
     snake_dict = create_snake_dict(data['snakes'])
