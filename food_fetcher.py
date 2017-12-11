@@ -8,6 +8,7 @@ DEBUG = True
 get_latency = lambda start_time: int(round((time.time() - start_time) * 1000))
 
 
+# TODO  ---> look into what to change here (still calls Voronoi stuff, etc) 
 def pick_move_to_food(start_time, data, board, snake_dict):
     my_snake_id = data['you']
     our_snake_coords_len = len(snake_dict[my_snake_id]['coords'])

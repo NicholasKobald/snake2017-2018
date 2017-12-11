@@ -52,7 +52,6 @@ def label_board_voronoi(board, snake_dict):
         p_x, p_y = cur['from_tuple']
         dist = cur['dist']
         init_mov = cur['move']
-        parent_tile = board.get_tile(p_x, p_y)
         parent_list = tile.get_voronoi_data()  # this is a list of dicts
         parent_info = parent_list[0]
         parent_id = cur['s_id']
@@ -165,4 +164,5 @@ def find_closest_snakes(board, snake_dict):
                     if cur_path_len + 1 <= working_min_path_len:
                         queue.append(dict(coords=pos, path_len=(cur_path_len + 1)))
                         visited[pos[0]][pos[1]] = True
+
     return dict(by_dest=by_dest, by_snake=by_snake)
