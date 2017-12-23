@@ -252,9 +252,14 @@ def get_moves_from_id(snake_id, snake_list, board):
     moves = board.get_valid_moves(head[0], head[1])
     return moves
 
-
-# returns IDs of all snakes that ate in the previous turn
 def find_snakes_that_just_ate(data, prev_food_list, board):
+    '''
+    Determines which snakes have just eaten food and will therefore grow next turn.
+    Uses position of food from previous turn and current position of snake heads.
+
+    Returns:
+        snakes_just_ate (list): IDs of all snakes that ate in the previous turn
+    '''
     snakes_just_ate = []
     for prev_food in prev_food_list:
         # ignore foods that are still there from last turn

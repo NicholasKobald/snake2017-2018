@@ -46,7 +46,7 @@ def print_data(data):
 
 @app.route('/start', methods=['POST'])
 def start():
-    data = request.get_json(force=True)  # dict
+    data = request.get_json(force=True)
     PREV_DATA_BY_GAME_ID[data['game_id']] = dict(prev_food_list=None)
     response = dict(
         color='#369',
@@ -66,13 +66,11 @@ def move():
     board = Board(data['height'], data['width'], snake_dict, data['food'])
     prev_food_list = PREV_DATA_BY_GAME_ID[data['game_id']]['prev_food_list']
 
-    snakes_just_ate = []
-    if prev_food_list is not None:
-        snakes_just_ate = find_snakes_that_just_ate(data, prev_food_list, board)
-
     # insert info about which snakes ate last turn into data object
-    data['ate_last_turn'] = snakes_just_ate
-    PREV_DATA_BY_GAME_ID[data['game_id']]['prev_food_list'] = data['food'][:]
+    data['ate_last_turn'] = find_snakes_that_just_ate(data, prev_food_list, board)
+    # save food info for this move since we will use it next turn to determine who ate
+    # TODO: determine if we can just make a shallow copy
+    PREV_DATA_BY_GAME_ID.get(data['game_id']).get('prev_food_list') = data['food'][:]
 
     # TODO pick a default
     if len(sys.argv) == 1:
