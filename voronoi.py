@@ -1,6 +1,6 @@
 import random
 
-from snake2017.shared import coords_to_key_str
+from shared import coords_to_key_str
 
 
 def init_voronoi(board):
