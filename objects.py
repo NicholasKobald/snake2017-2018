@@ -57,25 +57,6 @@ class Tile(object):
         else:
             return 0
 
-    def init_voronoi_list(self):
-        self.data['voronoi_info'] = []
-
-    def set_voronoi_tile(self, snake_id, path_len, move=None):
-        if len(self.data['voronoi_info']) > 0:
-            if path_len > self.data['voronoi_info'][0]['path_len']:
-                print "This is INVALID."
-        self.data['voronoi_info'].append(dict(
-            snake_id=snake_id,
-            path_len=path_len,
-            move=move
-        ))
-
-    def get_voronoi_data(self):
-        return self.data['voronoi_info']
-
-    def is_voronoi_set(self):
-        return 'voronoi_info' in self.data
-
 
 class Board(object):
 
@@ -124,8 +105,7 @@ class Board(object):
         for move in valid_moves:
             valid_pos = self.get_pos_from_move((col, row), move)
             if valid_pos is None:
-                print "* UNEXPECTED: get_pos_from_move(a_valid_move) should never return None"
-                continue
+                raise SnakeGoneWrong() 
             for adj in ['right', 'left', 'up', 'down']:
                 adj_pos = self.get_pos_from_move(valid_pos, adj)
                 # skip if we are looking outside the board or if this is our head
@@ -181,8 +161,9 @@ class Board(object):
                 tile = Tile()
                 row.append(tile)
             board.append(row)
+
         # encode snakes into board by setting Tile object type to 'snake'
-        for s_id, snake in snakes.iteritems():
+        for s_id, snake in snakes.items():
             s_len = len(snake['coords'])
             for index, coord in enumerate(snake['coords']):
                 x, y = coord[0], coord[1]
@@ -224,8 +205,8 @@ class Board(object):
                     row += '  |'
                 else:
                     row += str(tile_data['til_empty']) + ' |'
-            print row
-            print '-' * self.width
+            print(row)
+            print('-' * self.width)
 
     def print_board(self):
         for i in range(self.height):
@@ -236,6 +217,8 @@ class Board(object):
                     row += '  |'
                 else:
                     row += (str(self.get_tile(j, i))) + ' |'
-            print row
-            print '-' * self.width
+            print(row)
+            print('-' * self.width)
 
+class SnakeGoneWrong(Exception):
+    pass 

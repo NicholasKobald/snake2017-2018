@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 import os
 import json
 import sys
@@ -9,7 +7,7 @@ from flask import Flask
 from flask import request
 
 from food_fetcher import pick_move_to_food, find_snakes_that_just_ate
-from gameObjects import Board
+from objects import Board
 from shared import create_snake_dict
 
 OUR_SNAKE_NAME = '1'
@@ -60,7 +58,7 @@ def move():
     print("\nPINGED\n********************")
     start_time = time()
     data = request.get_json(force=True)  # dict
-    print(data)
+    # print(data)
 
     snake_dict = create_snake_dict(data['snakes'])
     board = Board(data['height'], data['width'], snake_dict, data['food'])

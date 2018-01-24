@@ -138,7 +138,7 @@ def key_str_to_coords(key_str):
 
 def prefer_nearest_food(move_dict):
     moves_to_nearest_food, cur_nearest_food_dist = [], float('inf')
-    for move, path_lengths in move_dict.iteritems():
+    for move, path_lengths in move_dict.items():
         for food_dist in path_lengths:
             if food_dist < cur_nearest_food_dist:
                 cur_nearest_food_dist = food_dist
@@ -153,7 +153,7 @@ def prefer_nearest_food(move_dict):
 
 def prefer_nearby_food_clusters(move_dict):
     moves_to_nearest_clusters, cur_nearest_cluster_dist = [], float('inf')
-    for move, path_lengths in move_dict.iteritems():
+    for move, path_lengths in move_dict.items():
         ave_dist = int(round(sum(path_lengths) / (len(path_lengths))))
         if ave_dist < cur_nearest_cluster_dist:
             cur_nearest_cluster_dist = ave_dist
@@ -165,7 +165,7 @@ def prefer_nearby_food_clusters(move_dict):
 
 def prefer_biggest_food_clusters(move_dict):
     moves_to_biggest_cluster, cur_biggest_cluster_size = [], 0
-    for move, path_lengths in move_dict.iteritems():
+    for move, path_lengths in move_dict.items():
         cur_cluster_size = len(path_lengths)
         if cur_biggest_cluster_size < cur_cluster_size:
             cur_biggest_cluster_size = cur_cluster_size
@@ -224,7 +224,7 @@ def move_approaches_target(move, cur_pos, dest_pos):
         return (cur_row < dest_row)
     elif move == 'up':
         return (cur_row > dest_row)
-    print "* PROVIDED INVALID MOVE to move_approaches_target"
+    print("* PROVIDED INVALID MOVE to move_approaches_target")
     return None
 
 
