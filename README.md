@@ -5,7 +5,7 @@ implementation for the 2017 battlesnake
 Prerequisistes:
 
 	docker
-	python 2.7.x
+	python 3 (prolly 3.4 + to be safe?) 
 	pip
 	heroku (soon)
 

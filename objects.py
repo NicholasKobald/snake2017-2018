@@ -1,21 +1,14 @@
-#
-#
 
 TILE_DEBUG = True
 
-class Tile:
+
+class Tile(object):
 
     def __init__(self, data=None):
-        if data == None:
+        if data is None:
             self.data = dict(type='empty')
         else:
             self.data = data
-
-    def eat(self):
-        self.data['type'] = 'empty'
-
-    def throwup(self):
-        self.data['type'] = 'food'
 
     def naive_is_safe(self):
         return self.data['type'] != 'snake'
@@ -25,7 +18,7 @@ class Tile:
             snake_id = self.get_snake_id()
             safe_tail = snake_id not in ate_last_turn
             return safe_tail
-        return (not self.is_snake())
+        return not self.is_snake()
 
     def is_food(self):
         return self.data['type'] == 'food'
@@ -37,7 +30,7 @@ class Tile:
         return self.data
 
     def is_snake(self):
-        return (self.data['type'] == 'snake')
+        return self.data['type'] == 'snake'
 
     def get_snake_id(self):
         if self.is_snake():
@@ -45,10 +38,10 @@ class Tile:
         return None
 
     def is_head(self):
-        return (self.is_snake() and self.data['head'])
+        return self.is_snake() and self.data['head']
 
     def is_tail(self):
-        return (self.is_snake() and self.data['tail'])
+        return self.is_snake() and self.data['tail']
 
     def __str__(self, voronoi=False):
         if self.data['type'] == 'snake' and self.data['head']:
@@ -56,7 +49,7 @@ class Tile:
         return self.data['type'][:1]
 
     def dist_down_snake(self, d):
-        data['dist'] = d
+        self.data['dist'] = d
 
     def turns_till_safe(self):
         if 'til_empty' in self.data:
@@ -64,61 +57,43 @@ class Tile:
         else:
             return 0
 
-    def init_voronoi_list(self):
-        self.data['voronoi_info'] = []
 
-    def set_voronoi_tile(self, snake_id, path_len, move=None):
-        if len(self.data['voronoi_info']) > 0:
-            if path_len > self.data['voronoi_info'][0]['path_len']:
-                print "This is INVALID."
-        self.data['voronoi_info'].append(dict(
-            snake_id=snake_id,
-            path_len=path_len,
-            move=move
-        ))
-
-    def get_voronoi_data(self):
-        return self.data['voronoi_info']
-
-    def is_voronoi_set(self):
-        return 'voronoi_info' in self.data
-
-
-class Board:
+class Board(object):
 
     def __init__(self, height, width, snake_dict, food):
         self.height = height
         self.width = width
-        self.board = self.create_board_from_data(snake_dict, food)      # expects a 2D array of Tile objects
+        self.board = self.create_board_from_data(snake_dict, food)  # expects a 2D array of Tile objects
         self.snake_dict = snake_dict
 
     # returns list of moves that will not result in instant death (wall or snake)
-    def get_valid_moves(self, col, row, ate_last_turn=[]):
+    def get_valid_moves(self, col, row, ate_last_turn=None):
+        if ate_last_turn is None:
+            ate_last_turn = []
         valid_moves = []
-        # TODO add check for snake tails (may be safe!)
-        if col < self.width-1 and self.get_tile(col+1, row).is_safe(ate_last_turn):
+        if col < self.width - 1 and self.get_tile(col + 1, row).is_safe(ate_last_turn):
             valid_moves.append('right')
-        if row < self.height-1 and self.get_tile(col, row+1).is_safe(ate_last_turn):
+        if row < self.height - 1 and self.get_tile(col, row + 1).is_safe(ate_last_turn):
             valid_moves.append('down')
-        if col > 0 and self.get_tile(col-1, row).is_safe(ate_last_turn):
+        if col > 0 and self.get_tile(col - 1, row).is_safe(ate_last_turn):
             valid_moves.append('left')
-        if row > 0 and self.get_tile(col, row-1).is_safe(ate_last_turn):
+        if row > 0 and self.get_tile(col, row - 1).is_safe(ate_last_turn):
             valid_moves.append('up')
 
         return valid_moves
 
     def get_snake_len_by_id(self, snake_id):
-        return (len(self.snake_dict[snake_id]['coords']))
+        return len(self.snake_dict[snake_id]['coords'])
 
     def naive_get_valid_moves(self, col, row):
         valid_moves = []
-        if col < self.width-1 and self.get_tile(col+1, row).naive_is_safe():
+        if col < self.width - 1 and self.get_tile(col + 1, row).naive_is_safe():
             valid_moves.append('right')
-        if row < self.height-1 and self.get_tile(col, row+1).naive_is_safe():
+        if row < self.height - 1 and self.get_tile(col, row + 1).naive_is_safe():
             valid_moves.append('down')
-        if col > 0 and self.get_tile(col-1, row).naive_is_safe():
+        if col > 0 and self.get_tile(col - 1, row).naive_is_safe():
             valid_moves.append('left')
-        if row > 0 and self.get_tile(col, row-1).naive_is_safe():
+        if row > 0 and self.get_tile(col, row - 1).naive_is_safe():
             valid_moves.append('up')
 
         return valid_moves
@@ -129,22 +104,21 @@ class Board:
         losing_head_collisions = []
         for move in valid_moves:
             valid_pos = self.get_pos_from_move((col, row), move)
-            if valid_pos == None:
-                print "* UNEXPECTED: get_pos_from_move(a_valid_move) should never return None"
-                continue
+            if valid_pos is None:
+                raise SnakeGoneWrong() 
             for adj in ['right', 'left', 'up', 'down']:
                 adj_pos = self.get_pos_from_move(valid_pos, adj)
                 # skip if we are looking outside the board or if this is our head
-                if adj_pos == None or (adj_pos[0] == col and adj_pos[1] == row):
+                if adj_pos is None or (adj_pos[0] == col and adj_pos[1] == row):
                     continue
 
                 adj_tile = self.safe_get_tile(adj_pos[0], adj_pos[1])
-                if adj_tile == None or not (adj_tile.is_head()):
+                if adj_tile is None or not (adj_tile.is_head()):
                     # skip if we are outside the board or we're not at a snake's head
                     continue
 
                 enemy_snake_id = adj_tile.get_snake_id()
-                if enemy_snake_id == None:
+                if enemy_snake_id is None:
                     continue
                 enemy_snake, my_snake = snake_dict[enemy_snake_id], snake_dict[my_snake_id]
 
@@ -171,9 +145,9 @@ class Board:
         return self.board[row][col]
 
     def not_valid_tile(self, row, col):
-        if row > self.width-1 or row < 0:
+        if row > self.width - 1 or row < 0:
             return True
-        if col > self.height-1 or col < 0:
+        if col > self.height - 1 or col < 0:
             return True
 
     def create_board_from_data(self, snakes, food_list):
@@ -183,16 +157,17 @@ class Board:
         for i in range(height):
             row = []
             for j in range(width):
-                #init empty board
-                tile=Tile()
+                # init empty board
+                tile = Tile()
                 row.append(tile)
             board.append(row)
+
         # encode snakes into board by setting Tile object type to 'snake'
-        for s_id, snake in snakes.iteritems():
+        for s_id, snake in snakes.items():
             s_len = len(snake['coords'])
             for index, coord in enumerate(snake['coords']):
                 x, y = coord[0], coord[1]
-                at_head, at_tail = (index == 0), (index==len(snake['coords'])-1)
+                at_head, at_tail = (index == 0), (index == len(snake['coords']) - 1)
                 if board[y][x].is_snake():
                     continue
                 else:
@@ -210,65 +185,18 @@ class Board:
 
     def get_pos_from_move(self, cur_pos, move):
         col, row = cur_pos[0], cur_pos[1]
-        if move == 'up' and row-1 >= 0:
-            return (col, row-1)
-        elif move == 'down' and row+1 < self.height:
-            return (col, row+1)
-        elif move == 'left' and col-1 >= 0:
-            return (col-1, row)
-        elif move == 'right' and col+1 < self.width:
-            return (col+1, row)
+        if move == 'up' and row - 1 >= 0:
+            return col, row - 1
+        elif move == 'down' and row + 1 < self.height:
+            return col, row + 1
+        elif move == 'left' and col - 1 >= 0:
+            return col - 1, row
+        elif move == 'right' and col + 1 < self.width:
+            return col + 1, row
         # None indicates that move is out of bounds
         return None
 
-
-    def print_voronoi_board(self):
-        for y in range(self.height):
-            row = ''
-            for x in range(self.width):
-                vor_list = self.get_tile(x, y).get_voronoi_data()
-                if vor_list:
-                    if len(vor_list) > 1:
-                        row += 'C |'
-                    else:
-                        vor_info = vor_list[0]
-                        num = vor_info['path_len']
-                        if num<9:
-                            vor_info = vor_list[0]
-                            row += str(num) + ' |'
-                        else:
-                            vor_info = vor_list[0]
-                            row += str(num) + '|'
-                else:
-                    row+= '  |'
-            print row
-            print '-'*self.width*3
-
-    def print_voronoi_board_moves(self):
-        print "\n\n"
-        for y in range(self.height):
-            row = ''
-            for x in range(self.width):
-                vor_list = self.get_tile(x, y).get_voronoi_data()
-                if vor_list:
-                    if len(vor_list) > 1:
-                        row += 'C |'
-                    else:
-                        var_info = vor_list[0]
-                        if var_info['move']:
-                            vor_info = vor_list[0]
-                            num = vor_info['move'][0]
-                            vor_info = vor_list[0]
-                            row += str(num) + ' |'
-                        else:
-                            row += '  |'
-                else:
-                    row+= '  |'
-            print row
-            print '-'*self.width*3
-
     def print_til_empty(self):
-        board = self.board
         for i in range(self.height):
             row = ''
             for j in range(self.width):
@@ -277,12 +205,10 @@ class Board:
                     row += '  |'
                 else:
                     row += str(tile_data['til_empty']) + ' |'
-            print row
-            print '-'*self.width
-
+            print(row)
+            print('-' * self.width)
 
     def print_board(self):
-        board = self.board
         for i in range(self.height):
             row = ''
             for j in range(self.width):
@@ -291,12 +217,8 @@ class Board:
                     row += '  |'
                 else:
                     row += (str(self.get_tile(j, i))) + ' |'
-            print row
-            print '-'*self.width
+            print(row)
+            print('-' * self.width)
 
-
-    def log_tail_safety(self):
-        for i in range(self.height):
-            row = ''
-            for j in range(self.width):
-                space_val = str(self.get_tile(j, i))
+class SnakeGoneWrong(Exception):
+    pass 
