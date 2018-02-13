@@ -2,33 +2,28 @@ import time
 
 from shared import *
 
-
 get_latency = lambda start_time: int(round((time.time() - start_time) * 1000))
 
 
-def pick_move_to_food(start_time, data, board, snake_dict):
-    my_snake_id = data['you']
-    our_snake_coords_len = len(snake_dict[my_snake_id]['coords'])
+def pick_move_to_food(data, board, snake_dict):
+    my_snake_id = data['you']['id']
 
-    snake_coords = get_head_coords(snake_dict[my_snake_id])
-    x, y = snake_coords[0], snake_coords[1]
-
-    valid_moves = board.get_valid_moves(x, y)
+    # get our head coordinates
+    x, y = get_head_coords(snake_dict[my_snake_id])
+    valid_moves = board.get_valid_moves(x, y, data['ate_last_turn'])
 
     # TODO add a better heuristic for choosing which dangerous move to make
     # --> e.g. consider whether other snake might move to other food instead
-    #for dangerous_move in losing_head_collisions:
+    # for dangerous_move in losing_head_collisions:
     #    if len(valid_moves) <= 1: break
     #    if dangerous_move in valid_moves: valid_moves.remove(dangerous_move)
 
-    prioritized_moves = prioritize_moves_by_food(start_time, data, board, valid_moves, snake_dict)
-
-    # print "ALL FOOD TIME:", get_latency(start_time), "ms"
+    prioritized_moves = prioritize_moves_by_food(data, board, valid_moves, snake_dict, my_snake_id)
     if prioritized_moves is None:
-        prioritized_moves = prioritize_moves_backup(valid_moves, snake_coords,
-                                                    board.width, board.height)
-
+        snake_coords = get_head_coords(snake_dict[my_snake_id])
+        prioritized_moves = prioritize_moves_backup(valid_moves, snake_coords, board.width, board.height)
     return prioritized_moves[0]
+
 
 def has_path_out(board, cur_pos, path_len, visited):
     valid_moves = board.get_valid_moves(cur_pos[0], cur_pos[1])
@@ -41,6 +36,7 @@ def has_path_out(board, cur_pos, path_len, visited):
             visited.add(new_pos)
             return has_path_out(board, new_pos, path_len + 1, visited)
     return False
+
 
 def has_open_adj_tile(board, path_len, cur_pos):
     adj_tiles = []
@@ -57,12 +53,12 @@ def has_open_adj_tile(board, path_len, cur_pos):
 
 
 # prefer moves that move us to the centre
-def prioritize_moves_backup(valid_moves, snake_coords, board_width, board_height):
+def prioritize_moves_backup(valid_moves, snake_head_coords, board_width, board_height):
     preferred_moves, other_moves = [], []
     centre_x, centre_y = (board_width / 2) - 1, (board_height / 2) - 1
-    max_dist_to_centre = abs(snake_coords[0] - centre_x) + abs(snake_coords[1] - centre_y)
+    max_dist_to_centre = abs(snake_head_coords[0] - centre_x) + abs(snake_head_coords[1] - centre_y)
     for move in valid_moves:
-        pos = get_pos_from_move(snake_coords, move)
+        pos = get_pos_from_move(snake_head_coords, move)
         dist_to_centre = abs(pos[0] - centre_x) + abs(pos[1] - centre_y)
         if dist_to_centre < max_dist_to_centre:
             preferred_moves.append(move)
@@ -89,12 +85,12 @@ def remove_moves_to_unsafe_components(moves, snake_coords, board, snake_len):
                 unsafe_moves.insert(0, move)
             else:
                 unsafe_moves.append(move)
-    if preferred_move != None and preferred_move not in unsafe_moves:
+    if preferred_move is not None and preferred_move not in unsafe_moves:
         unsafe_moves.append(preferred_move)  # never removed
 
     # order of move removal corresponds to the order of move insertion
     for unsafe_move in unsafe_moves:
-        if len(moves) == 1: 
+        if len(moves) == 1:
             break  # leave at least 1 move
         if unsafe_move in moves: moves.remove(unsafe_move)
 
@@ -111,8 +107,7 @@ def remove_losing_ties_by_snake_len(board, my_snake_id, food_info_list):
     return food_info_list
 
 
-
-def prioritize_moves_by_food(start_time, data, board, valid_moves, snake_dict):
+def prioritize_moves_by_food(data, board, valid_moves, snake_dict, my_snake_id):
     """
     returns: 
         (1) permuted valid_moves prioritized best->worst
@@ -120,10 +115,9 @@ def prioritize_moves_by_food(start_time, data, board, valid_moves, snake_dict):
      favours moves that approach most of: nearest cluster, largest cluster, nearest food
     """
 
-    my_snake_id = data['you']
     snake_coords = get_head_coords(snake_dict[my_snake_id])
 
-    closest_food_and_snakes = find_closest_snakes(board, data['food'], snake_dict)
+    closest_food_and_snakes = find_closest_snakes(board, data['food']['data'])
     foods_by_snake = closest_food_and_snakes['by_snake']
 
     if my_snake_id not in foods_by_snake:
@@ -142,18 +136,21 @@ def prioritize_moves_by_food(start_time, data, board, valid_moves, snake_dict):
                                   moves_to_nearest_clusters, moves_to_closest_food)
 
 
-def prioritize_valid_moves(valid_moves, to_big_clusters,
-                           to_near_clusters, to_close_food):
-    num_occurrences = [[], [], [], []]
+def prioritize_valid_moves(valid_moves, to_big_clusters, to_near_clusters, to_close_food):
+    # create buckets for every 'tier' of move priority (where 0 is the highest priority)
+    priority_buckets = [[], [], [], []]
     for move in valid_moves:
-        pop_count = sum(1 for cluster in (to_big_clusters, to_near_clusters, to_close_food)
-                        if move in cluster)
+        pop_count = 0
+        if move in to_big_clusters:
+            pop_count += 1
+        if move in to_near_clusters:
+            pop_count += 1
+        if move in to_close_food:
+            pop_count += 1
 
         priority_index = (pop_count * (-1)) - 1
-        num_occurrences[priority_index].append(move)
+        priority_buckets[priority_index].append(move)
 
-    most_occur_first = []
-    print(num_occurrences)
-    for moves in num_occurrences:
-        most_occur_first += moves
-    return most_occur_first
+    # that's it, done.
+    prioritized = sum(priority_buckets, [])
+    return prioritized
