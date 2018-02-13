@@ -272,12 +272,21 @@ def find_snakes_that_just_ate(data, prev_food_list, board):
     """
     snakes_just_ate = []
     cur_food_list = convert_to_coords_list(data['food']['data'])
+    print(prev_food_list)
     for prev_food in prev_food_list:
         # ignore foods that are still there from last turn
         if prev_food in cur_food_list:
             continue
 
         tile = board.get_tile(prev_food[0], prev_food[1])
+<<<<<<< HEAD
+=======
+        print("From foods:")
+        print(prev_food[0])
+        print(prev_food[1])
+        print("prev tile:")
+        print(tile)
+>>>>>>> 87b2567573e9b66d29a2e2a49bce5835a681713c
         if tile.is_snake():
             snakes_just_ate.append(tile.get_snake_id())
     return snakes_just_ate
