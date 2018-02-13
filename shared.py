@@ -96,7 +96,6 @@ def find_closest_snakes(board, coords_list):
             # cancels need for path_len comparison when we find snake_head
             if cur_path_len > working_min_path_len:
                 continue
-            print("Cur pos is:", cur_pos)
             cur_col, cur_row = cur_pos['x'], cur_pos['y']
 
             # have we reached our destination ?
@@ -121,7 +120,6 @@ def find_closest_snakes(board, coords_list):
 
             valid_moves = board.get_valid_moves(cur_col, cur_row)
             for move in ['up', 'down', 'right', 'left']:
-                print(cur_pos)
                 pos = board.get_pos_from_move(cur_pos, move)
                 if pos is None or visited[pos[0]][pos[1]]:
                     continue
@@ -135,7 +133,6 @@ def find_closest_snakes(board, coords_list):
 
 
 def coords_to_key_str(coords):
-    print(coords)
     col, row = coords['x'], coords['y']
     key_str = str(col) + ":" + str(row)
     return key_str
@@ -154,12 +151,10 @@ def prefer_nearest_food(move_dict):
         for food_dist in path_lengths:
             if food_dist < cur_nearest_food_dist:
                 cur_nearest_food_dist = food_dist
-                if DEBUG: "min is now:", food_dist
                 moves_to_nearest_food = [move]
             elif food_dist == cur_nearest_food_dist:
                 if move not in moves_to_nearest_food:
                     moves_to_nearest_food.append(move)
-            if DEBUG: "moves to nearest food:", moves_to_nearest_food
     return moves_to_nearest_food
 
 
@@ -190,11 +185,12 @@ def prefer_biggest_food_clusters(move_dict):
 def confirm_closest(board, snake_id, comp_snake_ids):
     comp_snake_ids.append(snake_id)
     longest_snake_id = find_longest_snake(board, comp_snake_ids)
-    return (longest_snake_id == snake_id)
+    return longest_snake_id == snake_id
 
 
 def find_longest_snake(board, snake_ids):
-    if len(snake_ids) < 1: return None
+    if len(snake_ids) < 1:
+        return None
     cur_longest_snake = snake_ids[0]
     cur_longest_len = board.get_snake_len_by_id(cur_longest_snake)
     for other_snake_id in snake_ids:

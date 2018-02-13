@@ -44,6 +44,7 @@ def print_data(data):
 
 @app.route('/start', methods=['POST'])
 def start():
+    global PREV_DATA_BY_GAME_ID
     data = request.get_json(force=True)
     # game_id may be changed to id in the future, if they care about their documentation
     PREV_DATA_BY_GAME_ID[data['game_id']] = dict(prev_food_list=None)
@@ -61,9 +62,7 @@ def start():
 def move():
     global PREV_DATA_BY_GAME_ID
     print("\nPINGED\n  ********************")
-    print('This is the /move post')
     data = request.get_json(force=True)  # dict
-    print(data)
 
     snake_dict = create_snake_dict(data['snakes'])
     board = Board(data['height'], data['width'], snake_dict, data['food']['data'])
@@ -77,13 +76,10 @@ def move():
 
     move = pick_move(data, board, snake_dict)
 
-
-
     response = {
         'move': move,
         'taunt': 'Squaack'
     }
-    end_time = time()
     return json.dumps(response)
 
 
