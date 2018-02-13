@@ -85,7 +85,7 @@ def find_closest_snakes(board, coords_list):
         dest_coord_key_str = coords_to_key_str(dest_coord)
         by_dest[dest_coord_key_str] = []
 
-        visited = [[False] * board.width for _ in range(board.height)]
+        visited = [[False] * board.height for _ in range(board.width)]
         queue = [dict(coords=dest_coord, path_len=0)]
         working_min_path_len = float('inf')  # we stop our search once beyond this
         while len(queue) > 0:
@@ -272,12 +272,18 @@ def find_snakes_that_just_ate(data, prev_food_list, board):
     """
     snakes_just_ate = []
     cur_food_list = convert_to_coords_list(data['food']['data'])
+    print(prev_food_list)
     for prev_food in prev_food_list:
         # ignore foods that are still there from last turn
         if prev_food in cur_food_list:
             continue
 
-        tile = board.safe_get_tile(prev_food[0], prev_food[1])
+        tile = board.get_tile(prev_food[0], prev_food[1])
+        print("From foods:")
+        print(prev_food[0])
+        print(prev_food[1])
+        print("prev tile:")
+        print(tile)
         if tile.is_snake():
             snakes_just_ate.append(tile.get_snake_id())
     return snakes_just_ate
@@ -321,15 +327,16 @@ def create_snake_dict(snake_data):
 
 # quick bfs to count reachable from specific board
 def count_reachable(board, head):
-    visited = [0] * board.width * board.height
-    count, que = 0, [head]
+    visited = set()
+    count = 0
+    que = [head]
     while que:
         head, count = que.pop(), count + 1
         valid_moves = board.get_valid_moves(head[0], head[1])
         for move in valid_moves:
             tile = get_pos_from_move(head, move)
-            if not visited[board.width * tile[0] + tile[1]]:
-                visited[board.width * tile[0] + tile[1]] = True
+            if tile not in visited:
+                visited.add(tile) 
                 que.append(tile)
 
     return count
