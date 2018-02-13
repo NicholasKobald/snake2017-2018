@@ -137,14 +137,17 @@ class Board(object):
         return losing_head_collisions
 
     def safe_get_tile(self, col, row):
+        # FIXME FIXME FIXME (NOT SAFER. NOT AS ADVERTISED)
         if self.not_valid_tile(row, col):
             return None
-        return self.board[row][col]
+        # this is getting a bit over the top with the indirection
+        return self.get_tile(col, row)
 
     def get_tile(self, col, row):
         return self.board[row][col]
 
     def not_valid_tile(self, row, col):
+        #fixme
         if row > self.width - 1 or row < 0:
             return True
         if col > self.height - 1 or col < 0:
