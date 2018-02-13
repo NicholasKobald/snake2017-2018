@@ -128,6 +128,7 @@ def prioritize_moves_by_food(data, board, valid_moves, snake_dict, my_snake_id):
     closest_food_and_snakes = find_closest_snakes(board, data['food']['data'])
     foods_by_snake = closest_food_and_snakes['by_snake']
 
+    # we aren't the closest to anything
     if my_snake_id not in foods_by_snake:
         return None
 

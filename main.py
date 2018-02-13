@@ -49,7 +49,7 @@ def start():
     # game_id may be changed to id in the future, if they care about their documentation
     PREV_DATA_BY_GAME_ID[data['game_id']] = dict(prev_food_list=None)
     response = dict(
-        color='#F00',
+        color='#00F',
         name='Lucifer',
         taunt='temptaunt',
         head_type='dead',

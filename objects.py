@@ -195,7 +195,6 @@ class Board(object):
         elif move == 'right' and col + 1 < self.width:
             return col + 1, row
         # None indicates that move is out of bounds
-        return None
 
     def print_til_empty(self):
         for i in range(self.height):
