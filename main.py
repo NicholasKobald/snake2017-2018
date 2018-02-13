@@ -6,7 +6,7 @@ from datetime import time
 from flask import Flask
 from flask import request
 
-from food_fetcher import pick_move_to_food, find_snakes_that_just_ate
+from food_fetcher import pick_move_to_food, find_snakes_that_just_ate, convert_to_coords_list
 from objects import Board
 from shared import create_snake_dict
 
@@ -24,8 +24,9 @@ def home():
     return "Hello World"
 
 
-def pick_move(start_time, data, board, snake_dict, mode=None):
-    move = pick_move_to_food(start_time, data, board, snake_dict)
+def pick_move(data, board, snake_dict):
+    move = pick_move_to_food(data, board, snake_dict)
+
     return move
 
 
@@ -44,45 +45,45 @@ def print_data(data):
 @app.route('/start', methods=['POST'])
 def start():
     data = request.get_json(force=True)
+    # game_id may be changed to id in the future, if they care about their documentation
     PREV_DATA_BY_GAME_ID[data['game_id']] = dict(prev_food_list=None)
     response = dict(
-        color='#369',
-        name='7geese guy',
-        taunt='My. Treat.'
+        color='#F00',
+        name='Lucifer',
+        taunt='temptaunt',
+        head_type='dead',
+        tail_type='curled'
     )
     return json.dumps(response)
 
 
 @app.route('/move', methods=['POST'])
 def move():
-    print("\nPINGED\n********************")
-    start_time = time()
+    global PREV_DATA_BY_GAME_ID
+    print("\nPINGED\n  ********************")
+    print('This is the /move post')
     data = request.get_json(force=True)  # dict
-    # print(data)
+    print(data)
 
     snake_dict = create_snake_dict(data['snakes'])
-    board = Board(data['height'], data['width'], snake_dict, data['food'])
-    #prev_food_list = PREV_DATA_BY_GAME_ID[data['game_id']]['prev_food_list']
+    board = Board(data['height'], data['width'], snake_dict, data['food']['data'])
 
+    prev_food_list = PREV_DATA_BY_GAME_ID[data['id']]['prev_food_list']
     # insert info about which snakes ate last turn into data object
-    # data['ate_last_turn'] = find_snakes_that_just_ate(data, prev_food_list, board)
-    # save food info for this move since we will use it next turn to determine who ate
-    # TODO: determine if we can just make a shallow copy
-    # PREV_DATA_BY_GAME_ID.get(data['game_id']).get('prev_food_list') = data['food'][:]
+    if prev_food_list is not None:
+        data['ate_last_turn'] = find_snakes_that_just_ate(data, prev_food_list, board)
 
-    # TODO pick a default
-    if len(sys.argv) == 1:
-        mode = 'food-fetcher'
-    else:
-        mode = sys.argv[1]
+    PREV_DATA_BY_GAME_ID[data['id']]['prev_food_list'] = convert_to_coords_list(data['food']['data'])
 
-    move = pick_move(start_time, data, board, snake_dict, mode)
+    move = pick_move(data, board, snake_dict)
+
+
+
     response = {
         'move': move,
         'taunt': 'Squaack'
     }
     end_time = time()
-    # print("Took", end_time - start_time, "seconds to compute move.")
     return json.dumps(response)
 
 

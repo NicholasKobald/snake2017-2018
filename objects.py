@@ -105,7 +105,7 @@ class Board(object):
         for move in valid_moves:
             valid_pos = self.get_pos_from_move((col, row), move)
             if valid_pos is None:
-                raise SnakeGoneWrong() 
+                raise SnakeGoneWrong("Ssssssssssssssshit")
             for adj in ['right', 'left', 'up', 'down']:
                 adj_pos = self.get_pos_from_move(valid_pos, adj)
                 # skip if we are looking outside the board or if this is our head
@@ -142,6 +142,7 @@ class Board(object):
         return self.board[row][col]
 
     def get_tile(self, col, row):
+        print("Get tIL: {} {} {} {}".format(col, row, type(col), type(row)))
         return self.board[row][col]
 
     def not_valid_tile(self, row, col):
@@ -164,10 +165,10 @@ class Board(object):
 
         # encode snakes into board by setting Tile object type to 'snake'
         for s_id, snake in snakes.items():
-            s_len = len(snake['coords'])
-            for index, coord in enumerate(snake['coords']):
-                x, y = coord[0], coord[1]
-                at_head, at_tail = (index == 0), (index == len(snake['coords']) - 1)
+            s_len = len(snake['body']['data'])
+            for index, coord in enumerate(snake['body']['data']):
+                x, y = coord['x'], coord['y']
+                at_head, at_tail = (index == 0), (index == s_len - 1)
                 if board[y][x].is_snake():
                     continue
                 else:
@@ -178,13 +179,14 @@ class Board(object):
                         tail=at_tail,
                         til_empty=s_len - index
                     ))
+        print(food_list)
         for food in food_list:
-            x, y = food[0], food[1]
+            x, y = food['x'], food['y']
             board[y][x].set_tile_type(dict(type='food'))
         return board
 
     def get_pos_from_move(self, cur_pos, move):
-        col, row = cur_pos[0], cur_pos[1]
+        col, row = cur_pos['x'], cur_pos['y']
         if move == 'up' and row - 1 >= 0:
             return col, row - 1
         elif move == 'down' and row + 1 < self.height:
@@ -219,6 +221,7 @@ class Board(object):
                     row += (str(self.get_tile(j, i))) + ' |'
             print(row)
             print('-' * self.width)
+
 
 class SnakeGoneWrong(Exception):
     pass 

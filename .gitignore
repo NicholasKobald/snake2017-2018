@@ -2,6 +2,8 @@
 
 snake-env/
 
+# oops..
+.idea/ 
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
