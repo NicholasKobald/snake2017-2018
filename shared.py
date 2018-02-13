@@ -282,6 +282,7 @@ def find_snakes_that_just_ate(data, prev_food_list, board):
             snakes_just_ate.append(tile.get_snake_id())
     return snakes_just_ate
 
+
 def convert_to_coords_list(food_list):
     """
     e.g. food_list = [
@@ -301,6 +302,7 @@ def convert_to_coords_list(food_list):
         food_coords.append([x, y])
     return food_coords
 
+
 def create_snake_dict(snake_data):
     snake_dict = dict()
     snake_list = snake_data['data']
@@ -315,16 +317,6 @@ def create_snake_dict(snake_data):
         snake['food_eaten'] = []
         del snake['id']  # no longer needed.
     return snake_dict
-
-
-def determine_distance_to_nearest_food(head, food_list):
-    min_dist = float('inf')
-    for food in food_list:
-        x_diff = abs(head[0] - food[0])
-        y_diff = abs(head[1] - food[1])
-        min(min_dist, (x_diff + y_diff))
-
-    return min_dist
 
 
 # quick bfs to count reachable from specific board
@@ -374,7 +366,8 @@ def get_reachable(board, head):
     visited = [0] * board.width * board.height
     count, que = 0, [head]
     while que:
-        head, count = que.pop(), count + 1
+        count += 1
+        head = que.pop()
         valid_moves = board.get_valid_moves(head[0], head[1])
         for move in valid_moves:
             tile = get_pos_from_move(head, move)

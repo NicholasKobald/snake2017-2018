@@ -142,7 +142,6 @@ class Board(object):
         return self.board[row][col]
 
     def get_tile(self, col, row):
-        print("Get tIL: {} {} {} {}".format(col, row, type(col), type(row)))
         return self.board[row][col]
 
     def not_valid_tile(self, row, col):

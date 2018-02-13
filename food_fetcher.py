@@ -1,8 +1,4 @@
-import time
-
 from shared import *
-
-get_latency = lambda start_time: int(round((time.time() - start_time) * 1000))
 
 
 def pick_move_to_food(data, board, snake_dict):
@@ -10,7 +6,7 @@ def pick_move_to_food(data, board, snake_dict):
 
     # get our head coordinates
     x, y = get_head_coords(snake_dict[my_snake_id])
-    valid_moves = board.get_valid_moves(x, y, data['ate_last_turn'])
+    valid_moves = board.get_valid_moves(x, y, data.get('ate_last_turn', []))
 
     # TODO add a better heuristic for choosing which dangerous move to make
     # --> e.g. consider whether other snake might move to other food instead
@@ -22,6 +18,18 @@ def pick_move_to_food(data, board, snake_dict):
     if prioritized_moves is None:
         snake_coords = get_head_coords(snake_dict[my_snake_id])
         prioritized_moves = prioritize_moves_backup(valid_moves, snake_coords, board.width, board.height)
+
+    size_and_move = []
+    for move in prioritized_moves:
+        possible_head = get_pos_from_move((x, y), move)
+        component_size = count_reachable(board, possible_head)
+        size_and_move.append((move, component_size))
+
+    if size_and_move[0][1] < len(snake_dict[my_snake_id]['coords']):
+        fallback = max(size_and_move, key=lambda v: v[1])
+        print("Selected fallback!!")
+        return fallback[0]
+
     return prioritized_moves[0]
 
 
@@ -42,7 +50,7 @@ def has_open_adj_tile(board, path_len, cur_pos):
     adj_tiles = []
     for move in ['up', 'down', 'left', 'right']:
         pos = board.get_pos_from_move(cur_pos, move)
-        if pos != None:
+        if pos is not None:
             tile = board.get_tile(pos[0], pos[1])
             adj_tiles.append(tile)
     for tile in adj_tiles:
