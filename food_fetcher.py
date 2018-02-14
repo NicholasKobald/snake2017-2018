@@ -8,13 +8,7 @@ def pick_move_to_food(data, board, snake_dict):
     x, y = get_head_coords(snake_dict[my_snake_id])
     valid_moves = board.get_valid_moves(x, y, data.get('ate_last_turn', []))
 
-    losing_head_collisions = board.find_losing_head_collisions(x, y, my_snake_id, snake_dict)
-
-    # TODO add a better heuristic for choosing which dangerous move to make
-    # --> e.g. consider whether other snake might move to other food instead
-    for dangerous_move in losing_head_collisions:
-       if len(valid_moves) <= 1: break
-       if dangerous_move in valid_moves: valid_moves.remove(dangerous_move)
+    losing_head_collisions = board.find_losing_head_collisions(x, y, my_snake_id, snake_dict, data.get('ate_last_turn', []))
 
     prioritized_moves = prioritize_moves_by_food(data, board, valid_moves, snake_dict, my_snake_id)
     if prioritized_moves is None:
@@ -22,16 +16,31 @@ def pick_move_to_food(data, board, snake_dict):
         prioritized_moves = prioritize_moves_backup(valid_moves, snake_coords, board.width, board.height)
 
     size_and_move = []
+    last_resorts = []
     for move in prioritized_moves:
         possible_head = get_pos_from_move((x, y), move)
         component_size = count_reachable(board, possible_head)
-        size_and_move.append((move, component_size))
+        if move not in losing_head_collisions:
+            size_and_move.append((move, component_size))
+        else:
+            last_resorts.append((move, component_size))
 
-    if size_and_move[0][1] < len(snake_dict[my_snake_id]['coords']):
+    snake_len = len(snake_dict[my_snake_id]['coords'])
+    if size_and_move[0][1] <  snake_len:
         fallback = max(size_and_move, key=lambda v: v[1])
-        print("Selected fallback!!")
-        return fallback[0]
+        last_resort_max = max(last_resorts, key=lambda v: v[1])
 
+        # We really don't want to take moves that could be potentially fatal,
+        # however, if the alternative is moving into a component that is 1/6 the side of our. 
+        # current snakelen, (versus a component that is the size of our snakelen + 5)
+        # we risk it.
+        # TODO add a better heuristic for choosing which dangerous move to make
+        # --> e.g. consider whether other snake might move to other food instead
+        # A lot of this clunky logic will be obsolete when we take into account snakes leaving
+        # and build paths based on that.
+        if fallback[1] < snake_len / 6 and last_resort_max[1] > snake_len + 5:
+            return last_resort_max[0]
+        return fallback[0]
     return prioritized_moves[0]
 
 

@@ -98,6 +98,10 @@ class Board(object):
 
         return valid_moves
 
+    # for easier migrating to the 2018 api
+    def _tuple_to_point(self, tup):
+        return {'x': tup[0], 'y': tup[1]}
+
     def find_losing_head_collisions(self, col, row, my_snake_id, snake_dict, ate_last_turn):
         """Determine which moves would cause death by head collision for specified snake.
         Params:
@@ -111,11 +115,11 @@ class Board(object):
 
         losing_head_collisions = []
         for move in valid_moves:
-            valid_pos = self.get_pos_from_move((col, row), move)
+            valid_pos = self.get_pos_from_move(self._tuple_to_point((col, row)), move)
             if valid_pos is None:
                 raise SnakeGoneWrong("Ssssssssssssssshit")
             for adj in ['right', 'left', 'up', 'down']:
-                adj_pos = self.get_pos_from_move(valid_pos, adj)
+                adj_pos = self.get_pos_from_move(self._tuple_to_point(valid_pos), adj)
                 # skip if we are looking outside the board or if this is our head
                 if adj_pos is None or (adj_pos[0] == col and adj_pos[1] == row):
                     continue
