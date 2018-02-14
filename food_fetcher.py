@@ -26,7 +26,7 @@ def pick_move_to_food(data, board, snake_dict):
             last_resorts.append((move, component_size))
     snake_len = len(snake_dict[my_snake_id]['coords'])
 
-    if size_and_move[0][1] < snake_len:
+    if len(size_and_move) > 1 and size_and_move[0][1] < snake_len:
         fallback = max(size_and_move, key=lambda v: v[1], default=(prioritized_moves[0], float('-inf')))
         last_resort_max = max(last_resorts, key=lambda v: v[1], default=(prioritized_moves[0], float('inf')))
 
@@ -42,6 +42,7 @@ def pick_move_to_food(data, board, snake_dict):
             return last_resort_max[0]
         if size_and_move:
             return fallback[0]
+
     return prioritized_moves[0]
 
 
