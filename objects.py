@@ -99,6 +99,14 @@ class Board(object):
         return valid_moves
 
     def find_losing_head_collisions(self, col, row, my_snake_id, snake_dict, ate_last_turn):
+        """Determine which moves would cause death by head collision for specified snake.
+        Params:
+            col, row: current position of my_snake_id
+            my_snake_id: identifies snake whose well-being concerns us
+
+        Returns:
+            losing_head_collisions: list of dangerous moves e.g. ['up', 'left']
+        """
         valid_moves = self.get_valid_moves(col, row, ate_last_turn)
 
         losing_head_collisions = []
@@ -225,4 +233,4 @@ class Board(object):
 
 
 class SnakeGoneWrong(Exception):
-    pass 
+    pass

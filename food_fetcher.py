@@ -8,11 +8,13 @@ def pick_move_to_food(data, board, snake_dict):
     x, y = get_head_coords(snake_dict[my_snake_id])
     valid_moves = board.get_valid_moves(x, y, data.get('ate_last_turn', []))
 
+    losing_head_collisions = board.find_losing_head_collisions(x, y, my_snake_id, snake_dict)
+
     # TODO add a better heuristic for choosing which dangerous move to make
     # --> e.g. consider whether other snake might move to other food instead
-    # for dangerous_move in losing_head_collisions:
-    #    if len(valid_moves) <= 1: break
-    #    if dangerous_move in valid_moves: valid_moves.remove(dangerous_move)
+    for dangerous_move in losing_head_collisions:
+       if len(valid_moves) <= 1: break
+       if dangerous_move in valid_moves: valid_moves.remove(dangerous_move)
 
     prioritized_moves = prioritize_moves_by_food(data, board, valid_moves, snake_dict, my_snake_id)
     if prioritized_moves is None:
@@ -117,7 +119,7 @@ def remove_losing_ties_by_snake_len(board, my_snake_id, food_info_list):
 
 def prioritize_moves_by_food(data, board, valid_moves, snake_dict, my_snake_id):
     """
-    returns: 
+    returns:
         (1) permuted valid_moves prioritized best->worst
         (2) None if no foods are closest to us
      favours moves that approach most of: nearest cluster, largest cluster, nearest food
