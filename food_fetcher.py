@@ -24,23 +24,24 @@ def pick_move_to_food(data, board, snake_dict):
             size_and_move.append((move, component_size))
         else:
             last_resorts.append((move, component_size))
-
     snake_len = len(snake_dict[my_snake_id]['coords'])
-    if size_and_move[0][1] <  snake_len:
-        fallback = max(size_and_move, key=lambda v: v[1])
-        last_resort_max = max(last_resorts, key=lambda v: v[1])
+
+    if size_and_move[0][1] < snake_len:
+        fallback = max(size_and_move, key=lambda v: v[1], default=(prioritized_moves[0], float('-inf')))
+        last_resort_max = max(last_resorts, key=lambda v: v[1], default=(prioritized_moves[0], float('inf')))
 
         # We really don't want to take moves that could be potentially fatal,
-        # however, if the alternative is moving into a component that is 1/6 the side of our. 
+        # however, if the alternative is moving into a component that is 1/6 the side of our.
         # current snakelen, (versus a component that is the size of our snakelen + 5)
         # we risk it.
         # TODO add a better heuristic for choosing which dangerous move to make
         # --> e.g. consider whether other snake might move to other food instead
         # A lot of this clunky logic will be obsolete when we take into account snakes leaving
         # and build paths based on that.
-        if fallback[1] < snake_len / 6 and last_resort_max[1] > snake_len + 5:
+        if last_resorts and fallback[1] < snake_len / 6 and last_resort_max[1] > snake_len + 5:
             return last_resort_max[0]
-        return fallback[0]
+        if size_and_move:
+            return fallback[0]
     return prioritized_moves[0]
 
 
