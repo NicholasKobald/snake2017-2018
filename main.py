@@ -14,7 +14,7 @@ OUR_SNAKE_NAME = '1'
 PREV_DATA_BY_GAME_ID = dict()
 DEBUG = True
 
-taunts = ["10% LUCK, 20% SSSSLITHER", "I look like.. MOM'S SPAGHETTI"]
+taunts = ["Use Bulletted Lists", "I look like.. SANS SERIF"]
 
 app = Flask(__name__)
 
@@ -49,8 +49,8 @@ def start():
     # game_id may be changed to id in the future, if they care about their documentation
     PREV_DATA_BY_GAME_ID[data['game_id']] = dict(prev_food_list=None)
     response = dict(
-        color='#00F',
-        name='Lucifer',
+        color='#F00',
+        name='Val',
         taunt='temptaunt',
         head_type='dead',
         tail_type='curled'
