@@ -15,39 +15,23 @@ def pick_move_to_food(data, board, snake_dict):
         snake_coords = get_head_coords(snake_dict[my_snake_id])
         prioritized_moves = prioritize_moves_backup(valid_moves, snake_coords, board.width, board.height)
 
+
     size_and_move = []
-    last_resorts = []
-    for move in prioritized_moves:
+    for move in list(set(prioritized_moves) - set(losing_head_collisions)):
         possible_head = get_pos_from_move((x, y), move)
         component_size = count_reachable(board, possible_head)
-        if move not in losing_head_collisions:
-            size_and_move.append((move, component_size))
-        else:
-            last_resorts.append((move, component_size))
+        size_and_move.append((move, component_size))
+
+    if not size_and_move:  # all that exist are losing head collisions, good bye world
+        return losing_head_collisions[0]
+
     snake_len = len(snake_dict[my_snake_id]['coords'])
+    if size_and_move[0][1] < snake_len:  # TODO: better heuristic by half
+        fallback = max(size_and_move, key=lambda v: v[1])
+        return fallback[0]
 
-    # WE'LL CHANGE THIS I PROMISE
-    if len(size_and_move) > 1 and size_and_move[0][1] < snake_len:
-        fallback = max(size_and_move, key=lambda v: v[1], default=(prioritized_moves[0], float('-inf')))
-        last_resort_max = max(last_resorts, key=lambda v: v[1], default=(prioritized_moves[0], float('inf')))
+    return prioritized_moves[0]
 
-        # We really don't want to take moves that could be potentially fatal,
-        # however, if the alternative is moving into a component that is 1/6 the side of our.
-        # current snakelen, (versus a component that is the size of our snakelen + 5)
-        # we risk it.
-        # TODO add a better heuristic for choosing which dangerous move to make
-        # --> e.g. consider whether other snake might move to other food instead
-        # A lot of this clunky logic will be obsolete when we take into account snakes leaving
-        # and build paths based on that.
-        if last_resorts and fallback[1] < snake_len / 6 and last_resort_max[1] > snake_len + 5:
-            return last_resort_max[0]
-        if size_and_move:
-            return fallback[0]
-    elif len(last_resorts) > 1:
-        last_resort_max = max(last_resorts, key=lambda v: v[1], default=(prioritized_moves[0], float('inf')))
-        return last_resort_max[0]
-    else:
-        return prioritized_moves[0]
 
 
 def has_path_out(board, cur_pos, path_len, visited):
@@ -117,7 +101,8 @@ def remove_moves_to_unsafe_components(moves, snake_coords, board, snake_len):
     for unsafe_move in unsafe_moves:
         if len(moves) == 1:
             break  # leave at least 1 move
-        if unsafe_move in moves: moves.remove(unsafe_move)
+        if unsafe_move in moves:
+            moves.remove(unsafe_move)
 
 
 def remove_losing_ties_by_snake_len(board, my_snake_id, food_info_list):
