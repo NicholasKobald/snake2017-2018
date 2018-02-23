@@ -15,22 +15,26 @@ def pick_move_to_food(data, board, snake_dict):
         snake_coords = get_head_coords(snake_dict[my_snake_id])
         prioritized_moves = prioritize_moves_backup(valid_moves, snake_coords, board.width, board.height)
 
-
     size_and_move = []
-    for move in list(set(prioritized_moves) - set(losing_head_collisions)):
+    prioritized_unfatal_moves = [p for p in prioritized_moves if p not in losing_head_collisions]
+    for move in prioritized_unfatal_moves:
         possible_head = get_pos_from_move((x, y), move)
         component_size = count_reachable(board, possible_head)
         size_and_move.append((move, component_size))
 
-    if not size_and_move:  # all that exist are losing head collisions, good bye world
-        return losing_head_collisions[0]
-
+    if not size_and_move:  # all that exist are losing head collisions, I guess be optimistic?
+        return prioritized_moves[0]
+    
     snake_len = len(snake_dict[my_snake_id]['coords'])
-    if size_and_move[0][1] < snake_len:  # TODO: better heuristic by half
+    if size_and_move[0][1] < snake_len:
         fallback = max(size_and_move, key=lambda v: v[1])
         return fallback[0]
 
-    return prioritized_moves[0]
+    try:
+        return prioritized_unfatal_moves[0]
+    except IndexError:
+        # better not to crash if we're in multiple games
+        return 'up'
 
 
 
