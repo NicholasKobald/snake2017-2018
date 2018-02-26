@@ -26,6 +26,7 @@ def pick_move_to_food(data, board, snake_dict):
         try:  # TODO: convince myself this can't happen unless it needs to
             return prioritized_moves[0]
         except IndexError:
+            print("Returning 'left' (no valid options")
             return 'left'  # the answer is always left
 
     max_length = get_max_snake_length(snake_dict)
@@ -37,12 +38,14 @@ def pick_move_to_food(data, board, snake_dict):
     snake_len = len(snake_dict[my_snake_id]['coords'])
     if size_and_move[0][1] < snake_len:
         fallback = max(size_and_move, key=lambda v: v[1])
+        print("Returning", fallback[0], "as a fallback")
         return fallback[0]
 
     try:
         return prioritized_unfatal_moves[0]
     except IndexError:
         # better not to crash if we're in multiple games
+        print("Returning 'up' (no valid options)")
         return 'up'
 
 
@@ -66,31 +69,9 @@ def find_path_out(board, head, moves_elapsed, max_snake_length, visited, num_tim
 
     return False
 
-def has_path_out(board, cur_pos, path_len, visited):
-    valid_moves = board.get_valid_moves(cur_pos['x'], cur_pos['y'])
-    if has_open_adj_tile(board, path_len, cur_pos):
-        return True
 
-    for move in valid_moves:
-        new_pos = board.get_pos_from_move(cur_pos, move)
-        if new_pos not in visited:
-            visited.add(new_pos)
-            return has_path_out(board, new_pos, path_len + 1, visited)
-    return False
-
-
-def has_open_adj_tile(board, path_len, cur_pos):
-    adj_tiles = []
-    for move in ['up', 'down', 'left', 'right']:
-        pos = board.get_pos_from_move(cur_pos, move)
-        if pos is not None:
-            tile = board.get_tile(pos[0], pos[1])
-            adj_tiles.append(tile)
-    for tile in adj_tiles:
-        l_bound = tile.turns_till_safe()
-        if 0 < l_bound < path_len + 1:
-            return True
-    return False
+def mark_dangerous_paths(board):
+    pass
 
 
 # prefer moves that move us to the centre
@@ -107,35 +88,6 @@ def prioritize_moves_backup(valid_moves, snake_head_coords, board_width, board_h
             other_moves.append(move)
     prioritized_moves = preferred_moves + other_moves
     return prioritized_moves
-
-
-def remove_moves_to_unsafe_components(moves, snake_coords, board, snake_len):
-    # USES UNCASE GET POS FROM MOVE
-    unsafe_moves = []
-    smallest_component_size = float('inf')
-    largest_component_size = float('-inf')
-    preferred_move = None
-    for move in moves:
-        new_head = get_pos_from_move(snake_coords, move)
-        component_size = count_reachable(board, new_head)
-        if component_size < snake_len:  # this is a dead end!
-            if component_size > largest_component_size:
-                largest_component_size = component_size
-                preferred_move = move
-            if component_size < smallest_component_size:
-                smallest_component_size = component_size
-                unsafe_moves.insert(0, move)
-            else:
-                unsafe_moves.append(move)
-    if preferred_move is not None and preferred_move not in unsafe_moves:
-        unsafe_moves.append(preferred_move)  # never removed
-
-    # order of move removal corresponds to the order of move insertion
-    for unsafe_move in unsafe_moves:
-        if len(moves) == 1:
-            break  # leave at least 1 move
-        if unsafe_move in moves:
-            moves.remove(unsafe_move)
 
 
 def remove_losing_ties_by_snake_len(board, my_snake_id, food_info_list):
@@ -157,9 +109,6 @@ def prioritize_moves_by_food(data, board, valid_moves, snake_dict, my_snake_id):
         (2) None if no foods are closest to us
      favours moves that approach most of: nearest cluster, largest cluster, nearest food
     """
-
-    snake_coords = get_head_coords(snake_dict[my_snake_id])
-
     closest_food_and_snakes = find_closest_snakes(board, data['food']['data'])
     foods_by_snake = closest_food_and_snakes['by_snake']
 
