@@ -1,7 +1,6 @@
 import os
 import json
-import sys
-from datetime import time
+from time import time 
 
 from flask import Flask
 from flask import request
@@ -62,20 +61,27 @@ def start():
 def move():
     global PREV_DATA_BY_GAME_ID
     print("\nPINGED\n  ********************")
+    start = time()
     data = request.get_json(force=True)  # dict
-
     snake_dict = create_snake_dict(data['snakes'])
-    board = Board(data['height'], data['width'], snake_dict, data['food']['data'])
+    board = Board(data['height'], data['width'], snake_dict, data['food']['data'], data['you']['id'])
 
-    prev_food_list = PREV_DATA_BY_GAME_ID[data['id']]['prev_food_list']
+    try:
+        prev_food_list = PREV_DATA_BY_GAME_ID[data['id']]['prev_food_list']
+    except KeyError:  # bit of a hack, but lets us restart the game server and resume the same game
+        # without issues. Also good if we ever crash mid game
+        prev_food_list = None
     # insert info about which snakes ate last turn into data object
     if prev_food_list is not None:
         data['ate_last_turn'] = find_snakes_that_just_ate(data, prev_food_list, board)
 
-    PREV_DATA_BY_GAME_ID[data['id']]['prev_food_list'] = convert_to_coords_list(data['food']['data'])
-
+    try:
+        PREV_DATA_BY_GAME_ID[data['id']]['prev_food_list'] = convert_to_coords_list(data['food']['data'])
+    except KeyError:
+        pass
+    end = time()
     move = pick_move(data, board, snake_dict)
-
+    print("Took", end - start, "to compute move")
     response = {
         'move': move,
         'taunt': 'Squaack'
