@@ -63,9 +63,9 @@ def move():
     global PREV_DATA_BY_GAME_ID
     print("\nPINGED\n  ********************")
     data = request.get_json(force=True)  # dict
-
+    print(data)
     snake_dict = create_snake_dict(data['snakes'])
-    board = Board(data['height'], data['width'], snake_dict, data['food']['data'])
+    board = Board(data['height'], data['width'], snake_dict, data['food']['data'], data['you']['id'])
 
     try:
         prev_food_list = PREV_DATA_BY_GAME_ID[data['id']]['prev_food_list']

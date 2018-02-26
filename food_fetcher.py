@@ -1,4 +1,4 @@
-from shared import * # fixme
+from shared import *  # fixme
 
 
 def pick_move_to_food(data, board, snake_dict):
@@ -30,7 +30,7 @@ def pick_move_to_food(data, board, snake_dict):
         print("Testing out move:", move)
         possible_head = board.get_pos_from_move((x, y), move)
         print("Starting search with", possible_head, "for length:", max_length)
-        if find_path_out(board, possible_head, 1, max_length, set()):
+        if find_path_out(board, possible_head, 2, max_length, set()):
             print("IT WAS SAFE!")
             return move
         else:
@@ -48,14 +48,22 @@ def pick_move_to_food(data, board, snake_dict):
         return 'up'
 
 
-def find_path_out(board, head, moves_elapsed, max_snake_length, visited):
+def find_path_out(board, head, moves_elapsed, max_snake_length, visited, num_times_eaten):
     # print('at depth:', moves_elapsed)
     visited.add(head)
+    if board.get_tile(head[0], head[1]).is_food():
+        # TODO UPDATE HOW MUCH WE HATE
+        # AND THEN PASS IT THROUGH TO GET VALID MOVES
+        # AND THEN EVERYTHING WORKS =)
+        pass
+
     if moves_elapsed == max_snake_length + 1:  # it's a brand new world
         return True
 
     valid_moves = board.get_valid_moves_in_the_future(head[0], head[1], moves_elapsed)
+    print("valid moves recieved here:", valid_moves)
     if not valid_moves:
+        print("GOt to depth:", moves_elapsed, "at", head)
         return False
 
     for move in valid_moves:
@@ -63,8 +71,7 @@ def find_path_out(board, head, moves_elapsed, max_snake_length, visited):
         if new_pos not in visited and find_path_out(board, new_pos, moves_elapsed + 1, max_snake_length, visited):
             return True
 
-    return False
-
+    return False  # ??? what
 
 def has_path_out(board, cur_pos, path_len, visited):
     valid_moves = board.get_valid_moves(cur_pos['x'], cur_pos['y'])

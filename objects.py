@@ -13,8 +13,10 @@ class Tile(object):
     def naive_is_safe(self):
         return self.data['type'] != 'snake'
 
-    def safe_in_the_future(self, future):
+    def safe_in_the_future(self, future, num_times_eaten, us_id):
         if 'til_empty' in self.data:
+            if us_id == self.data['snake_id']:
+                return future >= self.data['til_empty'] + num_times_eaten
             return future >= self.data['til_empty']
         return True
 
@@ -61,22 +63,24 @@ class Tile(object):
 
 class Board(object):
 
-    def __init__(self, height, width, snake_dict, food):
+    def __init__(self, height, width, snake_dict, food, us_id):
         self.height = height
         self.width = width
         self.board = self.create_board_from_data(snake_dict, food)  # expects a 2D array of Tile objects
         self.snake_dict = snake_dict
+        self.our_snake_id = us_id  # inject our own snake id here, for, reasons
 
-    def get_valid_moves_in_the_future(self, col, row, turns_passed):
+    def get_valid_moves_in_the_future(self, col, row, turns_passed, num_times_eaten):
         valid_moves = []
+        us_id = self.our_snake_id
 
-        if col < self.width - 1 and self.get_tile(col + 1, row).safe_in_the_future(turns_passed):
+        if col < self.width - 1 and self.get_tile(col + 1, row).safe_in_the_future(turns_passed, num_times_eaten, us_id):
             valid_moves.append('right')
-        if row < self.height - 1 and self.get_tile(col, row + 1).safe_in_the_future(turns_passed):
+        if row < self.height - 1 and self.get_tile(col, row + 1).safe_in_the_future(turns_passed, num_times_eaten, us_id):
             valid_moves.append('down')
-        if col > 0 and self.get_tile(col - 1, row).safe_in_the_future(turns_passed):
+        if col > 0 and self.get_tile(col - 1, row).safe_in_the_future(turns_passed, num_times_eaten, us_id):
             valid_moves.append('left')
-        if row > 0 and self.get_tile(col, row - 1).safe_in_the_future(turns_passed):
+        if row > 0 and self.get_tile(col, row - 1).safe_in_the_future(turns_passed, num_times_eaten, us_id):
             valid_moves.append('up')
 
         return valid_moves
