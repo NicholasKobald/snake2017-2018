@@ -13,11 +13,15 @@ class Tile(object):
     def naive_is_safe(self):
         return self.data['type'] != 'snake'
 
+    def safe_in_the_future(self, future):
+        if 'til_empty' in self.data:
+            return future >= self.data['til_empty']
+        return True
+
     def is_safe(self, ate_last_turn):
         if self.is_tail():
             snake_id = self.get_snake_id()
-            safe_tail = snake_id not in ate_last_turn
-            return safe_tail
+            return snake_id not in ate_last_turn
         return not self.is_snake()
 
     def is_food(self):
@@ -48,9 +52,6 @@ class Tile(object):
             return 'h'
         return self.data['type'][:1]
 
-    def dist_down_snake(self, d):
-        self.data['dist'] = d
-
     def turns_till_safe(self):
         if 'til_empty' in self.data:
             return self.data['til_empty']
@@ -65,6 +66,20 @@ class Board(object):
         self.width = width
         self.board = self.create_board_from_data(snake_dict, food)  # expects a 2D array of Tile objects
         self.snake_dict = snake_dict
+
+    def get_valid_moves_in_the_future(self, col, row, turns_passed):
+        valid_moves = []
+
+        if col < self.width - 1 and self.get_tile(col + 1, row).safe_in_the_future(turns_passed):
+            valid_moves.append('right')
+        if row < self.height - 1 and self.get_tile(col, row + 1).safe_in_the_future(turns_passed):
+            valid_moves.append('down')
+        if col > 0 and self.get_tile(col - 1, row).safe_in_the_future(turns_passed):
+            valid_moves.append('left')
+        if row > 0 and self.get_tile(col, row - 1).safe_in_the_future(turns_passed):
+            valid_moves.append('up')
+
+        return valid_moves
 
     # returns list of moves that will not result in instant death (wall or snake)
     def get_valid_moves(self, col, row, ate_last_turn=None):
@@ -159,7 +174,7 @@ class Board(object):
         return self.board[row][col]
 
     def not_valid_tile(self, row, col):
-        #fixme
+        # fixme
         if row > self.width - 1 or row < 0:
             return True
         if col > self.height - 1 or col < 0:
@@ -193,14 +208,17 @@ class Board(object):
                         tail=at_tail,
                         til_empty=s_len - index
                     ))
-        print(food_list)
         for food in food_list:
             x, y = food['x'], food['y']
             board[y][x].set_tile_type(dict(type='food'))
         return board
 
     def get_pos_from_move(self, cur_pos, move):
-        col, row = cur_pos['x'], cur_pos['y']
+        if isinstance(cur_pos, dict):
+            col, row = cur_pos['x'], cur_pos['y']
+        else:
+            col, row = cur_pos[0], cur_pos[1]
+
         if move == 'up' and row - 1 >= 0:
             return col, row - 1
         elif move == 'down' and row + 1 < self.height:

@@ -13,7 +13,12 @@ def get_head_coords(snake):
     return coords_head['x'], coords_head['y']
 
 
+def get_max_snake_length(snake_dict):
+    return max(len(snake['coords']) for snake in snake_dict.values())
+
+
 def get_pos_from_move(cur_pos, move):
+    raise NotImplementedError()
     col, row = cur_pos[0], cur_pos[1]
     if move == 'up':
         return col, row - 1
@@ -255,13 +260,6 @@ def get_displacement_for_each(col, row, coord_list):
     return distances
 
 
-def get_moves_from_id(snake_id, snake_list, board):
-    snake = get_snake(snake_id, snake_list)
-    head = get_head_coords(snake)
-    moves = board.get_valid_moves(head[0], head[1])
-    return moves
-
-
 def find_snakes_that_just_ate(data, prev_food_list, board):
     """
     Determines which snakes have just eaten food and will therefore grow next turn.
@@ -272,7 +270,6 @@ def find_snakes_that_just_ate(data, prev_food_list, board):
     """
     snakes_just_ate = []
     cur_food_list = convert_to_coords_list(data['food']['data'])
-    print(prev_food_list)
     for prev_food in prev_food_list:
         # ignore foods that are still there from last turn
         if prev_food in cur_food_list:
@@ -329,7 +326,7 @@ def count_reachable(board, head):
         head, count = que.pop(), count + 1
         valid_moves = board.get_valid_moves(head[0], head[1])
         for move in valid_moves:
-            tile = get_pos_from_move(head, move)
+            tile = board.get_pos_from_move(head, move)
             if tile not in visited:
                 visited.add(tile)
                 que.append(tile)
@@ -357,10 +354,10 @@ def count_reachable_fixed(board, head, length_goal):
 
 
 # must be called before 'is component safe'
-def label_turns_until_safe(board, snake_dict):
-    for snake in snake_dict:
+def label_turns_until_safe(board, snake_list):
+    for snake in snake_list:
         for i, c in enumerate(reversed(snake['coords'])):
-            board.get_tile(c[0], c[1]).dist_down_snake(i)
+            board.get_tile(c['x'], c['y']).set_dist_down_snake(i)
 
 
 # uses bfs to determine the coordinates of a component
@@ -387,4 +384,6 @@ def check_exit(board, x, y, component, depth):
 
     for x, y in s:
         if not component[board.width * x + y] and board.get_tile(x, y).turns_till_safe() < depth:
+
             return True
+

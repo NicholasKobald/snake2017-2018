@@ -67,12 +67,19 @@ def move():
     snake_dict = create_snake_dict(data['snakes'])
     board = Board(data['height'], data['width'], snake_dict, data['food']['data'])
 
-    prev_food_list = PREV_DATA_BY_GAME_ID[data['id']]['prev_food_list']
+    try:
+        prev_food_list = PREV_DATA_BY_GAME_ID[data['id']]['prev_food_list']
+    except KeyError:  # bit of a hack, but lets us restart the game server and resume the same game
+        # without issues. Also good if we ever crash mid game
+        prev_food_list = None
     # insert info about which snakes ate last turn into data object
     if prev_food_list is not None:
         data['ate_last_turn'] = find_snakes_that_just_ate(data, prev_food_list, board)
 
-    PREV_DATA_BY_GAME_ID[data['id']]['prev_food_list'] = convert_to_coords_list(data['food']['data'])
+    try:
+        PREV_DATA_BY_GAME_ID[data['id']]['prev_food_list'] = convert_to_coords_list(data['food']['data'])
+    except KeyError:
+        pass
 
     move = pick_move(data, board, snake_dict)
 

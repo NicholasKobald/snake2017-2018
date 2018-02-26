@@ -1,34 +1,45 @@
-from shared import *
+from shared import * # fixme
 
 
 def pick_move_to_food(data, board, snake_dict):
     my_snake_id = data['you']['id']
-
     # get our head coordinates
     x, y = get_head_coords(snake_dict[my_snake_id])
     valid_moves = board.get_valid_moves(x, y, data.get('ate_last_turn', []))
-
+    print("valid moves:", valid_moves)
     losing_head_collisions = board.find_losing_head_collisions(x, y, my_snake_id, snake_dict, data.get('ate_last_turn', []))
 
     prioritized_moves = prioritize_moves_by_food(data, board, valid_moves, snake_dict, my_snake_id)
     if prioritized_moves is None:
         snake_coords = get_head_coords(snake_dict[my_snake_id])
-        prioritized_moves = prioritize_moves_backup(valid_moves, snake_coords, board.width, board.height)
+        prioritized_moves = prioritize_moves_backup(valid_moves, snake_coords, board.width,
+                                                    board.height, board)
 
     size_and_move = []
     prioritized_unfatal_moves = [p for p in prioritized_moves if p not in losing_head_collisions]
     for move in prioritized_unfatal_moves:
-        possible_head = get_pos_from_move((x, y), move)
+        possible_head = board.get_pos_from_move((x, y), move)
         component_size = count_reachable(board, possible_head)
         size_and_move.append((move, component_size))
 
     if not size_and_move:  # all that exist are losing head collisions, I guess be optimistic?
         return prioritized_moves[0]
-    
-    snake_len = len(snake_dict[my_snake_id]['coords'])
-    if size_and_move[0][1] < snake_len:
-        fallback = max(size_and_move, key=lambda v: v[1])
-        return fallback[0]
+
+    max_length = get_max_snake_length(snake_dict)
+    for move in prioritized_unfatal_moves:
+        print("Testing out move:", move)
+        possible_head = board.get_pos_from_move((x, y), move)
+        print("Starting search with", possible_head, "for length:", max_length)
+        if find_path_out(board, possible_head, 1, max_length, set()):
+            print("IT WAS SAFE!")
+            return move
+        else:
+            print("IT WAS NOT SAFE")
+
+    # snake_len = len(snake_dict[my_snake_id]['coords'])
+    # if size_and_move[0][1] < snake_len:
+    #    fallback = max(size_and_move, key=lambda v: v[1])
+    #    return fallback[0]
 
     try:
         return prioritized_unfatal_moves[0]
@@ -37,9 +48,26 @@ def pick_move_to_food(data, board, snake_dict):
         return 'up'
 
 
+def find_path_out(board, head, moves_elapsed, max_snake_length, visited):
+    # print('at depth:', moves_elapsed)
+    visited.add(head)
+    if moves_elapsed == max_snake_length + 1:  # it's a brand new world
+        return True
+
+    valid_moves = board.get_valid_moves_in_the_future(head[0], head[1], moves_elapsed)
+    if not valid_moves:
+        return False
+
+    for move in valid_moves:
+        new_pos = board.get_pos_from_move(head, move)
+        if new_pos not in visited and find_path_out(board, new_pos, moves_elapsed + 1, max_snake_length, visited):
+            return True
+
+    return False
+
 
 def has_path_out(board, cur_pos, path_len, visited):
-    valid_moves = board.get_valid_moves(cur_pos[0], cur_pos[1])
+    valid_moves = board.get_valid_moves(cur_pos['x'], cur_pos['y'])
     if has_open_adj_tile(board, path_len, cur_pos):
         return True
 
@@ -66,12 +94,12 @@ def has_open_adj_tile(board, path_len, cur_pos):
 
 
 # prefer moves that move us to the centre
-def prioritize_moves_backup(valid_moves, snake_head_coords, board_width, board_height):
+def prioritize_moves_backup(valid_moves, snake_head_coords, board_width, board_height, board):
     preferred_moves, other_moves = [], []
     centre_x, centre_y = (board_width / 2) - 1, (board_height / 2) - 1
     max_dist_to_centre = abs(snake_head_coords[0] - centre_x) + abs(snake_head_coords[1] - centre_y)
     for move in valid_moves:
-        pos = get_pos_from_move(snake_head_coords, move)
+        pos = board.get_pos_from_move(snake_head_coords, move)
         dist_to_centre = abs(pos[0] - centre_x) + abs(pos[1] - centre_y)
         if dist_to_centre < max_dist_to_centre:
             preferred_moves.append(move)
@@ -82,6 +110,7 @@ def prioritize_moves_backup(valid_moves, snake_head_coords, board_width, board_h
 
 
 def remove_moves_to_unsafe_components(moves, snake_coords, board, snake_len):
+    # USES UNCASE GET POS FROM MOVE
     unsafe_moves = []
     smallest_component_size = float('inf')
     largest_component_size = float('-inf')
