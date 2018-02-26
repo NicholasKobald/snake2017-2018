@@ -23,18 +23,16 @@ def pick_move_to_food(data, board, snake_dict):
         size_and_move.append((move, component_size))
 
     if not size_and_move:  # all that exist are losing head collisions, I guess be optimistic?
-        return prioritized_moves[0]
+        try:  # TODO: convince myself this can't happen unless it needs to
+            return prioritized_moves[0]
+        except IndexError:
+            return 'left'  # the answer is always left
 
     max_length = get_max_snake_length(snake_dict)
     for move in prioritized_unfatal_moves:
-        print("Testing out move:", move)
         possible_head = board.get_pos_from_move((x, y), move)
-        print("Starting search with", possible_head, "for length:", max_length)
         if find_path_out(board, possible_head, 2, max_length, set(), 0):
-            print("IT WAS SAFE!")
             return move
-        else:
-            print("IT WAS NOT SAFE")
 
     snake_len = len(snake_dict[my_snake_id]['coords'])
     if size_and_move[0][1] < snake_len:
