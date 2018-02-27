@@ -48,13 +48,29 @@ def start():
     # game_id may be changed to id in the future, if they care about their documentation
     PREV_DATA_BY_GAME_ID[data['game_id']] = dict(prev_food_list=None)
     response = dict(
-        color='#F00',
+        color='#039',
         name='Val',
         taunt='temptaunt',
         head_type='dead',
         tail_type='curled'
     )
     return json.dumps(response)
+
+
+@app.route('/end', methods=['POST'])
+def end():
+    data = request.get_json(force=True)  # dict
+    print("We finished a game")
+    print(json.dumps(data, indent=2))
+    print("** end data")
+    game_finished = data['game_id']
+    global PREV_DATA_BY_GAME_ID
+    try:
+        del PREV_DATA_BY_GAME_ID[game_finished]
+    except Exception:
+        print("Got told we finished a game we weren't in?")
+
+    return json.dumps({'thanks': True})
 
 
 @app.route('/move', methods=['POST'])
