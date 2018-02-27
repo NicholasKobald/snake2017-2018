@@ -19,6 +19,8 @@ def pick_move_to_food(data, board, snake_dict):
 
     move_to_size = dict()
     prioritized_unfatal_moves = [p for p in prioritized_moves if p not in losing_head_collisions]
+    # TODO: use these if the above have no paths
+    prioritized_potentially_fatal_moves = [p for p in prioritized_moves if p]
 
     if not prioritized_unfatal_moves:  # all that exist are losing head collisions, I guess be optimistic?
         try:
@@ -35,10 +37,6 @@ def pick_move_to_food(data, board, snake_dict):
     max_length = get_max_snake_length(snake_dict)
     moves_with_valid_paths_out = []
     mark_dangerous_tiles(board, snake_dict, ate_last_turn, my_snake_id)
-    # Doesn't work super well, but look into it more later?
-    # for move in prioritized_unfatal_moves:
-    #    possible_head = board.get_pos_from_move((x, y), move)
-    #    if find_conservative_path_out(board, possible_head, 2, max_length, set(), 0):
 
     limit = 4
     move_to_options = dict()
@@ -65,10 +63,23 @@ def pick_move_to_food(data, board, snake_dict):
 
         # if the improvement is less than 10%, go with the food option
         print("best", max_val)
+        food_bonus = (snake_dict[my_snake_id]['health'] * 1.0) / 100
+        print("Food bonus", food_bonus)
+
         print("best food", first_choice_val)
         improvement = 1.0 - (first_choice_val * 1.0) / max_val
         print("Computed an improvement of", improvement)
-        if improvement < 0.3:
+        if food_bonus < 0.3:  # less than 20 health
+            improvement = improvement - 0.2
+        elif food_bonus < 0.2:
+            improvement = improvement - 0.4
+        elif food_bonus < 0.1:
+            improvement = improvement - 0.6
+        elif food_bonus < 0.05:
+            improvement = 0
+
+        print("Adjust to:", improvement)
+        if improvement < 0.5:
             print('Decided maximizing the options was not worth it', moves_with_valid_paths_out[0])
             return moves_with_valid_paths_out[0]
         else:
@@ -76,23 +87,17 @@ def pick_move_to_food(data, board, snake_dict):
             print("Returning", max_key, "since it was safe and had the most options")
             return max_key
 
-    # if moves_with_valid_paths_out:
-    #    move_to_size_with_path = {k: v for k, v in move_to_size.items() if k in moves_with_valid_paths_out}
-    #    max_key = max(move_to_size_with_path, key=lambda k: move_to_size_with_path[k])
-    #    print("Returning", max_key, "since it was safe and had the biggest size")
-    #    return max_key
-
+    # no path existed so, maybe a risky move is the right choice?
+    risky_moves = [p for p in prioritized_potentially_fatal_moves if p not in prioritized_unfatal_moves]
+    if risky_moves:
+        print("Chose a risky move and did no more thinking about it.")
+        return risky_moves[0]
     try:
         max_key = max(move_to_size, key=lambda k: move_to_size[k])
         print("There was no safe path out, but we picked the biggest componenet", max_key)
         return max_key
     except:
         pass
-
-    # if size_and_move[0][1] < snake_len:
-    #    fallback = max(move_to_size, key=lambda v: v[1])
-    #    print("Returning", fallback[0], "as a fallback")
-    #    return fallback[0]
 
     try:
         return prioritized_unfatal_moves[0]
