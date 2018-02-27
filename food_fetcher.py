@@ -3,9 +3,11 @@ from shared import *  # fixme
 
 def pick_move_to_food(data, board, snake_dict):
     my_snake_id = data['you']['id']
+    ate_last_turn = data.get('ate_last_turn', [])
     # get our head coordinates
     x, y = get_head_coords(snake_dict[my_snake_id])
-    valid_moves = board.get_valid_moves(x, y, data.get('ate_last_turn', []))
+    print("Ate last turn:", data.get('ate_last_turn', []))
+    valid_moves = board.get_valid_moves(x, y, ate_last_turn)
     print("valid moves:", valid_moves)
     losing_head_collisions = board.find_losing_head_collisions(x, y, my_snake_id, snake_dict, data.get('ate_last_turn', []))
 
@@ -15,31 +17,75 @@ def pick_move_to_food(data, board, snake_dict):
         prioritized_moves = prioritize_moves_backup(valid_moves, snake_coords, board.width,
                                                     board.height, board)
 
-    size_and_move = []
+    move_to_size = dict()
     prioritized_unfatal_moves = [p for p in prioritized_moves if p not in losing_head_collisions]
+
+    if not prioritized_unfatal_moves:  # all that exist are losing head collisions, I guess be optimistic?
+        try:
+            return prioritized_moves[0]
+        except IndexError:
+            print("Returning 'left' (no valid moves)")
+            return 'left'  # the answer is always left
+
     for move in prioritized_unfatal_moves:
         possible_head = board.get_pos_from_move((x, y), move)
         component_size = count_reachable(board, possible_head)
-        size_and_move.append((move, component_size))
-
-    if not size_and_move:  # all that exist are losing head collisions, I guess be optimistic?
-        try:  # TODO: convince myself this can't happen unless it needs to
-            return prioritized_moves[0]
-        except IndexError:
-            print("Returning 'left' (no valid options")
-            return 'left'  # the answer is always left
+        move_to_size[move] = component_size
 
     max_length = get_max_snake_length(snake_dict)
+    moves_with_valid_paths_out = []
+    # mark_dangerous_tiles(board, snake_dict, ate_last_turn, my_snake_id)
+    # Doesn't work super well, but look into it more later?
+    # for move in prioritized_unfatal_moves:
+    #    possible_head = board.get_pos_from_move((x, y), move)
+    #    if find_conservative_path_out(board, possible_head, 2, max_length, set(), 0):
+
+    limit = 3
+    move_to_options = dict()
     for move in prioritized_unfatal_moves:
         possible_head = board.get_pos_from_move((x, y), move)
+        print("move", move)
+        num = count_number_of_paths_out_from_move(board, possible_head, 2, limit + 2, set(), 0)
+        move_to_options[move] = num
+        print("Has", num, "ways to get", limit, "moves into the future")
         if find_path_out(board, possible_head, 2, max_length, set(), 0):
-            return move
+            moves_with_valid_paths_out.append(move)
 
-    snake_len = len(snake_dict[my_snake_id]['coords'])
-    if size_and_move[0][1] < snake_len:
-        fallback = max(size_and_move, key=lambda v: v[1])
-        print("Returning", fallback[0], "as a fallback")
-        return fallback[0]
+    if moves_with_valid_paths_out:
+        move_to_options_with_path = {k: v for k, v in move_to_options.items() if k in moves_with_valid_paths_out}
+        max_val = max(list(move_to_options_with_path.values()))
+        first_choice_val = move_to_options_with_path[moves_with_valid_paths_out[0]]
+
+        # if the improvement is less than 10%, go with the food option
+        print("best", max_val)
+        print("best food", first_choice_val)
+        improvement = 1.0 - (first_choice_val * 1.0) / max_val
+        print("Computed an improvement of", improvement)
+        if improvement < 0.2:
+            print('Decided maximizing the options was not worth it', moves_with_valid_paths_out[0])
+            return moves_with_valid_paths_out[0]
+        else:
+            max_key = max(move_to_options_with_path, key=lambda k: move_to_options_with_path[k])
+            print("Returning", max_key, "since it was safe and had the most options")
+            return max_key
+
+    # if moves_with_valid_paths_out:
+    #    move_to_size_with_path = {k: v for k, v in move_to_size.items() if k in moves_with_valid_paths_out}
+    #    max_key = max(move_to_size_with_path, key=lambda k: move_to_size_with_path[k])
+    #    print("Returning", max_key, "since it was safe and had the biggest size")
+    #    return max_key
+
+    try:
+        max_key = max(move_to_size, key=lambda k: move_to_size[k])
+        print("There was no safe path out, but we picked the biggest componenet", max_key)
+        return max_key
+    except:
+        pass
+
+    # if size_and_move[0][1] < snake_len:
+    #    fallback = max(move_to_size, key=lambda v: v[1])
+    #    print("Returning", fallback[0], "as a fallback")
+    #    return fallback[0]
 
     try:
         return prioritized_unfatal_moves[0]
@@ -70,8 +116,63 @@ def find_path_out(board, head, moves_elapsed, max_snake_length, visited, num_tim
     return False
 
 
-def mark_dangerous_paths(board):
-    pass
+def count_number_of_paths_out_from_move(board, head, moves_elapsed, limit, visited, num_times_eaten):
+    # print('at depth:', moves_elapsed)
+    visited.add(head)
+    if board.get_tile(head[0], head[1]).is_food():
+        num_times_eaten += 1
+
+    if moves_elapsed == limit:  # it's a brand new world
+        visited.remove(head)
+        return 1
+
+    valid_moves = board.get_valid_moves_in_the_future(head[0], head[1], moves_elapsed, num_times_eaten)
+
+    total_moves_from_here = 0
+    for move in valid_moves:
+        new_pos = board.get_pos_from_move(head, move)
+        total_moves_from_here += count_number_of_paths_out_from_move(board, new_pos, moves_elapsed + 1, limit, visited, num_times_eaten)
+
+    try:
+        visited.remove(head)
+    except:
+        pass
+    return total_moves_from_here
+
+
+
+def find_conservative_path_out(board, head, moves_elapsed, max_snake_length, visited, num_times_eaten):
+    # print('at depth:', moves_elapsed)
+    visited.add(head)
+    if board.get_tile(head[0], head[1]).is_food():
+        num_times_eaten += 1
+
+    if moves_elapsed == max_snake_length + 1:  # it's a brand new world
+        return True
+
+    valid_moves = board.get_valid_moves_in_the_future(head[0], head[1], moves_elapsed, num_times_eaten)
+    if not valid_moves:
+        return False
+
+    for move in valid_moves:
+        new_pos = board.get_pos_from_move(head, move)
+        if 'threatened' not in board.get_tile(new_pos[0], new_pos[1]).data:
+            if new_pos not in visited and find_path_out(board, new_pos, moves_elapsed + 1, max_snake_length, visited, num_times_eaten):
+                return True
+
+    return False
+
+
+def mark_dangerous_tiles(board, snake_dict, ate_last_turn, our_snake_id):
+    for s_id, snake in snake_dict.items():
+        if s_id != our_snake_id:
+            print(snake['coords'])
+            for point in snake['coords']:
+                x, y = point['x'], point['y']
+                valid_moves = board.get_valid_moves(x, y, ate_last_turn)
+                for move in valid_moves:
+                    head_x, head_y = board.get_pos_from_move((x, y), move)
+                    board.get_tile(head_x, head_y).data['threatened'] = True
 
 
 # prefer moves that move us to the centre
