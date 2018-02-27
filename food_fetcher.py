@@ -6,11 +6,10 @@ def pick_move_to_food(data, board, snake_dict):
     ate_last_turn = data.get('ate_last_turn', [])
     # get our head coordinates
     x, y = get_head_coords(snake_dict[my_snake_id])
-    print("Ate last turn:", data.get('ate_last_turn', []))
+    print("Ate last turn:", ate_last_turn)
     valid_moves = board.get_valid_moves(x, y, ate_last_turn)
     print("valid moves:", valid_moves)
     losing_head_collisions = board.find_losing_head_collisions(x, y, my_snake_id, snake_dict, data.get('ate_last_turn', []))
-
     prioritized_moves = prioritize_moves_by_food(data, board, valid_moves, snake_dict, my_snake_id)
     if prioritized_moves is None:
         snake_coords = get_head_coords(snake_dict[my_snake_id])

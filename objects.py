@@ -134,16 +134,16 @@ class Board(object):
 
         losing_head_collisions = []
         for move in valid_moves:
-            valid_pos = self.get_pos_from_move(self._tuple_to_point((col, row)), move)
-            if valid_pos is None:
-                raise SnakeGoneWrong("Ssssssssssssssshit")
+            valid_pos = self.get_pos_from_move((col, row), move)
+
             for adj in ['right', 'left', 'up', 'down']:
-                adj_pos = self.get_pos_from_move(self._tuple_to_point(valid_pos), adj)
+                adj_pos = self.get_pos_from_move((valid_pos[0], valid_pos[1]), adj)
+
                 # skip if we are looking outside the board or if this is our head
                 if adj_pos is None or (adj_pos[0] == col and adj_pos[1] == row):
                     continue
 
-                adj_tile = self.safe_get_tile(adj_pos[0], adj_pos[1])
+                adj_tile = self.get_tile(adj_pos[0], adj_pos[1])
                 if adj_tile is None or not (adj_tile.is_head()):
                     # skip if we are outside the board or we're not at a snake's head
                     continue
@@ -151,6 +151,7 @@ class Board(object):
                 enemy_snake_id = adj_tile.get_snake_id()
                 if enemy_snake_id is None:
                     continue
+
                 enemy_snake, my_snake = snake_dict[enemy_snake_id], snake_dict[my_snake_id]
 
                 enemy_snake_len = len(enemy_snake['coords'])
@@ -160,19 +161,11 @@ class Board(object):
                 my_snake_len = len(my_snake['coords'])
                 if my_snake in ate_last_turn:
                     my_snake_len += 1
-
                 # ensure not to insert duplicates
-                if enemy_snake_len >= my_snake_len and move not in losing_head_collisions:
+                if enemy_snake_len >= my_snake_len:
                     losing_head_collisions.append(move)
 
-        return losing_head_collisions
-
-    def safe_get_tile(self, col, row):
-        # FIXME FIXME FIXME (NOT SAFER. NOT AS ADVERTISED)
-        if self.not_valid_tile(row, col):
-            return None
-        # this is getting a bit over the top with the indirection
-        return self.get_tile(col, row)
+        return list(set(losing_head_collisions))
 
     def get_tile(self, col, row):
         return self.board[row][col]
