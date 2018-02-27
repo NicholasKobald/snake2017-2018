@@ -101,7 +101,7 @@ def move():
 
     end = time()
     move = pick_move(data, board, snake_dict)
-    print("Took", (end - start) * 100, "to compute move", move)
+    print("Took", end - start, "to compute move")
     response = {
         'move': move,
         'taunt': 'Squaack'
