@@ -70,7 +70,9 @@ def move():
         prev_food_list = PREV_DATA_BY_GAME_ID[data['id']]['prev_food_list']
     except KeyError:  # bit of a hack, but lets us restart the game server and resume the same game
         # without issues. Also good if we ever crash mid game
+        print("Failed to retrieve prev turn data")
         prev_food_list = None
+
     # insert info about which snakes ate last turn into data object
     if prev_food_list is not None:
         data['ate_last_turn'] = find_snakes_that_just_ate(data, prev_food_list, board)
@@ -78,7 +80,9 @@ def move():
     try:
         PREV_DATA_BY_GAME_ID[data['id']]['prev_food_list'] = convert_to_coords_list(data['food']['data'])
     except KeyError:
+        print("Failed to update prev food list for next turn")
         pass
+
     end = time()
     move = pick_move(data, board, snake_dict)
     print("Took", end - start, "to compute move")
