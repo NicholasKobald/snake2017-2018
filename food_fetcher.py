@@ -34,13 +34,13 @@ def pick_move_to_food(data, board, snake_dict):
 
     max_length = get_max_snake_length(snake_dict)
     moves_with_valid_paths_out = []
-    # mark_dangerous_tiles(board, snake_dict, ate_last_turn, my_snake_id)
+    mark_dangerous_tiles(board, snake_dict, ate_last_turn, my_snake_id)
     # Doesn't work super well, but look into it more later?
     # for move in prioritized_unfatal_moves:
     #    possible_head = board.get_pos_from_move((x, y), move)
     #    if find_conservative_path_out(board, possible_head, 2, max_length, set(), 0):
 
-    limit = 3
+    limit = 4
     move_to_options = dict()
     for move in prioritized_unfatal_moves:
         possible_head = board.get_pos_from_move((x, y), move)
@@ -48,8 +48,15 @@ def pick_move_to_food(data, board, snake_dict):
         num = count_number_of_paths_out_from_move(board, possible_head, 2, limit + 2, set(), 0)
         move_to_options[move] = num
         print("Has", num, "ways to get", limit, "moves into the future")
-        if find_path_out(board, possible_head, 2, max_length, set(), 0):
+        if find_conservative_path_out(board, possible_head, 2, max_length, set(), 0):
             moves_with_valid_paths_out.append(move)
+
+    # use a less conservative version here..
+    if not moves_with_valid_paths_out:
+        for move in prioritized_unfatal_moves:
+            possible_head = board.get_pos_from_move((x, y), move)
+            if find_path_out(board, possible_head, 2, max_length, set(), 0):
+                moves_with_valid_paths_out.append(move)
 
     if moves_with_valid_paths_out:
         move_to_options_with_path = {k: v for k, v in move_to_options.items() if k in moves_with_valid_paths_out}
@@ -61,7 +68,7 @@ def pick_move_to_food(data, board, snake_dict):
         print("best food", first_choice_val)
         improvement = 1.0 - (first_choice_val * 1.0) / max_val
         print("Computed an improvement of", improvement)
-        if improvement < 0.2:
+        if improvement < 0.3:
             print('Decided maximizing the options was not worth it', moves_with_valid_paths_out[0])
             return moves_with_valid_paths_out[0]
         else:
@@ -140,7 +147,6 @@ def count_number_of_paths_out_from_move(board, head, moves_elapsed, limit, visit
     return total_moves_from_here
 
 
-
 def find_conservative_path_out(board, head, moves_elapsed, max_snake_length, visited, num_times_eaten):
     # print('at depth:', moves_elapsed)
     visited.add(head)
@@ -166,7 +172,6 @@ def find_conservative_path_out(board, head, moves_elapsed, max_snake_length, vis
 def mark_dangerous_tiles(board, snake_dict, ate_last_turn, our_snake_id):
     for s_id, snake in snake_dict.items():
         if s_id != our_snake_id:
-            print(snake['coords'])
             for point in snake['coords']:
                 x, y = point['x'], point['y']
                 valid_moves = board.get_valid_moves(x, y, ate_last_turn)
