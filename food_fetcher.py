@@ -21,9 +21,9 @@ def pick_move_to_food(data, board, snake_dict):
     # TODO: use these if the above have no paths
     prioritized_potentially_fatal_moves = [p for p in prioritized_moves if p]
 
-    if not prioritized_unfatal_moves:  # all that exist are losing head collisions, I guess be optimistic?
+    if not prioritized_unfatal_moves:  # all that exist are losing head collisions, assume they'll go for food
         try:
-            return prioritized_moves[0]
+            return prioritized_moves.pop()
         except IndexError:
             print("Returning 'left' (no valid moves)")
             return 'left'  # the answer is always left
@@ -35,7 +35,7 @@ def pick_move_to_food(data, board, snake_dict):
 
     max_length = get_max_snake_length(snake_dict)
     moves_with_valid_paths_out = []
-    mark_dangerous_tiles(board, snake_dict, ate_last_turn, my_snake_id)
+    killer_moves = mark_dangerous_tiles(board, snake_dict, ate_last_turn, my_snake_id)
 
     limit = 4
     move_to_options = dict()
@@ -55,6 +55,8 @@ def pick_move_to_food(data, board, snake_dict):
             if find_path_out(board, possible_head, 2, max_length, set(), 0):
                 moves_with_valid_paths_out.append(move)
 
+
+    # print_marked_dangerous(board)
     if moves_with_valid_paths_out:
         move_to_options_with_path = {k: v for k, v in move_to_options.items() if k in moves_with_valid_paths_out}
         max_val = max(list(move_to_options_with_path.values()))
@@ -78,7 +80,7 @@ def pick_move_to_food(data, board, snake_dict):
             improvement = 0
 
         print("Adjust to:", improvement)
-        if improvement < 0.6:
+        if improvement < 0.7:
             print('Decided maximizing the options was not worth it', moves_with_valid_paths_out[0])
             return moves_with_valid_paths_out[0]
         else:
@@ -99,7 +101,8 @@ def pick_move_to_food(data, board, snake_dict):
         pass
 
     try:
-        return prioritized_unfatal_moves[0]
+        print("Final choice!!")
+        return prioritized_unfatal_moves.pop()
     except IndexError:
         # better not to crash if we're in multiple games
         print("Returning 'up' (no valid options)")
@@ -176,12 +179,37 @@ def find_conservative_path_out(board, head, moves_elapsed, max_snake_length, vis
 def mark_dangerous_tiles(board, snake_dict, ate_last_turn, our_snake_id):
     for s_id, snake in snake_dict.items():
         if s_id != our_snake_id:
-            for point in snake['coords']:
-                x, y = point['x'], point['y']
-                valid_moves = board.get_valid_moves(x, y, ate_last_turn)
-                for move in valid_moves:
-                    head_x, head_y = board.get_pos_from_move((x, y), move)
-                    board.get_tile(head_x, head_y).data['threatened'] = True
+            point = snake['coords'][0]
+            x, y = point['x'], point['y']
+            valid_moves = board.get_valid_moves(x, y, ate_last_turn)
+            for move in valid_moves:
+                head_x, head_y = board.get_pos_from_move((x, y), move)
+                board.get_tile(head_x, head_y).data['threatened'] = snake['length']
+
+    us = snake_dict[our_snake_id]
+    point = us['coords'][0]
+    x, y = point['x'], point['y']
+    killer_moves = []
+    valid_moves = board.get_valid_moves(x, y, ate_last_turn)
+    for move in valid_moves:
+        head_x, head_y = board.get_pos_from_move((x, y), move)
+        if 'threatened' in board.get_tile(head_x, head_y).data:
+            if board.get_tile(head_x, head_y).data['threatened'] < us['length']:
+                # if we can kill them, don't run away. be strong.
+                killer_moves.append(move)
+                print("DECIDED TO BE STRONK")
+                del board.get_tile(head_x, head_y).data['threatened']
+
+    return killer_moves
+
+
+
+
+def print_marked_dangerous(board):
+    for i in range(board.height):
+        for j in range(board.width):
+            print("X" if 'threatened' in board.get_tile(j, i).data else ".", end='')
+        print()
 
 
 # prefer moves that move us to the centre
