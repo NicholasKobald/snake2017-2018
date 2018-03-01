@@ -60,12 +60,14 @@ def start():
 @app.route('/end', methods=['POST'])
 def end():
     data = request.get_json(force=True)  # dict
+    # return json.dumps({'thanks': True})
     print("We finished a game")
     print(json.dumps(data, indent=2))
     print("** end data")
     game_finished = data['game_id']
     global PREV_DATA_BY_GAME_ID
     try:
+        pass
         del PREV_DATA_BY_GAME_ID[game_finished]
     except Exception:
         print("Got told we finished a game we weren't in?")
