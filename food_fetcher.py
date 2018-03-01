@@ -80,7 +80,7 @@ def pick_move_to_food(data, board, snake_dict):
             improvement = 0
 
         print("Adjust to:", improvement)
-        if improvement < 0.7:
+        if improvement < 0.65:
             print('Decided maximizing the options was not worth it', moves_with_valid_paths_out[0])
             return moves_with_valid_paths_out[0]
         else:
