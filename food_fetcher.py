@@ -40,7 +40,7 @@ def pick_move_to_food(data, board, snake_dict):
     moves_with_valid_paths_out = []
     mark_dangerous_tiles(board, snake_dict, ate_last_turn, my_snake_id)
 
-    limit = 7
+    limit = 6
     move_to_options = dict()
 
     for move in prioritized_unfatal_moves:
@@ -89,7 +89,7 @@ def pick_move_to_food(data, board, snake_dict):
             improvement = 0
 
         print("Adjust to:", improvement)
-        if improvement < 0.55: # mm..
+        if improvement < 0.50:  # mm..
             print('Decided maximizing the options was not worth it', moves_with_valid_paths_out[0])
             return moves_with_valid_paths_out[0]
         else:
