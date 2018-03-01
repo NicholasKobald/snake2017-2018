@@ -60,7 +60,7 @@ def pick_move_to_food(data, board, snake_dict):
         max_val = max(list(move_to_options_with_path.values()))
         first_choice_val = move_to_options_with_path[moves_with_valid_paths_out[0]]
 
-        # if the improvement is less than 10%, go with the food option
+        # if the improvement is less than some %, go with the food option
         print("best", max_val)
         food_bonus = (snake_dict[my_snake_id]['health'] * 1.0) / 100
         print("Food bonus", food_bonus)
@@ -78,7 +78,7 @@ def pick_move_to_food(data, board, snake_dict):
             improvement = 0
 
         print("Adjust to:", improvement)
-        if improvement < 0.8:
+        if improvement < 0.6:
             print('Decided maximizing the options was not worth it', moves_with_valid_paths_out[0])
             return moves_with_valid_paths_out[0]
         else:
