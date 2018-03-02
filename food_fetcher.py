@@ -31,10 +31,10 @@ def pick_move_to_food(data, board, snake_dict):
             return 'left'  # the answer is always left
 
     # count component sizes
-    for move in prioritized_unfatal_moves:
-        possible_head = board.get_pos_from_move((x, y), move)
-        component_size = count_reachable(board, possible_head)
-        move_to_size[move] = component_size
+    # for move in prioritized_unfatal_moves:
+    #    possible_head = board.get_pos_from_move((x, y), move)
+    #    component_size = count_reachable(board, possible_head)
+    #    move_to_size[move] = component_size
 
 
     max_length = get_max_snake_length(snake_dict)
@@ -49,7 +49,7 @@ def pick_move_to_food(data, board, snake_dict):
         num_paths = count_number_of_paths_out_from_move(board, possible_head, 2, limit + 2, set(), 0)
         move_to_options[move] = num_paths
 
-    threat_level = 4
+    threat_level = 3
     while not moves_with_valid_paths_out:
         threat_level = threat_level - 1
         for move in prioritized_unfatal_moves:
@@ -111,14 +111,9 @@ def pick_move_to_food(data, board, snake_dict):
     if risky_moves:
         print("Chose the least priotized move. Presumably, other snakes are going to go eat that food")
         return risky_moves.pop()
-    try:
-        max_key = max(move_to_size, key=lambda k: move_to_size[k])
-        print("There was no safe path out, but we picked the biggest componenet", max_key)
-        return max_key
-    except:
-        pass
-
-    raise Exception("HELP US")
+    else:
+        print("There's a path through our logic that... sucks")
+        raise Exception("HELP US")
 
 
 def find_path_out(board, head, moves_elapsed, max_snake_length, visited, num_times_eaten):
