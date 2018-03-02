@@ -21,6 +21,7 @@ def pick_move_to_food(data, board, snake_dict):
     # TODO: use these if the above have no paths
     prioritized_potentially_fatal_moves = [p for p in prioritized_moves if p]
 
+
     if not prioritized_unfatal_moves:  # all that exist are losing head collisions, assume they'll go for food
         try:
             return prioritized_moves.pop()
@@ -58,16 +59,19 @@ def pick_move_to_food(data, board, snake_dict):
 
 
     # print_marked_dangerous(board)
+    print("OUR LENGTH:", snake_dict[my_snake_id]['length'])
+    print("OTHER LENGTHS:", [s['length'] for i, s in snake_dict.items() if i != my_snake_id])
+
+    print("The KILLER moves we could take are: ", killer_moves)
+
     if moves_with_valid_paths_out:
         move_to_options_with_path = {k: v for k, v in move_to_options.items() if k in moves_with_valid_paths_out}
         max_val = max(list(move_to_options_with_path.values()))
         first_choice_val = move_to_options_with_path[moves_with_valid_paths_out[0]]
-
         # if the improvement is less than some %, go with the food option
         print("best", max_val)
         food_bonus = (snake_dict[my_snake_id]['health'] * 1.0) / 100
         print("Food bonus", food_bonus)
-
         print("best food", first_choice_val)
         improvement = 1.0 - (first_choice_val * 1.0) / max_val
         print("Computed an improvement of", improvement)
@@ -83,6 +87,8 @@ def pick_move_to_food(data, board, snake_dict):
         print("Adjust to:", improvement)
         if improvement < 0.70:
             print('Decided maximizing the options was not worth it', moves_with_valid_paths_out[0])
+            max_key = max(move_to_options_with_path, key=lambda k: move_to_options_with_path[k])
+            print("The improvement of going", max_key, "was", improvement)
             return moves_with_valid_paths_out[0]
         else:
             max_key = max(move_to_options_with_path, key=lambda k: move_to_options_with_path[k])
