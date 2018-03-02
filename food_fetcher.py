@@ -22,10 +22,12 @@ def pick_move_to_food(data, board, snake_dict):
     move_to_size = dict()
     prioritized_unfatal_moves = [p for p in prioritized_moves if p not in losing_head_collisions]
     prioritized_potentially_fatal_moves = [p for p in prioritized_moves if p]
-
+    print("priotized potentially fatal:", prioritized_potentially_fatal_moves)
+    potentially_fatal = False
     if not prioritized_unfatal_moves:
         try:
-            return prioritized_moves.pop()
+            potentially_fatal = True
+            prioritized_unfatal_moves = prioritized_potentially_fatal_moves
         except IndexError:
             print("Returning 'left' (no valid moves)")
             return 'left'  # the answer is always left
@@ -39,7 +41,8 @@ def pick_move_to_food(data, board, snake_dict):
 
     max_length = get_max_snake_length(snake_dict)
     moves_with_valid_paths_out = []
-    killer_moves = mark_dangerous_tiles(board, snake_dict, ate_last_turn, my_snake_id)
+    if not potentially_fatal:
+        mark_dangerous_tiles(board, snake_dict, ate_last_turn, my_snake_id)
 
     limit = 4
     move_to_options = dict()
@@ -49,20 +52,20 @@ def pick_move_to_food(data, board, snake_dict):
         num_paths = count_number_of_paths_out_from_move(board, possible_head, 2, limit + 2, set(), 0)
         move_to_options[move] = num_paths
 
-    threat_level = 3
-    while not moves_with_valid_paths_out:
-        threat_level = threat_level - 1
-        for move in prioritized_unfatal_moves:
-            possible_head = board.get_pos_from_move((x, y), move)
-            if find_conservative_path_out(board, possible_head, 2, max_length, set(), 0, threat_level):
-                moves_with_valid_paths_out.append(move)
+    if not potentially_fatal:
+        threat_level = 3
+        while not moves_with_valid_paths_out:
+            threat_level = threat_level - 1
+            for move in prioritized_unfatal_moves:
+                possible_head = board.get_pos_from_move((x, y), move)
+                if find_conservative_path_out(board, possible_head, 2, max_length, set(), 0, threat_level):
+                    moves_with_valid_paths_out.append(move)
 
-        if threat_level == 1:
-            break
+            if threat_level == 1:
+                break
 
     # print("Moves with valid paths out:", moves_with_valid_paths_out)
     # print("Threat level:", threat_level)
-
     # use a less conservative version here..
     if not moves_with_valid_paths_out:
         print("Fell back to least-conservative find-path-out")
@@ -73,11 +76,9 @@ def pick_move_to_food(data, board, snake_dict):
     else:
         print("We selected a conservative path!")
 
-
     # print_marked_dangerous(board)
     # print("OUR LENGTH:", snake_dict[my_snake_id]['length'])
     # print("OTHER LENGTHS:", [s['length'] for i, s in snake_dict.items() if i != my_snake_id])
-
 
     if moves_with_valid_paths_out:
         move_to_options_with_path = {k: v for k, v in move_to_options.items() if k in moves_with_valid_paths_out}
@@ -106,11 +107,9 @@ def pick_move_to_food(data, board, snake_dict):
             return max_key
 
     # no path existed so, maybe a risky move is the right choice?
-    risky_moves = [p for p in prioritized_potentially_fatal_moves if p not in prioritized_unfatal_moves]
-
-    if risky_moves:
+    if prioritized_potentially_fatal_moves:
         print("Chose the least priotized move. Presumably, other snakes are going to go eat that food")
-        return risky_moves.pop()
+        return prioritized_potentially_fatal_moves.pop()
     else:
         print("There's a path through our logic that... sucks")
         print("We had NO MOVES")
