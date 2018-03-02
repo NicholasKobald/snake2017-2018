@@ -6,7 +6,6 @@ def pick_move_to_food(data, board, snake_dict):
     ate_last_turn = data.get('ate_last_turn', [])
     # get our head coordinates
     x, y = get_head_coords(snake_dict[my_snake_id])
-    print("Ate last turn:", ate_last_turn)
     valid_moves = board.get_valid_moves(x, y, ate_last_turn)
     print("valid moves:", valid_moves)
     losing_head_collisions = board.find_losing_head_collisions(x, y, my_snake_id, snake_dict, data.get('ate_last_turn', []))
@@ -16,21 +15,16 @@ def pick_move_to_food(data, board, snake_dict):
         prioritized_moves = prioritize_moves_backup(valid_moves, snake_coords, board.width,
                                                     board.height, board)
 
-
-    print("Prioritized moves:", prioritized_moves)
-
     prioritized_unfatal_moves = [p for p in prioritized_moves if p not in losing_head_collisions]
     prioritized_potentially_fatal_moves = [p for p in prioritized_moves if p]
-    print("priotized potentially fatal:", prioritized_potentially_fatal_moves)
     potentially_fatal = False
-    if prioritized_unfatal_moves == []:
+
+    if not prioritized_unfatal_moves:
         potentially_fatal = True
         prioritized_unfatal_moves = prioritized_potentially_fatal_moves
-
     # if we have not valid moves
-    if prioritized_unfatal_moves == []:
+    if not prioritized_unfatal_moves:
         return 'left'
-
 
     max_length = get_max_snake_length(snake_dict)
     moves_with_valid_paths_out = []
@@ -57,21 +51,12 @@ def pick_move_to_food(data, board, snake_dict):
             if threat_level == 1:
                 break
 
-    # print("Moves with valid paths out:", moves_with_valid_paths_out)
-    # print("Threat level:", threat_level)
-    # use a less conservative version here..
     if not moves_with_valid_paths_out:
-        print("Fell back to least-conservative find-path-out")
         for move in prioritized_unfatal_moves:
             possible_head = board.get_pos_from_move((x, y), move)
             if find_path_out(board, possible_head, 1, max_length, set(), 0):
                 moves_with_valid_paths_out.append(move)
-    else:
-        print("We selected a conservative path!")
 
-    # print_marked_dangerous(board)
-    # print("OUR LENGTH:", snake_dict[my_snake_id]['length'])
-    # print("OTHER LENGTHS:", [s['length'] for i, s in snake_dict.items() if i != my_snake_id])
 
     if moves_with_valid_paths_out:
         move_to_options_with_path = {k: v for k, v in move_to_options.items() if k in moves_with_valid_paths_out}
@@ -90,13 +75,10 @@ def pick_move_to_food(data, board, snake_dict):
         elif food_bonus < 0.05:
             improvement = 0
 
-        print("Adjust to:", improvement)
         max_key = max(move_to_options_with_path, key=lambda k: move_to_options_with_path[k])
         if improvement < 0.70:
-            print('Decided maximizing the options was not worth it', moves_with_valid_paths_out[0])
             return moves_with_valid_paths_out[0]
         else:
-            print("Returning", max_key, "since it was safe and had the most options")
             return max_key
 
     # no path existed so, maybe a risky move is the right choice?
@@ -110,8 +92,6 @@ def pick_move_to_food(data, board, snake_dict):
         max_key = max(move_to_size, key=lambda k: move_to_size[k])
         return max_key
     else:
-        print("There's a path through our logic that... sucks")
-        print("We had NO MOVES")
         return 'right' # go right!
         # raise Exception("HELP US")
 
