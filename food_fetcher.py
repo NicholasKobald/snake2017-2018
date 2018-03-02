@@ -31,12 +31,6 @@ def pick_move_to_food(data, board, snake_dict):
     if prioritized_unfatal_moves == []:
         return 'left'
 
-    # move_to_size = dict()
-    # count component sizes
-    # for move in prioritized_unfatal_moves:
-    #    possible_head = board.get_pos_from_move((x, y), move)
-    #    component_size = count_reachable(board, possible_head)
-    #    move_to_size[move] = component_size
 
     max_length = get_max_snake_length(snake_dict)
     moves_with_valid_paths_out = []
@@ -107,8 +101,14 @@ def pick_move_to_food(data, board, snake_dict):
 
     # no path existed so, maybe a risky move is the right choice?
     if prioritized_potentially_fatal_moves:
-        print("Chose the least priotized move. Presumably, other snakes are going to go eat that food")
-        return prioritized_potentially_fatal_moves.pop()
+        print("Selecting largest componenent cause no path out")
+        move_to_size = dict()
+        for move in prioritized_unfatal_moves:
+            possible_head = board.get_pos_from_move((x, y), move)
+            component_size = count_reachable(board, possible_head)
+            move_to_size[move] = component_size
+        max_key = max(move_to_size, key=lambda k: move_to_size[k])
+        return max_key
     else:
         print("There's a path through our logic that... sucks")
         print("We had NO MOVES")
