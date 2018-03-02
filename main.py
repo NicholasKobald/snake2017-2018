@@ -46,6 +46,7 @@ def start():
     print("STARTING GAME WITH ID",  data['game_id'])
 
     response = dict(
+        color='#0FF', 
         name='This is the guy!',
         taunt='temptaunt',
         head_type='dead',
@@ -109,5 +110,5 @@ def move():
 
 
 if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 6000))
+    port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
