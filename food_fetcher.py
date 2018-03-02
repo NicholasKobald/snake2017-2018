@@ -41,19 +41,20 @@ def pick_move_to_food(data, board, snake_dict):
     move_to_options = dict()
     for move in prioritized_unfatal_moves:
         possible_head = board.get_pos_from_move((x, y), move)
-        print("move", move)
         num = count_number_of_paths_out_from_move(board, possible_head, 2, limit + 2, set(), 0)
         move_to_options[move] = num
-        print("Has", num, "ways to get", limit, "moves into the future")
         if find_conservative_path_out(board, possible_head, 2, max_length, set(), 0):
             moves_with_valid_paths_out.append(move)
 
     # use a less conservative version here..
     if not moves_with_valid_paths_out:
+        print("We are going to try to find an none-conservative path")
         for move in prioritized_unfatal_moves:
             possible_head = board.get_pos_from_move((x, y), move)
             if find_path_out(board, possible_head, 2, max_length, set(), 0):
                 moves_with_valid_paths_out.append(move)
+    else:
+        print("We selected a conservative path!")
 
 
     # print_marked_dangerous(board)
@@ -80,7 +81,7 @@ def pick_move_to_food(data, board, snake_dict):
             improvement = 0
 
         print("Adjust to:", improvement)
-        if improvement < 0.65:
+        if improvement < 0.70:
             print('Decided maximizing the options was not worth it', moves_with_valid_paths_out[0])
             return moves_with_valid_paths_out[0]
         else:

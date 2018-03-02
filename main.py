@@ -9,11 +9,7 @@ from food_fetcher import pick_move_to_food, find_snakes_that_just_ate, convert_t
 from objects import Board
 from shared import create_snake_dict
 
-OUR_SNAKE_NAME = '1'
 PREV_DATA_BY_GAME_ID = dict()
-DEBUG = True
-
-taunts = ["Use Bulletted Lists", "I look like.. SANS SERIF"]
 
 app = Flask(__name__)
 
@@ -25,7 +21,6 @@ def home():
 
 def pick_move(data, board, snake_dict):
     move = pick_move_to_food(data, board, snake_dict)
-
     return move
 
 
@@ -47,9 +42,12 @@ def start():
     data = request.get_json(force=True)
     # game_id may be changed to id in the future, if they care about their documentation
     PREV_DATA_BY_GAME_ID[data['game_id']] = dict(prev_food_list=None)
+
+    print("STARTING GAME WITH ID",  data['game_id'])
+
     response = dict(
-        color='#039',
-        name='Val',
+        color='#077',
+        name='This is the guy!',
         taunt='temptaunt',
         head_type='dead',
         tail_type='curled'
@@ -106,7 +104,7 @@ def move():
     print("Took", end - start, "to compute move")
     response = {
         'move': move,
-        'taunt': 'Squaack'
+        'taunt': 'Nobody likes snakes. Even snakes dont like snakes'
     }
     return json.dumps(response)
 
