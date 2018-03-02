@@ -58,7 +58,7 @@ def pick_move_to_food(data, board, snake_dict):
             threat_level = threat_level - 1
             for move in prioritized_unfatal_moves:
                 possible_head = board.get_pos_from_move((x, y), move)
-                if find_conservative_path_out(board, possible_head, 2, max_length, set(), 0, threat_level):
+                if find_conservative_path_out(board, possible_head, 1, max_length, set(), 0, threat_level):
                     moves_with_valid_paths_out.append(move)
 
             if threat_level == 1:
@@ -71,7 +71,7 @@ def pick_move_to_food(data, board, snake_dict):
         print("Fell back to least-conservative find-path-out")
         for move in prioritized_unfatal_moves:
             possible_head = board.get_pos_from_move((x, y), move)
-            if find_path_out(board, possible_head, 2, max_length, set(), 0):
+            if find_path_out(board, possible_head, 1, max_length, set(), 0):
                 moves_with_valid_paths_out.append(move)
     else:
         print("We selected a conservative path!")
