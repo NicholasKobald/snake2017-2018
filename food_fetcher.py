@@ -10,7 +10,6 @@ def pick_move_to_food(data, board, snake_dict):
     valid_moves = board.get_valid_moves(x, y, ate_last_turn)
     print("valid moves:", valid_moves)
     losing_head_collisions = board.find_losing_head_collisions(x, y, my_snake_id, snake_dict, data.get('ate_last_turn', []))
-    print("Losing head collisions:", losing_head_collisions)
     prioritized_moves = prioritize_moves_by_food(data, board, valid_moves, snake_dict, my_snake_id)
     if prioritized_moves is None:
         snake_coords = get_head_coords(snake_dict[my_snake_id])
@@ -55,20 +54,14 @@ def pick_move_to_food(data, board, snake_dict):
         threat_level = threat_level - 1
         for move in prioritized_unfatal_moves:
             possible_head = board.get_pos_from_move((x, y), move)
-            print("Checking move", move, "with threat level:", threat_level)
-            print("*********")
             if find_conservative_path_out(board, possible_head, 2, max_length, set(), 0, threat_level):
-                print("Selected", move)
                 moves_with_valid_paths_out.append(move)
-            else:
-                print("Move eliminated")
-            print("**************")
 
         if threat_level == 1:
             break
 
-    print("Moves with valid paths out:", moves_with_valid_paths_out)
-    print("Threat level:", threat_level)
+    # print("Moves with valid paths out:", moves_with_valid_paths_out)
+    # print("Threat level:", threat_level)
 
     # use a less conservative version here..
     if not moves_with_valid_paths_out:
@@ -82,12 +75,9 @@ def pick_move_to_food(data, board, snake_dict):
 
 
     # print_marked_dangerous(board)
-    print("OUR LENGTH:", snake_dict[my_snake_id]['length'])
-    print("OTHER LENGTHS:", [s['length'] for i, s in snake_dict.items() if i != my_snake_id])
+    # print("OUR LENGTH:", snake_dict[my_snake_id]['length'])
+    # print("OTHER LENGTHS:", [s['length'] for i, s in snake_dict.items() if i != my_snake_id])
 
-
-    print("DANGEROUS")
-    print_marked_dangerous(board)
 
     if moves_with_valid_paths_out:
         move_to_options_with_path = {k: v for k, v in move_to_options.items() if k in moves_with_valid_paths_out}
@@ -179,7 +169,6 @@ def count_number_of_paths_out_from_move(board, head, moves_elapsed, limit, visit
 def find_conservative_path_out(board, head, moves_elapsed, max_snake_length, visited, num_times_eaten, threat_level):
     # print('at depth:', moves_elapsed)
     visited.add(head)
-    print(max_snake_length)
     if board.get_tile(head[0], head[1]).is_food():
         num_times_eaten += 1
 
@@ -193,10 +182,8 @@ def find_conservative_path_out(board, head, moves_elapsed, max_snake_length, vis
     for move in valid_moves:
         new_pos = board.get_pos_from_move(head, move)
         tile_data = board.get_tile(new_pos[0], new_pos[1]).data
-        if 'threatened' not in tile_data: # or ('threatened' in tile_data and tile_data['threatened'] > threat_level):
-            print("Positon:", new_pos, "not threatened")
+        if 'threatened' not in tile_data or ('threatened' in tile_data and tile_data['threatened'] < threat_level):
             if new_pos not in visited and find_conservative_path_out(board, new_pos, moves_elapsed + 1, max_snake_length, visited, num_times_eaten, threat_level):
-                print("Got to:", new_pos, "am safe")
                 return True
 
     return False
