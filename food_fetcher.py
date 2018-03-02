@@ -113,7 +113,9 @@ def pick_move_to_food(data, board, snake_dict):
         return risky_moves.pop()
     else:
         print("There's a path through our logic that... sucks")
-        raise Exception("HELP US")
+        print("We had NO MOVES")
+        return 'right' # go right!
+        # raise Exception("HELP US")
 
 
 def find_path_out(board, head, moves_elapsed, max_snake_length, visited, num_times_eaten):
