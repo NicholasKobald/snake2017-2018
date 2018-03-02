@@ -81,6 +81,12 @@ def pick_move_to_food(data, board, snake_dict):
         else:
             return max_key
 
+    for move in prioritized_potentially_fatal_moves:
+        print("Potentially fatal move:", move)
+        possible_head = board.get_pos_from_move((x, y), move)
+        if find_path_out(board, possible_head, 1, max_length, set(), 0):
+            return move # just do it
+
     # no path existed so, maybe a risky move is the right choice?
     if prioritized_potentially_fatal_moves:
         print("Selecting largest componenent cause no path out")
