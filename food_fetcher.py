@@ -19,25 +19,24 @@ def pick_move_to_food(data, board, snake_dict):
 
     print("Prioritized moves:", prioritized_moves)
 
-    move_to_size = dict()
     prioritized_unfatal_moves = [p for p in prioritized_moves if p not in losing_head_collisions]
     prioritized_potentially_fatal_moves = [p for p in prioritized_moves if p]
     print("priotized potentially fatal:", prioritized_potentially_fatal_moves)
     potentially_fatal = False
-    if not prioritized_unfatal_moves:
-        try:
-            potentially_fatal = True
-            prioritized_unfatal_moves = prioritized_potentially_fatal_moves
-        except IndexError:
-            print("Returning 'left' (no valid moves)")
-            return 'left'  # the answer is always left
+    if prioritized_unfatal_moves == []:
+        potentially_fatal = True
+        prioritized_unfatal_moves = prioritized_potentially_fatal_moves
 
+    # if we have not valid moves
+    if prioritized_unfatal_moves == []:
+        return 'left'
+
+    # move_to_size = dict()
     # count component sizes
     # for move in prioritized_unfatal_moves:
     #    possible_head = board.get_pos_from_move((x, y), move)
     #    component_size = count_reachable(board, possible_head)
     #    move_to_size[move] = component_size
-
 
     max_length = get_max_snake_length(snake_dict)
     moves_with_valid_paths_out = []
@@ -186,6 +185,19 @@ def find_conservative_path_out(board, head, moves_elapsed, max_snake_length, vis
 
 
 def mark_dangerous_tiles(board, snake_dict, ate_last_turn, our_snake_id):
+    """Mark tiles around other snakes' heads as dangerous by mutating the board object.
+
+    board[x][y] = Tile({
+        ...
+        'threatened_length': 10, # length of snake that is threatening us
+        'threatened': 2,
+        ...
+    })
+
+    Returns:
+        killer_moves: list of moves e.g. ['left', 'right']
+            moves that would kill another snake immediately (if they moved to the same tile that we do)
+    """
     for s_id, snake in snake_dict.items():
         if s_id != our_snake_id:
             point = snake['coords'][0]
