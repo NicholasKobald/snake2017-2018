@@ -24,6 +24,7 @@ def pick_move_to_food(data, board, snake_dict):
     if not prioritized_unfatal_moves:
         potentially_fatal = True
         prioritized_unfatal_moves = prioritized_potentially_fatal_moves
+        
     # if we have not valid moves
     if not prioritized_unfatal_moves:
         return 'left'

@@ -45,9 +45,9 @@ def start():
     print("STARTING GAME WITH ID",  data['game_id'])
 
     response = dict(
-        color='#0FF', 
-        name='This is the guy!',
-        taunt='temptaunt',
+        color='#069',
+        name='Bitcoin',
+        taunt="Hope I don't crash!",
         head_type='dead',
         tail_type='curled'
     )
@@ -109,7 +109,7 @@ def move():
 
     response = {
         'move': move,
-        'taunt': 'Nobody likes snakes. Even snakes dont like snakes'
+        'taunt': "ITS NOT A BUBBLE. WE WON'T CRASH"
     }
     return json.dumps(response)
 
