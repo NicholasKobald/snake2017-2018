@@ -1,3 +1,5 @@
+from time import time
+
 from shared import *  # fixme
 
 
@@ -34,7 +36,7 @@ def pick_move_to_food(data, board, snake_dict):
     limit = 3
     move_to_options = dict()
 
-
+    conservative_start = time()
     if not potentially_fatal:
         threat_level = 3
         while not moves_with_valid_paths_out:
@@ -47,16 +49,29 @@ def pick_move_to_food(data, board, snake_dict):
             if threat_level == 1:
                 break
 
+
+    conservative_end = time()
+    print("Spent", (conservative_end - conservative_start), "seconds determining conservative paths")
+
+
+    safe_paths = time()
     if not moves_with_valid_paths_out:
         for move in prioritized_unfatal_moves:
             possible_head = board.get_pos_from_move((x, y), move)
             if find_path_out(board, possible_head, 1, max_length, set(), 0):
                 moves_with_valid_paths_out.append(move)
 
+    safe_end = time()
+    print("Spent", (safe_end - safe_paths), "seconds determining just safe paths")
+
+    enumerate_paths_start = time()
     for move in moves_with_valid_paths_out:
         possible_head = board.get_pos_from_move((x, y), move)
         num_paths = count_number_of_paths_out_from_move(board, possible_head, 2, limit + 2, set(), 0)
         move_to_options[move] = num_paths
+    enumerate_end = time()
+    print("Spent", (enumerate_end - enumerate_paths_start) , "seconds enumerating the all-paths heuristic")
+
 
     if moves_with_valid_paths_out:
         move_to_options_with_path = {k: v for k, v in move_to_options.items() if k in moves_with_valid_paths_out}
@@ -210,13 +225,13 @@ def mark_dangerous_tiles(board, snake_dict, ate_last_turn, our_snake_id):
             if board.get_tile(head_x, head_y).data['threatened_length'] < us['length']:
                 # if we can kill them, don't run away. be strong.
                 killer_moves.append(move)
-                print("DECIDED TO BE STRONK")
                 del board.get_tile(head_x, head_y).data['threatened']
 
     return killer_moves
 
 
 def print_marked_dangerous(board):
+
     for i in range(board.height):
         for j in range(board.width):
             print("X" if 'threatened' in board.get_tile(j, i).data else ".", end='')

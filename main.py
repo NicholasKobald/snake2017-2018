@@ -99,8 +99,14 @@ def move():
         pass
 
     end = time()
+    print("Took", (end - start), "to build the board and setup game data")
+
+    move_alone = time()
     move = pick_move(data, board, snake_dict)
-    print("Took", (end - start) * 100, "to compute move", move)
+    print("Computing the move took", (move_alone - start), "time")
+    end = time()
+    print("Took", (end - start), "to compute move", move)
+
     response = {
         'move': move,
         'taunt': 'Nobody likes snakes. Even snakes dont like snakes'
