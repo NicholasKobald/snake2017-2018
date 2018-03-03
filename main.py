@@ -2,8 +2,7 @@ import os
 import json
 from time import time 
 
-from flask import Flask
-from flask import request
+from flask import Flask, request
 
 from food_fetcher import pick_move_to_food, find_snakes_that_just_ate, convert_to_coords_list
 from objects import Board
@@ -16,7 +15,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def home():
-    return "Hello World"
+    return "<b>Hello World</b>"
 
 
 def pick_move(data, board, snake_dict):
@@ -111,4 +110,4 @@ def move():
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
-    app.run(host='0.0.0.0', port=port)
+    app.run(host='localhost', port=port)

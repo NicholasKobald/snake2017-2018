@@ -31,7 +31,7 @@ def pick_move_to_food(data, board, snake_dict):
     if not potentially_fatal:
         mark_dangerous_tiles(board, snake_dict, ate_last_turn, my_snake_id)
 
-    limit = 4
+    limit = 3
     move_to_options = dict()
 
     for move in prioritized_unfatal_moves:
