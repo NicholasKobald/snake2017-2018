@@ -33,7 +33,7 @@ def pick_move_to_food(data, board, snake_dict):
     if not potentially_fatal:
         mark_dangerous_tiles(board, snake_dict, ate_last_turn, my_snake_id)
 
-    limit = 3
+    limit = 4
     move_to_options = dict()
 
     conservative_start = time()
