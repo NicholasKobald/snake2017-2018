@@ -40,6 +40,7 @@ def start():
     global PREV_DATA_BY_GAME_ID
     data = request.get_json(force=True)
     # game_id may be changed to id in the future, if they care about their documentation
+    
     PREV_DATA_BY_GAME_ID[data['game_id']] = dict(prev_food_list=None)
 
     print("STARTING GAME WITH ID",  data['game_id'])
