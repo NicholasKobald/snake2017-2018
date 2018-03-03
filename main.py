@@ -55,7 +55,6 @@ def start():
     )
     return json.dumps(response)
 
-
 @app.route('/end', methods=['POST'])
 def end():
     data = request.get_json(force=True)  # dict
