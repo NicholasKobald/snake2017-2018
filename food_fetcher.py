@@ -53,16 +53,15 @@ def pick_move_to_food(data, board, snake_dict):
             if find_path_out(board, possible_head, 1, max_length, set(), 0):
                 moves_with_valid_paths_out.append(move)
 
+    for move in moves_with_valid_paths_out:
+        possible_head = board.get_pos_from_move((x, y), move)
+        num_paths = count_number_of_paths_out_from_move(board, possible_head, 2, limit + 2, set(), 0)
+        move_to_options[move] = num_paths
 
     if moves_with_valid_paths_out:
         move_to_options_with_path = {k: v for k, v in move_to_options.items() if k in moves_with_valid_paths_out}
         max_val = max(list(move_to_options_with_path.values()))
         first_choice_val = move_to_options_with_path[moves_with_valid_paths_out[0]]
-
-        for move in moves_with_valid_paths_out:
-            possible_head = board.get_pos_from_move((x, y), move)
-            num_paths = count_number_of_paths_out_from_move(board, possible_head, 2, limit + 2, set(), 0)
-            move_to_options[move] = num_paths
 
         # if the improvement is less than some %, go with the food option
         food_bonus = (snake_dict[my_snake_id]['health'] * 1.0) / 100
