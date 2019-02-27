@@ -1,6 +1,6 @@
 import os
 import json
-from time import time 
+from time import time
 
 from flask import Flask, request
 
@@ -41,9 +41,9 @@ def start():
     data = request.get_json(force=True)
     # game_id may be changed to id in the future, if they care about their documentation
 
-    PREV_DATA_BY_GAME_ID[data['game_id']] = dict(prev_food_list=None)
+    PREV_DATA_BY_GAME_ID[data['game']['id']] = dict(prev_food_list=None)
 
-    print("STARTING GAME WITH ID",  data['game_id'])
+    print("STARTING GAME WITH ID",  data['game']['id'])
 
     response = dict(
         color='#069',
@@ -79,11 +79,12 @@ def move():
     print("\nPINGED\n  ********************")
     start = time()
     data = request.get_json(force=True)  # dict
-    snake_dict = create_snake_dict(data['snakes'])
-    board = Board(data['height'], data['width'], snake_dict, data['food']['data'], data['you']['id'])
+    board_data = data['board']
+    snake_dict = create_snake_dict(board_data['snakes'])
+    board = Board(board_data['height'], board_data['width'], snake_dict, board_data['food'], data['you']['id'])
 
     try:
-        prev_food_list = PREV_DATA_BY_GAME_ID[data['id']]['prev_food_list']
+        prev_food_list = PREV_DATA_BY_GAME_ID[data['game']['id']]['prev_food_list']
     except KeyError:  # bit of a hack, but lets us restart the game server and resume the same game
         # without issues. Also good if we ever crash mid game
         print("Failed to retrieve prev turn data")
@@ -94,7 +95,7 @@ def move():
         data['ate_last_turn'] = find_snakes_that_just_ate(data, prev_food_list, board)
 
     try:
-        PREV_DATA_BY_GAME_ID[data['id']]['prev_food_list'] = convert_to_coords_list(data['food']['data'])
+        PREV_DATA_BY_GAME_ID[data['game']['id']]['prev_food_list'] = convert_to_coords_list(board_data['food'])
     except KeyError:
         print("Failed to update prev food list for next turn")
         pass

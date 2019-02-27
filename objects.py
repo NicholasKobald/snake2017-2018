@@ -191,8 +191,8 @@ class Board(object):
 
         # encode snakes into board by setting Tile object type to 'snake'
         for s_id, snake in snakes.items():
-            s_len = len(snake['body']['data'])
-            for index, coord in enumerate(snake['body']['data']):
+            s_len = len(snake['body'])
+            for index, coord in enumerate(snake['body']):
                 x, y = coord['x'], coord['y']
                 at_head, at_tail = (index == 0), (index == s_len - 1)
                 if board[y][x].is_snake():

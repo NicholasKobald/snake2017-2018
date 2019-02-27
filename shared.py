@@ -269,7 +269,7 @@ def find_snakes_that_just_ate(data, prev_food_list, board):
         snakes_just_ate (list): IDs of all snakes that ate in the previous turn
     """
     snakes_just_ate = []
-    cur_food_list = convert_to_coords_list(data['food']['data'])
+    cur_food_list = convert_to_coords_list(data['food'])
     for prev_food in prev_food_list:
         # ignore foods that are still there from last turn
         if prev_food in cur_food_list:
@@ -301,14 +301,11 @@ def convert_to_coords_list(food_list):
     return food_coords
 
 
-def create_snake_dict(snake_data):
+def create_snake_dict(snake_list):
     snake_dict = dict()
-    snake_list = snake_data['data']
     for snake in snake_list:
-        # TODO: we can flatten this dictionary a bit, so we don't have to write
-        # ['body']['data'] every time we iterate over coordinates.
         snake_dict[snake['id']] = snake
-        snake['coords'] = snake['body']['data']
+        snake['coords'] = snake['body']
         snake['eaten'] = 0
         snake['ate'] = [False]  # init with prev game info.
         snake['old_tails'] = []

@@ -3,6 +3,7 @@ from time import time
 from shared import *  # fixme
 
 
+# TODO adapt use of 'data' var, now that most stuff is in data['board']
 def pick_move_to_food(data, board, snake_dict):
     my_snake_id = data['you']['id']
     ate_last_turn = data.get('ate_last_turn', [])
@@ -24,7 +25,7 @@ def pick_move_to_food(data, board, snake_dict):
     if not prioritized_unfatal_moves:
         potentially_fatal = True
         prioritized_unfatal_moves = prioritized_potentially_fatal_moves
-        
+
     # if we have not valid moves
     if not prioritized_unfatal_moves:
         return 'left'
@@ -207,7 +208,7 @@ def mark_dangerous_tiles(board, snake_dict, ate_last_turn, our_snake_id):
             valid_moves = board.get_valid_moves(x, y, ate_last_turn)
             for move in valid_moves:
                 head_x, head_y = board.get_pos_from_move((x, y), move)
-                board.get_tile(head_x, head_y).data['threatened_length'] = snake['length'] # TODO this..
+                board.get_tile(head_x, head_y).data['threatened_length'] = len(snake['coords']) # TODO this..
                 board.get_tile(head_x, head_y).data['threatened'] = 1
                 valid_followup_moves = board.get_valid_moves(head_x, head_y)
                 for followup_move in valid_followup_moves:
@@ -223,7 +224,7 @@ def mark_dangerous_tiles(board, snake_dict, ate_last_turn, our_snake_id):
     for move in valid_moves:
         head_x, head_y = board.get_pos_from_move((x, y), move)
         if 'threatened_length' in board.get_tile(head_x, head_y).data:
-            if board.get_tile(head_x, head_y).data['threatened_length'] < us['length']:
+            if board.get_tile(head_x, head_y).data['threatened_length'] < len(us['coords']):
                 # if we can kill them, don't run away. be strong.
                 killer_moves.append(move)
                 del board.get_tile(head_x, head_y).data['threatened']
@@ -280,7 +281,7 @@ def prioritize_moves_by_food(data, board, valid_moves, snake_dict, my_snake_id):
         (2) None if no foods are closest to us
      favours moves that approach most of: nearest cluster, largest cluster, nearest food
     """
-    closest_food_and_snakes = find_closest_snakes(board, data['food']['data'])
+    closest_food_and_snakes = find_closest_snakes(board, data['food'])
     foods_by_snake = closest_food_and_snakes['by_snake']
 
     # we aren't the closest to anything
