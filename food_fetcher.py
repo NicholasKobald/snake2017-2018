@@ -3,7 +3,6 @@ from time import time
 from shared import *  # fixme
 
 
-# TODO adapt use of 'data' var, now that most stuff is in data['board']
 def pick_move_to_food(data, board, snake_dict):
     my_snake_id = data['you']['id']
     ate_last_turn = data.get('ate_last_turn', [])
@@ -12,7 +11,7 @@ def pick_move_to_food(data, board, snake_dict):
     valid_moves = board.get_valid_moves(x, y, ate_last_turn)
     print("valid moves:", valid_moves)
     losing_head_collisions = board.find_losing_head_collisions(x, y, my_snake_id, snake_dict, data.get('ate_last_turn', []))
-    prioritized_moves = prioritize_moves_by_food(data, board, valid_moves, snake_dict, my_snake_id)
+    prioritized_moves = prioritize_moves_by_food(data['board'], board, valid_moves, snake_dict, my_snake_id)
     if prioritized_moves is None:
         snake_coords = get_head_coords(snake_dict[my_snake_id])
         prioritized_moves = prioritize_moves_backup(valid_moves, snake_coords, board.width,
@@ -274,14 +273,14 @@ def remove_losing_ties_by_snake_len(board, my_snake_id, food_info_list):
     return food_info_list
 
 
-def prioritize_moves_by_food(data, board, valid_moves, snake_dict, my_snake_id):
+def prioritize_moves_by_food(board_data, board, valid_moves, snake_dict, my_snake_id):
     """
     returns:
         (1) permuted valid_moves prioritized best->worst
         (2) None if no foods are closest to us
      favours moves that approach most of: nearest cluster, largest cluster, nearest food
     """
-    closest_food_and_snakes = find_closest_snakes(board, data['food'])
+    closest_food_and_snakes = find_closest_snakes(board, board_data['food'])
     foods_by_snake = closest_food_and_snakes['by_snake']
 
     # we aren't the closest to anything

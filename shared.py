@@ -260,7 +260,7 @@ def get_displacement_for_each(col, row, coord_list):
     return distances
 
 
-def find_snakes_that_just_ate(data, prev_food_list, board):
+def find_snakes_that_just_ate(board_data, prev_food_list, board):
     """
     Determines which snakes have just eaten food and will therefore grow next turn.
     Uses position of food from previous turn and current position of snake heads.
@@ -269,7 +269,7 @@ def find_snakes_that_just_ate(data, prev_food_list, board):
         snakes_just_ate (list): IDs of all snakes that ate in the previous turn
     """
     snakes_just_ate = []
-    cur_food_list = convert_to_coords_list(data['food'])
+    cur_food_list = convert_to_coords_list(board_data['food'])
     for prev_food in prev_food_list:
         # ignore foods that are still there from last turn
         if prev_food in cur_food_list:
@@ -284,9 +284,9 @@ def find_snakes_that_just_ate(data, prev_food_list, board):
 def convert_to_coords_list(food_list):
     """
     e.g. food_list = [
-        {"x": 0, "y": 0, "object": "point"},
+        {"x": 0, "y": 0},
         ...
-        {"x": 5, "y": 5, "object": "point"}
+        {"x": 5, "y": 5}
     ] =>
     [
         [0,0],

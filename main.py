@@ -24,9 +24,9 @@ def pick_move(data, board, snake_dict):
 
 
 # page to dump data
-@app.route('/hello')
+@app.route('/ping')
 def hello():
-    return "Hello World!"
+    return "Successfully pinged"
 
 
 def print_data(data):
@@ -62,7 +62,7 @@ def end():
     print("We finished a game")
     print(json.dumps(data, indent=2))
     print("** end data")
-    game_finished = data['game_id']
+    game_finished = data['game']['id']
     global PREV_DATA_BY_GAME_ID
     try:
         pass
@@ -92,7 +92,7 @@ def move():
 
     # insert info about which snakes ate last turn into data object
     if prev_food_list is not None:
-        data['ate_last_turn'] = find_snakes_that_just_ate(data, prev_food_list, board)
+        data['ate_last_turn'] = find_snakes_that_just_ate(board_data, prev_food_list, board)
 
     try:
         PREV_DATA_BY_GAME_ID[data['game']['id']]['prev_food_list'] = convert_to_coords_list(board_data['food'])
@@ -109,11 +109,7 @@ def move():
     end = time()
     print("Took", (end - start), "to compute move", move)
 
-    response = {
-        'move': move,
-        'taunt': "ITS NOT A BUBBLE. WE WON'T CRASH"
-    }
-    return json.dumps(response)
+    return json.dumps(dict(move=move))
 
 
 if __name__ == '__main__':
