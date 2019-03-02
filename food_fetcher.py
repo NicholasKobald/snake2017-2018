@@ -38,6 +38,7 @@ def pick_move_to_food(data, board, snake_dict):
     if not potentially_fatal:
         mark_dangerous_tiles(board, snake_dict, ate_last_turn, my_snake_id)
 
+    moves_with_valid_paths_out = []
     if not potentially_fatal:
         moves_with_valid_paths_out = find_very_safe_moves(prioritized_unfatal_moves, board, x, y, max_length)
 
