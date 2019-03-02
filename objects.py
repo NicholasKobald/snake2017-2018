@@ -10,15 +10,32 @@ class Tile(object):
         else:
             self.data = data
 
+    def __repr__(self):
+        return self.__str__()
+
+    def __str__(self):
+        if self.is_food():
+            return "f"
+        elif self.is_head():
+            return "h"
+        elif self.is_snake():
+            return "s"
+        elif self.is_tail():
+            return "t"
+        elif self.is_safe():
+            return "o"
+        else:
+            return "?"
+
     def naive_is_safe(self):
         return self.data['type'] != 'snake'
 
-    def safe_in_the_future(self, future, num_times_eaten, us_id):
-        if 'til_empty' in self.data:
-            if us_id == self.data['snake_id']:
-                return future >= self.data['til_empty'] + num_times_eaten
-            return future >= self.data['til_empty']
-        return True
+    def safe_in_the_future(self, num_turns_in_future, num_times_eaten, us_id, ate_last_turn=[]):
+        if self.is_snake() and self.get_snake_id() == us_id:
+            num_turns_until_safe = self.turns_till_safe(ate_last_turn=ate_last_turn) + num_times_eaten
+        else:
+            num_turns_until_safe = self.turns_till_safe(ate_last_turn=ate_last_turn)
+        return num_turns_until_safe <= num_turns_in_future
 
     def is_safe(self, ate_last_turn):
         if self.is_tail():
@@ -54,9 +71,13 @@ class Tile(object):
             return 'h'
         return self.data['type'][:1]
 
-    def turns_till_safe(self):
+    def turns_till_safe(self, ate_last_turn=[]):
         if 'til_empty' in self.data:
-            return self.data['til_empty']
+            if self.is_snake() and self.get_snake_id() in ate_last_turn:
+                return self.data['til_empty']
+            else:
+                # because the tail is safe!
+                return self.data['til_empty'] - 1
         else:
             return 0
 
@@ -70,17 +91,31 @@ class Board(object):
         self.snake_dict = snake_dict
         self.our_snake_id = us_id  # inject our own snake id here, for, reasons
 
-    def get_valid_moves_in_the_future(self, col, row, turns_passed, num_times_eaten):
+    def __repr__(self):
+        return __str__()
+
+    def __str__(self):
+        board_str = ""
+        for row in self.board:
+            for tile in row:
+                board_str += str(tile) + " "
+            board_str += "\n"
+        return board_str
+
+    def get_valid_moves_in_the_future(self, col, row, turns_passed, num_times_eaten, ate_last_turn=[]):
         valid_moves = []
         us_id = self.our_snake_id
 
-        if col < self.width - 1 and self.get_tile(col + 1, row).safe_in_the_future(turns_passed, num_times_eaten, us_id):
+        if col < self.width - 1 and self.get_tile(col + 1, row).safe_in_the_future(turns_passed, num_times_eaten, us_id, ate_last_turn):
             valid_moves.append('right')
-        if row < self.height - 1 and self.get_tile(col, row + 1).safe_in_the_future(turns_passed, num_times_eaten, us_id):
+
+        if row < self.height - 1 and self.get_tile(col, row + 1).safe_in_the_future(turns_passed, num_times_eaten, us_id, ate_last_turn):
             valid_moves.append('down')
-        if col > 0 and self.get_tile(col - 1, row).safe_in_the_future(turns_passed, num_times_eaten, us_id):
-            valid_moves.append('left')
-        if row > 0 and self.get_tile(col, row - 1).safe_in_the_future(turns_passed, num_times_eaten, us_id):
+
+        if col > 0 and self.get_tile(col - 1, row).safe_in_the_future(turns_passed, num_times_eaten, us_id, ate_last_turn):
+                valid_moves.append('left')
+
+        if row > 0 and self.get_tile(col, row - 1).safe_in_the_future(turns_passed, num_times_eaten, us_id, ate_last_turn):
             valid_moves.append('up')
 
         return valid_moves

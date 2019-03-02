@@ -310,7 +310,9 @@ def create_snake_dict(snake_list):
         snake['ate'] = [False]  # init with prev game info.
         snake['old_tails'] = []
         snake['food_eaten'] = []
-        del snake['id']  # no longer needed.
+
+        # NOTE: leaving this in causes no harm, but removing it messes with the (shotty) unit tests
+        #del snake['id']  # no longer needed.
     return snake_dict
 
 
