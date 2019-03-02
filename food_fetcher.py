@@ -52,16 +52,20 @@ def pick_move_to_food(data, board, snake_dict):
 
     num_paths_out_per_move = count_paths_out(board, prioritized_moves_with_path_out, cur_x, cur_y, ate_last_turn)
     if prioritized_moves_with_path_out:
-        # if we are worried about food, try to pick highest from prioritized list
+        # if we are VERY hungry, move to food
+        if snake_dict[my_snake_id]['health'] < 30:
+            return prioritized_moves_with_path_out[0]
+
+        # if we are getting hungry food, try to pick move to food
         # with number of paths above the average
-        if snake_dict[my_snake_id]['health'] < 70:
+        elif snake_dict[my_snake_id]['health'] < 70:
             # get average number of paths
             ave_num_paths = sum(num_paths_out_per_move.values()) / len(num_paths_out_per_move.keys())
             for move in prioritized_moves_with_path_out:
                 if num_paths_out_per_move[move] > ave_num_paths:
                     return move
 
-        # if none are above average (or if we are NOT worried about food),
+        # if none are above average (or we're not hungry),
         # take move with most paths
         return max(
             num_paths_out_per_move,
