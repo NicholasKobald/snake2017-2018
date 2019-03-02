@@ -102,7 +102,7 @@ def should_eat(snake_dict, my_snake_id):
     for snake_id, snake_data in snake_dict.items():
         if snake_id == my_snake_id:
             continue
-        if cur_length < len(snake_data['coords']) - 2:
+        if cur_length < len(snake_data['coords']) + 2:
             return True
     return False
 
