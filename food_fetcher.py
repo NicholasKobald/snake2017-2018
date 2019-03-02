@@ -9,8 +9,8 @@ def pick_move_to_food(data, board, snake_dict):
     valid_moves = board.get_valid_moves(cur_x, cur_y, ate_last_turn)
     print("valid moves:", valid_moves)
     losing_head_collisions = board.find_losing_head_collisions(cur_x, cur_y, my_snake_id, snake_dict, data.get('ate_last_turn', []))
-    prioritized_moves = prioritize_moves_by_food(data['board'], board, valid_moves, snake_dict, my_snake_id)
-    if prioritized_moves is None:
+    prioritized_moves, priority_val_per_move = prioritize_moves_by_food(data['board'], board, valid_moves, snake_dict, my_snake_id)
+    if prioritized_moves == []:
         snake_coords = get_head_coords(snake_dict[my_snake_id])
         prioritized_moves = prioritize_moves_backup(
             valid_moves,
@@ -53,12 +53,14 @@ def pick_move_to_food(data, board, snake_dict):
     num_paths_out_per_move = count_paths_out(board, prioritized_moves_with_path_out, cur_x, cur_y, ate_last_turn)
     if prioritized_moves_with_path_out:
         # if we are VERY hungry, move to food
-        if snake_dict[my_snake_id]['health'] < 30:
-            return prioritized_moves_with_path_out[0]
+        if should_eat(snake_dict, my_snake_id):
+            for move in prioritized_moves_with_path_out:
+                if priority_val_per_move.get(move, 0) >= 1:
+                    return move
 
         # if we are getting hungry food, try to pick move to food
         # with number of paths above the average
-        elif snake_dict[my_snake_id]['health'] < 70:
+        if snake_dict[my_snake_id]['health'] < 70:
             # get average number of paths
             ave_num_paths = sum(num_paths_out_per_move.values()) / len(num_paths_out_per_move.keys())
             for move in prioritized_moves_with_path_out:
@@ -91,6 +93,19 @@ def pick_move_to_food(data, board, snake_dict):
     else:
         return 'right' # go right!
         # raise Exception("HELP US")
+
+def should_eat(snake_dict, my_snake_id):
+    if snake_dict[my_snake_id]['health'] < 30:
+        return True
+
+    cur_length = len(snake_dict[my_snake_id]['coords'])
+    for snake_id, snake_data in snake_dict.items():
+        if snake_id == my_snake_id:
+            continue
+        if cur_length < len(snake_data['coords']) - 2:
+            return True
+    return False
+
 
 def count_paths_out(board, moves, cur_x, cur_y, ate_last_turn):
     """
@@ -285,16 +300,16 @@ def remove_losing_ties_by_snake_len(board, my_snake_id, food_info_list):
 def prioritize_moves_by_food(board_data, board, valid_moves, snake_dict, my_snake_id):
     """
     returns:
-        (1) permuted valid_moves prioritized best->worst
-        (2) None if no foods are closest to us
-     favours moves that approach most of: nearest cluster, largest cluster, nearest food
+        (list): permuted valid_moves prioritized best->worst.
+            favours moves that approach most of: nearest cluster, largest cluster, nearest food
+        (dict): key (str) is move, value (int) is score [0,3] where higher is better
     """
     closest_food_and_snakes = find_closest_snakes(board, board_data['food'])
     foods_by_snake = closest_food_and_snakes['by_snake']
 
     # we aren't the closest to anything
     if my_snake_id not in foods_by_snake:
-        return None
+        return [], dict()
 
     food_info_dict = foods_by_snake[my_snake_id]
     food_info_dict['dest_info'] = remove_losing_ties_by_snake_len(
@@ -312,6 +327,7 @@ def prioritize_moves_by_food(board_data, board, valid_moves, snake_dict, my_snak
 def prioritize_valid_moves(valid_moves, to_big_clusters, to_near_clusters, to_close_food):
     # create buckets for every 'tier' of move priority (where 0 is the highest priority)
     priority_buckets = [[], [], [], []]
+    priority_val_per_move = dict()
     for move in valid_moves:
         pop_count = 0
         if move in to_big_clusters:
@@ -321,9 +337,10 @@ def prioritize_valid_moves(valid_moves, to_big_clusters, to_near_clusters, to_cl
         if move in to_close_food:
             pop_count += 1
 
+        priority_val_per_move[move] = pop_count
         priority_index = (pop_count * (-1)) - 1
         priority_buckets[priority_index].append(move)
 
     # that's it, done.
     prioritized = sum(priority_buckets, [])
-    return prioritized
+    return prioritized, priority_val_per_move
