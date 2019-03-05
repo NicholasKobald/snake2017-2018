@@ -1,14 +1,13 @@
 import sys
+sys.path.extend(['.', '../'])
 
-sys.path.extend(['.', '..'])
-
-import main
-import objects
+from app import main, objects
+from app.food_fetcher import find_snakes_that_just_ate
+from app.shared import create_snake_dict
 import tests.fixtures as fixtures
+
 import unittest
 
-from food_fetcher import find_snakes_that_just_ate
-from shared import create_snake_dict
 
 class TestBasicSafety(unittest.TestCase):
     def test_prefer_head_collision_over_wall(self):

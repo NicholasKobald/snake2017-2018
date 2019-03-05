@@ -1,3 +1,7 @@
+import sys
+# necessary for rest of import statements below
+sys.path.extend(['.', '../'])
+
 flip_dict = dict(
     up='down',
     left='right',

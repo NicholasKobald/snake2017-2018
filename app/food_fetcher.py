@@ -1,4 +1,8 @@
-from shared import *  # fixme
+import sys
+# necessary for rest of import statements below
+sys.path.extend(['.', '../'])
+
+from app.shared import *  # fixme
 
 
 def pick_move_to_food(data, board, snake_dict):

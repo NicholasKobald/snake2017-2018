@@ -1,12 +1,15 @@
-import os
-import json
-from time import time
-
 from flask import Flask, request
+from time import time
+import json
+import os
 
-from food_fetcher import pick_move_to_food, find_snakes_that_just_ate, convert_to_coords_list
-from objects import Board
-from shared import create_snake_dict
+import sys
+# necessary for rest of import statements below
+sys.path.extend(['.', '../'])
+
+from app.food_fetcher import pick_move_to_food, find_snakes_that_just_ate, convert_to_coords_list
+from app.objects import Board
+from app.shared import create_snake_dict
 
 PREV_DATA_BY_GAME_ID = dict()
 

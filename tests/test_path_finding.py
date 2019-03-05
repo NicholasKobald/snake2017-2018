@@ -1,9 +1,9 @@
-from food_fetcher import find_path_out
-
-import objects
-import shared
+from app import objects, shared
+from app.food_fetcher import find_path_out
 import tests.fixtures as fixtures
+
 import unittest
+
 
 class TestPathFinding(unittest.TestCase):
     def test_find_two_paths_out(self):
