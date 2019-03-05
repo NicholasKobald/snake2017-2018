@@ -11,7 +11,7 @@ from app.food_fetcher import pick_move_to_food, find_snakes_that_just_ate, conve
 from app.objects import Board
 from app.shared import create_snake_dict
 
-PREV_DATA_BY_GAME_ID = dict()
+PREV_GAME_DATA = dict()
 
 app = Flask(__name__)
 
@@ -20,34 +20,23 @@ app = Flask(__name__)
 def home():
     return "<b>Hello World</b>"
 
-
-def pick_move(data, board, snake_dict):
-    move = pick_move_to_food(data, board, snake_dict)
+def pick_move(board, snake_dict, my_snake_id):
+    move = pick_move_to_food(board, snake_dict, my_snake_id)
     return move
 
-
-# page to dump data
 @app.route('/ping')
-def hello():
+def ping():
     return "Successfully pinged"
-
-
-def print_data(data):
-    print("DATA\n********************")
-    for key in data:
-        print(key, ":", data[key])
-
 
 @app.route('/start', methods=['POST'])
 def start():
-    global PREV_DATA_BY_GAME_ID
+    global PREV_GAME_DATA
     data = request.get_json(force=True)
-    # game_id may be changed to id in the future, if they care about their documentation
-
-    PREV_DATA_BY_GAME_ID[data['game']['id']] = dict(prev_food_list=None)
+    PREV_GAME_DATA[data['game']['id']] = dict()
 
     print("STARTING GAME WITH ID",  data['game']['id'])
 
+    # TODO update this to 2019 standard
     response = dict(
         color='#069',
         name='Bitcoin',
@@ -61,57 +50,65 @@ def start():
 @app.route('/end', methods=['POST'])
 def end():
     data = request.get_json(force=True)  # dict
-    # return json.dumps({'thanks': True})
     print("We finished a game")
     print(json.dumps(data, indent=2))
     print("** end data")
     game_finished = data['game']['id']
-    global PREV_DATA_BY_GAME_ID
+    global PREV_GAME_DATA
     try:
-        pass
-        del PREV_DATA_BY_GAME_ID[game_finished]
+        del PREV_GAME_DATA[game_finished]
     except Exception:
         print("Got told we finished a game we weren't in?")
-
     return json.dumps({'thanks': True})
-
 
 @app.route('/move', methods=['POST'])
 def move():
-    global PREV_DATA_BY_GAME_ID
+    """Returns chosen move, given request with body describing the board state.
+
+    Prepares board and snake data structures, from given game data.
+    See battlesnake documentation for details about body structure.
+
+    Returns:
+        (json): e.g. {"move": "up"}
+    """
+    global PREV_GAME_DATA
+    data = request.get_json(force=True)
+    board_data = data['board']
+    board_height, board_width, food = board_data['height'], board_data['width'], board_data['food']
+    game_id = data['game']['id']
+    my_snake_id = data['you']['id']
+
     print("\nPINGED\n  ********************")
     start = time()
-    data = request.get_json(force=True)  # dict
-    board_data = data['board']
+
+    prev_foods = PREV_GAME_DATA.get(game_id, {}).get('prev_foods', [])
+    if prev_foods != []:
+        ate_last_turn = find_snakes_that_just_ate(board_data, prev_foods, board)
+    else:
+        ate_last_turn = []
+
     snake_dict = create_snake_dict(board_data['snakes'])
-    board = Board(board_data['height'], board_data['width'], snake_dict, board_data['food'], data['you']['id'])
+    board = Board(
+        board_height,
+        board_width,
+        snake_dict,
+        food,
+        my_snake_id,
+        ate_last_turn,
+    )
 
-    try:
-        prev_food_list = PREV_DATA_BY_GAME_ID[data['game']['id']]['prev_food_list']
-    except KeyError:  # bit of a hack, but lets us restart the game server and resume the same game
-        # without issues. Also good if we ever crash mid game
-        print("Failed to retrieve prev turn data")
-        prev_food_list = None
-
-    # insert info about which snakes ate last turn into data object
-    if prev_food_list is not None:
-        data['ate_last_turn'] = find_snakes_that_just_ate(board_data, prev_food_list, board)
-
-    try:
-        PREV_DATA_BY_GAME_ID[data['game']['id']]['prev_food_list'] = convert_to_coords_list(board_data['food'])
-    except KeyError:
-        print("Failed to update prev food list for next turn")
-        pass
+    if game_id in PREV_GAME_DATA:
+        PREV_GAME_DATA[game_id]['prev_foods'] = convert_to_coords_list(board_data['food'])
 
     end = time()
     print("Took", (end - start), "to build the board and setup game data")
 
     move_alone = time()
-    move = pick_move(data, board, snake_dict)
+    move = pick_move(board, snake_dict, my_snake_id)
     print("Computing the move took", (move_alone - start), "time")
-    end = time()
-    print("Took", (end - start), "to compute move", move)
 
+    end = time()
+    print("TOTAL time:", (end - start), "to compute move", move)
     return json.dumps(dict(move=move))
 
 

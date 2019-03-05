@@ -26,7 +26,7 @@ class TestPathFinding(unittest.TestCase):
         moves_with_valid_paths_out = []
         for move in valid_moves:
             possible_head = board.get_pos_from_move((x, y), move)
-            if find_path_out(board, possible_head, 1, max_length, set(), 0, []):
+            if find_path_out(board, possible_head, 1, max_length, set(), 0):
                 moves_with_valid_paths_out.append(move)
         self.assertEqual(
             safe_moves,
@@ -54,7 +54,7 @@ class TestPathFinding(unittest.TestCase):
         moves_with_valid_paths_out = []
         for move in valid_moves:
             possible_head = board.get_pos_from_move((x, y), move)
-            if find_path_out(board, possible_head, 1, max_length, set(), 0, []):
+            if find_path_out(board, possible_head, 1, max_length, set(), 0):
                 moves_with_valid_paths_out.append(move)
         self.assertEqual(
             safe_moves,

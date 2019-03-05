@@ -83,12 +83,25 @@ class Tile(object):
 
 class Board(object):
 
-    def __init__(self, height, width, snake_dict, food, us_id):
+    def __init__(self, height, width, snake_dict, food, my_snake_id, ate_last_turn=[]):
+        """
+        Params:
+            height (int): of board.
+            width (int): of board.
+            snake_dict (dict): IDs and locations of snakes.
+            food (2D list): coords of food.
+            my_snake_id (str): ID of our snake.
+            ate_last_turn (list): list of snake IDs that ate food in the previous turn
+                (which means they will grow by 1 tile in this turn, their tail staying where it was).
+
+        """
         self.height = height
         self.width = width
-        self.board = self.create_board_from_data(snake_dict, food)  # expects a 2D array of Tile objects
+        self.board = self.create_board_from_data(snake_dict, food)
         self.snake_dict = snake_dict
-        self.our_snake_id = us_id  # inject our own snake id here, for, reasons
+        self.my_snake_id = my_snake_id
+        self.food = food
+        self.ate_last_turn = ate_last_turn
 
     def __repr__(self):
         return __str__()
@@ -101,36 +114,34 @@ class Board(object):
             board_str += "\n"
         return board_str
 
-    def get_valid_moves_in_the_future(self, col, row, turns_passed, num_times_eaten, ate_last_turn=[]):
+    def get_valid_moves_in_the_future(self, col, row, turns_passed, num_times_eaten):
         valid_moves = []
-        us_id = self.our_snake_id
+        us_id = self.my_snake_id
 
-        if col < self.width - 1 and self.get_tile(col + 1, row).safe_in_the_future(turns_passed, num_times_eaten, us_id, ate_last_turn):
+        if col < self.width - 1 and self.get_tile(col + 1, row).safe_in_the_future(turns_passed, num_times_eaten, us_id, self.ate_last_turn):
             valid_moves.append('right')
 
-        if row < self.height - 1 and self.get_tile(col, row + 1).safe_in_the_future(turns_passed, num_times_eaten, us_id, ate_last_turn):
+        if row < self.height - 1 and self.get_tile(col, row + 1).safe_in_the_future(turns_passed, num_times_eaten, us_id, self.ate_last_turn):
             valid_moves.append('down')
 
-        if col > 0 and self.get_tile(col - 1, row).safe_in_the_future(turns_passed, num_times_eaten, us_id, ate_last_turn):
+        if col > 0 and self.get_tile(col - 1, row).safe_in_the_future(turns_passed, num_times_eaten, us_id, self.ate_last_turn):
                 valid_moves.append('left')
 
-        if row > 0 and self.get_tile(col, row - 1).safe_in_the_future(turns_passed, num_times_eaten, us_id, ate_last_turn):
+        if row > 0 and self.get_tile(col, row - 1).safe_in_the_future(turns_passed, num_times_eaten, us_id, self.ate_last_turn):
             valid_moves.append('up')
 
         return valid_moves
 
     # returns list of moves that will not result in instant death (wall or snake)
-    def get_valid_moves(self, col, row, ate_last_turn=None):
-        if ate_last_turn is None:
-            ate_last_turn = []
+    def get_valid_moves(self, col, row):
         valid_moves = []
-        if col < self.width - 1 and self.get_tile(col + 1, row).is_safe(ate_last_turn):
+        if col < self.width - 1 and self.get_tile(col + 1, row).is_safe(self.ate_last_turn):
             valid_moves.append('right')
-        if row < self.height - 1 and self.get_tile(col, row + 1).is_safe(ate_last_turn):
+        if row < self.height - 1 and self.get_tile(col, row + 1).is_safe(self.ate_last_turn):
             valid_moves.append('down')
-        if col > 0 and self.get_tile(col - 1, row).is_safe(ate_last_turn):
+        if col > 0 and self.get_tile(col - 1, row).is_safe(self.ate_last_turn):
             valid_moves.append('left')
-        if row > 0 and self.get_tile(col, row - 1).is_safe(ate_last_turn):
+        if row > 0 and self.get_tile(col, row - 1).is_safe(self.ate_last_turn):
             valid_moves.append('up')
 
         return valid_moves
@@ -155,7 +166,7 @@ class Board(object):
     def _tuple_to_point(self, tup):
         return {'x': tup[0], 'y': tup[1]}
 
-    def find_losing_head_collisions(self, col, row, my_snake_id, snake_dict, ate_last_turn):
+    def find_losing_head_collisions(self, col, row, my_snake_id, snake_dict):
         """Determine which moves would cause death by head collision for specified snake.
         Params:
             col, row: current position of my_snake_id
@@ -164,7 +175,7 @@ class Board(object):
         Returns:
             losing_head_collisions: list of dangerous moves e.g. ['up', 'left']
         """
-        valid_moves = self.get_valid_moves(col, row, ate_last_turn)
+        valid_moves = self.get_valid_moves(col, row)
 
         losing_head_collisions = []
         for move in valid_moves:
@@ -189,11 +200,11 @@ class Board(object):
                 enemy_snake, my_snake = snake_dict[enemy_snake_id], snake_dict[my_snake_id]
 
                 enemy_snake_len = len(enemy_snake['coords'])
-                if enemy_snake in ate_last_turn:
+                if enemy_snake in self.ate_last_turn:
                     enemy_snake_len += 1
 
                 my_snake_len = len(my_snake['coords'])
-                if my_snake in ate_last_turn:
+                if my_snake in self.ate_last_turn:
                     my_snake_len += 1
                 # ensure not to insert duplicates
                 if enemy_snake_len >= my_snake_len:
@@ -212,6 +223,10 @@ class Board(object):
             return True
 
     def create_board_from_data(self, snakes, food_list):
+        """
+        Returns:
+            board (2D list of Tile): 2D representation of the board using instances of Tile.
+        """
         board = []
         height, width = self.height, self.width
         # creates board of empty Tile objects
