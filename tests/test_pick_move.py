@@ -1,9 +1,10 @@
 import sys
 sys.path.extend(['.', '../'])
 
-from app import main, objects
+from app import main
 from app.food_fetcher import find_snakes_that_just_ate
 from app.shared import create_snake_dict
+import app.objects.board as Board
 import tests.fixtures as fixtures
 
 import unittest
@@ -16,7 +17,7 @@ class TestBasicSafety(unittest.TestCase):
         my_snake_id = game_data['you']['id']
 
         snake_dict = create_snake_dict(board_data['snakes'])
-        board = objects.Board(
+        board = Board.Board(
             board_data['height'],
             board_data['width'],
             snake_dict,
@@ -39,7 +40,7 @@ class TestBasicSafety(unittest.TestCase):
         my_snake_id = game_data['you']['id']
 
         snake_dict = create_snake_dict(board_data['snakes'])
-        board = objects.Board(
+        board = Board.Board(
             board_data['height'],
             board_data['width'],
             snake_dict,
@@ -56,7 +57,7 @@ class TestBasicSafety(unittest.TestCase):
         my_snake_id = game_data['you']['id']
 
         snake_dict = create_snake_dict(board_data['snakes'])
-        board = objects.Board(
+        board = Board.Board(
             board_data['height'],
             board_data['width'],
             snake_dict,
@@ -74,7 +75,7 @@ class TestAdvancedSafety(unittest.TestCase):
         my_snake_id = game_data['you']['id']
 
         snake_dict = create_snake_dict(board_data['snakes'])
-        board = objects.Board(
+        board = Board.Board(
             board_data['height'],
             board_data['width'],
             snake_dict,

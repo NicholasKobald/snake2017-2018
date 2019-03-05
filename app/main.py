@@ -8,7 +8,7 @@ import sys
 sys.path.extend(['.', '../'])
 
 from app.food_fetcher import pick_move_to_food, find_snakes_that_just_ate, convert_to_coords_list
-from app.objects import Board
+from app.objects.board import Board
 from app.shared import create_snake_dict
 
 PREV_GAME_DATA = dict()

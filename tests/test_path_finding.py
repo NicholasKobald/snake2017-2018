@@ -1,5 +1,6 @@
-from app import objects, shared
+from app import shared
 from app.food_fetcher import find_path_out
+import app.objects.board as Board
 import tests.fixtures as fixtures
 
 import unittest
@@ -12,7 +13,7 @@ class TestPathFinding(unittest.TestCase):
         my_snake_id = game_data['you']['id']
 
         snake_dict = shared.create_snake_dict(board_data['snakes'])
-        board = objects.Board(
+        board = Board.Board(
             board_data['height'],
             board_data['width'],
             snake_dict,
@@ -40,7 +41,7 @@ class TestPathFinding(unittest.TestCase):
         my_snake_id = game_data['you']['id']
 
         snake_dict = shared.create_snake_dict(board_data['snakes'])
-        board = objects.Board(
+        board = Board.Board(
             board_data['height'],
             board_data['width'],
             snake_dict,
