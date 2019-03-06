@@ -65,11 +65,6 @@ class Tile(object):
     def is_tail(self):
         return self.is_snake() and self.data['tail']
 
-    def __str__(self, voronoi=False):
-        if self.data['type'] == 'snake' and self.data['head']:
-            return 'h'
-        return self.data['type'][:1]
-
     def turns_till_safe(self, ate_last_turn=[]):
         if 'til_empty' in self.data:
             if self.is_snake() and self.get_snake_id() in ate_last_turn:
@@ -83,12 +78,12 @@ class Tile(object):
 
 class Board(object):
 
-    def __init__(self, height, width, snake_dict, food, my_snake_id, ate_last_turn=[]):
+    def __init__(self, height, width, snakes, food, my_snake_id, ate_last_turn=[]):
         """
         Params:
             height (int): of board.
             width (int): of board.
-            snake_dict (dict): IDs and locations of snakes.
+            snakes (dict): IDs and locations of snakes.
             food (2D list): coords of food.
             my_snake_id (str): ID of our snake.
             ate_last_turn (list): list of snake IDs that ate food in the previous turn
@@ -97,11 +92,11 @@ class Board(object):
         """
         self.height = height
         self.width = width
-        self.board = self.create_board_from_data(snake_dict, food)
-        self.snake_dict = snake_dict
+        self.snakes = snakes
         self.my_snake_id = my_snake_id
         self.food = food
         self.ate_last_turn = ate_last_turn
+        self.board = self.create_board_from_data()
 
     def __repr__(self):
         return __str__()
@@ -146,9 +141,6 @@ class Board(object):
 
         return valid_moves
 
-    def get_snake_len_by_id(self, snake_id):
-        return len(self.snake_dict[snake_id]['coords'])
-
     def naive_get_valid_moves(self, col, row):
         valid_moves = []
         if col < self.width - 1 and self.get_tile(col + 1, row).naive_is_safe():
@@ -166,17 +158,15 @@ class Board(object):
     def _tuple_to_point(self, tup):
         return {'x': tup[0], 'y': tup[1]}
 
-    def find_losing_head_collisions(self, col, row, my_snake_id, snake_dict):
+    def find_losing_head_collisions(self):
         """Determine which moves would cause death by head collision for specified snake.
-        Params:
-            col, row: current position of my_snake_id
-            my_snake_id: identifies snake whose well-being concerns us
 
         Returns:
             losing_head_collisions: list of dangerous moves e.g. ['up', 'left']
         """
+        my_snake = self.snakes[self.my_snake_id]
+        col, row = my_snake.head
         valid_moves = self.get_valid_moves(col, row)
-
         losing_head_collisions = []
         for move in valid_moves:
             valid_pos = self.get_pos_from_move((col, row), move)
@@ -197,14 +187,14 @@ class Board(object):
                 if enemy_snake_id is None:
                     continue
 
-                enemy_snake, my_snake = snake_dict[enemy_snake_id], snake_dict[my_snake_id]
+                enemy_snake = self.snakes[enemy_snake_id]
 
-                enemy_snake_len = len(enemy_snake['coords'])
-                if enemy_snake in self.ate_last_turn:
+                enemy_snake_len = enemy_snake.length
+                if enemy_snake.ate_last_turn:
                     enemy_snake_len += 1
 
-                my_snake_len = len(my_snake['coords'])
-                if my_snake in self.ate_last_turn:
+                my_snake_len = my_snake.length
+                if my_snake.ate_last_turn:
                     my_snake_len += 1
                 # ensure not to insert duplicates
                 if enemy_snake_len >= my_snake_len:
@@ -222,8 +212,11 @@ class Board(object):
         if col > self.height - 1 or col < 0:
             return True
 
-    def create_board_from_data(self, snakes, food_list):
+    def create_board_from_data(self):
         """
+        NOTE: This should be the only function where the board grid is accessed directly.
+        From everywhere else, only get_tile() should be used.
+
         Returns:
             board (2D list of Tile): 2D representation of the board using instances of Tile.
         """
@@ -239,11 +232,10 @@ class Board(object):
             board.append(row)
 
         # encode snakes into board by setting Tile object type to 'snake'
-        for s_id, snake in snakes.items():
-            s_len = len(snake['body'])
-            for index, coord in enumerate(snake['body']):
+        for s_id, snake in self.snakes.items():
+            for index, coord in enumerate(snake.coords):
                 x, y = coord['x'], coord['y']
-                at_head, at_tail = (index == 0), (index == s_len - 1)
+                at_head, at_tail = (index == 0), (index == snake.length - 1)
                 if board[y][x].is_snake():
                     continue
                 else:
@@ -252,10 +244,10 @@ class Board(object):
                         snake_id=s_id,
                         head=at_head,
                         tail=at_tail,
-                        til_empty=s_len - index
+                        til_empty=snake.length - index
                     ))
-        for food in food_list:
-            x, y = food['x'], food['y']
+        for f in self.food:
+            x, y = f['x'], f['y']
             board[y][x].set_tile_type(dict(type='food'))
         return board
 
@@ -298,7 +290,3 @@ class Board(object):
                     row += (str(self.get_tile(j, i))) + ' |'
             print(row)
             print('-' * self.width)
-
-
-class SnakeGoneWrong(Exception):
-    pass

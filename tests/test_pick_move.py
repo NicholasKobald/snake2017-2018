@@ -3,7 +3,7 @@ sys.path.extend(['.', '../'])
 
 from app import main
 from app.food_fetcher import find_snakes_that_just_ate
-from app.shared import create_snake_dict
+from app.objects import snake
 import app.objects.board as Board
 import tests.fixtures as fixtures
 
@@ -16,21 +16,24 @@ class TestBasicSafety(unittest.TestCase):
         board_data = game_data['board']
         my_snake_id = game_data['you']['id']
 
-        snake_dict = create_snake_dict(board_data['snakes'])
+        # assume that the one other snake ate
+        ate_last_turn = [
+            snake_id for snake_id in board_data['snakes'] if snake_id != game_data['you']['id']
+        ]
+
+        snakes = {
+            s['id']: snake.Snake(s['id'], s['body'], s['health'], s['id'] in ate_last_turn)
+            for s in board_data['snakes']
+        }
         board = Board.Board(
             board_data['height'],
             board_data['width'],
-            snake_dict,
+            snakes,
             board_data['food'],
             my_snake_id,
         )
 
-        # assume that the one other snake ate
-        game_data['ate_last_turn'] = [
-            snake_id for snake_id in board_data['snakes'] if snake_id != game_data['you']['id']
-        ]
-
-        move = main.pick_move(board, snake_dict, my_snake_id)
+        move = main.pick_move(board, my_snake_id)
         self.assertEqual(move, only_valid_move, "Failed to choose only valid move.")
 
 
@@ -39,16 +42,19 @@ class TestBasicSafety(unittest.TestCase):
         board_data = game_data['board']
         my_snake_id = game_data['you']['id']
 
-        snake_dict = create_snake_dict(board_data['snakes'])
+        snakes = {
+            s['id']: snake.Snake(s['id'], s['body'], s['health'], False)
+            for s in board_data['snakes']
+        }
         board = Board.Board(
             board_data['height'],
             board_data['width'],
-            snake_dict,
+            snakes,
             board_data['food'],
             my_snake_id,
         )
 
-        move = main.pick_move(board, snake_dict, my_snake_id)
+        move = main.pick_move(board, my_snake_id)
         self.assertEqual(move, best_move, "Failed to choose best move.")
 
     def test_prefers_move_away_from_snake(self):
@@ -56,16 +62,19 @@ class TestBasicSafety(unittest.TestCase):
         board_data = game_data['board']
         my_snake_id = game_data['you']['id']
 
-        snake_dict = create_snake_dict(board_data['snakes'])
+        snakes = {
+            s['id']: snake.Snake(s['id'], s['body'], s['health'], False)
+            for s in board_data['snakes']
+        }
         board = Board.Board(
             board_data['height'],
             board_data['width'],
-            snake_dict,
+            snakes,
             board_data['food'],
             my_snake_id,
         )
 
-        move = main.pick_move(board, snake_dict, my_snake_id)
+        move = main.pick_move(board, my_snake_id)
         self.assertEqual(move, best_move, "Failed to choose best move.")
 
 class TestAdvancedSafety(unittest.TestCase):
@@ -74,14 +83,17 @@ class TestAdvancedSafety(unittest.TestCase):
         board_data = game_data['board']
         my_snake_id = game_data['you']['id']
 
-        snake_dict = create_snake_dict(board_data['snakes'])
+        snakes = {
+            s['id']: snake.Snake(s['id'], s['body'], s['health'], False)
+            for s in board_data['snakes']
+        }
         board = Board.Board(
             board_data['height'],
             board_data['width'],
-            snake_dict,
+            snakes,
             board_data['food'],
             my_snake_id,
         )
 
-        move = main.pick_move(board, snake_dict, my_snake_id)
+        move = main.pick_move(board, my_snake_id)
         self.assertEqual(move, best_move, "Failed to choose move towards big component.")

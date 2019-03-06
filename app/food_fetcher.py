@@ -5,22 +5,14 @@ sys.path.extend(['.', '../'])
 from app.shared import *  # fixme
 
 
-def pick_move_to_food(board, snake_dict, my_snake_id):
-    # get our head coordinates
-    cur_x, cur_y = get_head_coords(snake_dict[my_snake_id])
+def pick_move_to_food(board, my_snake_id):
+    cur_x, cur_y = board.snakes[my_snake_id].head
     valid_moves = board.get_valid_moves(cur_x, cur_y)
     print("valid moves:", valid_moves)
-    losing_head_collisions = board.find_losing_head_collisions(cur_x, cur_y, my_snake_id, snake_dict)
-    prioritized_moves, priority_val_per_move = prioritize_moves_by_food(board.food, board, valid_moves, snake_dict, my_snake_id)
+    losing_head_collisions = board.find_losing_head_collisions()
+    prioritized_moves, priority_val_per_move = prioritize_moves_by_food(board.food, board, valid_moves, my_snake_id)
     if prioritized_moves == []:
-        snake_coords = get_head_coords(snake_dict[my_snake_id])
-        prioritized_moves = prioritize_moves_backup(
-            valid_moves,
-            snake_coords,
-            board.width,
-            board.height,
-            board,
-        )
+        prioritized_moves = prioritize_moves_backup(valid_moves, cur_x, cur_y, board)
 
     # all prioritized valid moves that aren't losing head collisions
     prioritized_unfatal_moves = [p for p in prioritized_moves if p not in losing_head_collisions]
@@ -36,9 +28,9 @@ def pick_move_to_food(board, snake_dict, my_snake_id):
     if not prioritized_unfatal_moves:
         return 'left'
 
-    max_length = get_max_snake_length(snake_dict)
+    max_length = get_max_snake_length(board.snakes)
     if not potentially_fatal:
-        mark_dangerous_tiles(board, snake_dict, my_snake_id)
+        mark_dangerous_tiles(board, my_snake_id)
 
     prioritized_moves_with_path_out = []
     if not potentially_fatal:
@@ -55,14 +47,14 @@ def pick_move_to_food(board, snake_dict, my_snake_id):
     num_paths_out_per_move = count_paths_out(board, prioritized_moves_with_path_out, cur_x, cur_y)
     if prioritized_moves_with_path_out:
         # if we are VERY hungry, move to food
-        if should_eat(snake_dict, my_snake_id):
+        if should_eat(board.snakes, my_snake_id):
             for move in prioritized_moves_with_path_out:
                 if priority_val_per_move.get(move, 0) >= 1:
                     return move
 
         # if we are getting hungry food, try to pick move to food
         # with number of paths above the average
-        if snake_dict[my_snake_id]['health'] < 70:
+        if board.snakes[my_snake_id].health < 70:
             # get average number of paths
             ave_num_paths = sum(num_paths_out_per_move.values()) / len(num_paths_out_per_move.keys())
             for move in prioritized_moves_with_path_out:
@@ -96,15 +88,19 @@ def pick_move_to_food(board, snake_dict, my_snake_id):
         return 'right' # go right!
         # raise Exception("HELP US")
 
-def should_eat(snake_dict, my_snake_id):
-    if snake_dict[my_snake_id]['health'] < 30:
+def should_eat(snakes, my_snake_id):
+    """
+    Determines that we should eat if one of true holds:
+    1) We have low health
+    2) Some other snake is longer or within two units of our length
+    """
+    if snakes[my_snake_id].health < 30:
         return True
 
-    cur_length = len(snake_dict[my_snake_id]['coords'])
-    for snake_id, snake_data in snake_dict.items():
+    for snake_id, other_snake in snakes.items():
         if snake_id == my_snake_id:
             continue
-        if cur_length < len(snake_data['coords']) + 2:
+        if snakes[my_snake_id].length < other_snake.length + 2:
             return True
     return False
 
@@ -202,8 +198,12 @@ def find_conservative_path_out(board, head, moves_elapsed, max_snake_length, vis
 
     return False
 
-def mark_dangerous_tiles(board, snake_dict, our_snake_id):
+def mark_dangerous_tiles(board, my_snake_id):
     """Mark tiles around other snakes' heads as dangerous by mutating the board object.
+
+    Params:
+        board (Board).
+        my_snake_id (str).
 
     board[x][y] = Tile({
         ...
@@ -216,14 +216,13 @@ def mark_dangerous_tiles(board, snake_dict, our_snake_id):
         killer_moves: list of moves e.g. ['left', 'right']
             moves that would kill another snake immediately (if they moved to the same tile that we do)
     """
-    for s_id, snake in snake_dict.items():
-        if s_id != our_snake_id:
-            point = snake['coords'][0]
-            x, y = point['x'], point['y']
+    for s_id, snake in board.snakes.items():
+        if s_id != my_snake_id:
+            x, y = snake.head
             valid_moves = board.get_valid_moves(x, y)
             for move in valid_moves:
                 head_x, head_y = board.get_pos_from_move((x, y), move)
-                board.get_tile(head_x, head_y).data['threatened_length'] = len(snake['coords']) # TODO this..
+                board.get_tile(head_x, head_y).data['threatened_length'] = snake.length
                 board.get_tile(head_x, head_y).data['threatened'] = 1
                 valid_followup_moves = board.get_valid_moves(head_x, head_y)
                 for followup_move in valid_followup_moves:
@@ -231,15 +230,14 @@ def mark_dangerous_tiles(board, snake_dict, our_snake_id):
                     if 'threatened' not in board.get_tile(head_x2, head_y2).data:
                         board.get_tile(head_x2, head_y2).data['threatened'] = 2
 
-    us = snake_dict[our_snake_id]
-    point = us['coords'][0]
-    x, y = point['x'], point['y']
+    my_snake = board.snakes[my_snake_id]
+    x, y = my_snake.head
     killer_moves = []
     valid_moves = board.get_valid_moves(x, y)
     for move in valid_moves:
         head_x, head_y = board.get_pos_from_move((x, y), move)
         if 'threatened_length' in board.get_tile(head_x, head_y).data:
-            if board.get_tile(head_x, head_y).data['threatened_length'] < len(us['coords']):
+            if board.get_tile(head_x, head_y).data['threatened_length'] < my_snake.length:
                 # if we can kill them, don't run away. be strong.
                 killer_moves.append(move)
                 del board.get_tile(head_x, head_y).data['threatened']
@@ -257,13 +255,13 @@ def print_marked_dangerous(board):
             if 'threatened' in board.get_tile(j, i).data:
                 print("x:", i, "y:", j)
 
-# prefer moves that move us to the centre
-def prioritize_moves_backup(valid_moves, snake_head_coords, board_width, board_height, board):
+def prioritize_moves_backup(valid_moves, cur_x, cur_y, board):
+    """Prefers moves that approach centre of board."""
     preferred_moves, other_moves = [], []
-    centre_x, centre_y = (board_width / 2) - 1, (board_height / 2) - 1
-    max_dist_to_centre = abs(snake_head_coords[0] - centre_x) + abs(snake_head_coords[1] - centre_y)
+    centre_x, centre_y = (board.width / 2) - 1, (board.height / 2) - 1
+    max_dist_to_centre = abs(cur_x - centre_x) + abs(cur_y - centre_y)
     for move in valid_moves:
-        pos = board.get_pos_from_move(snake_head_coords, move)
+        pos = board.get_pos_from_move((cur_x, cur_y), move)
         dist_to_centre = abs(pos[0] - centre_x) + abs(pos[1] - centre_y)
         if dist_to_centre < max_dist_to_centre:
             preferred_moves.append(move)
@@ -283,9 +281,11 @@ def remove_losing_ties_by_snake_len(board, my_snake_id, food_info_list):
         if elem in food_info_list: food_info_list.remove(elem)
     return food_info_list
 
-def prioritize_moves_by_food(food, board, valid_moves, snake_dict, my_snake_id):
+def prioritize_moves_by_food(food, board, valid_moves, my_snake_id):
     """
-    returns:
+    Params:
+
+    Returns:
         (list): permuted valid_moves prioritized best->worst.
             favours moves that approach most of: nearest cluster, largest cluster, nearest food
         (dict): key (str) is move, value (int) is score [0,3] where higher is better

@@ -8,8 +8,8 @@ import sys
 sys.path.extend(['.', '../'])
 
 from app.food_fetcher import pick_move_to_food, find_snakes_that_just_ate, convert_to_coords_list
+from app.objects.snake import Snake
 from app.objects.board import Board
-from app.shared import create_snake_dict
 
 PREV_GAME_DATA = dict()
 
@@ -20,8 +20,16 @@ app = Flask(__name__)
 def home():
     return "<b>Hello World</b>"
 
-def pick_move(board, snake_dict, my_snake_id):
-    move = pick_move_to_food(board, snake_dict, my_snake_id)
+def pick_move(board, my_snake_id):
+    """
+    Params:
+        board (Board): represents game state.
+        my_snake_id (str): our snake ID.
+
+    Returns:
+        move (str): one of 'up', 'left', 'right', 'down'
+    """
+    move = pick_move_to_food(board, my_snake_id)
     return move
 
 @app.route('/ping')
@@ -87,11 +95,14 @@ def move():
     else:
         ate_last_turn = []
 
-    snake_dict = create_snake_dict(board_data['snakes'])
+    snakes = {
+        s['id']: Snake(s['id'], s['body'], s['health'], s['id'] in ate_last_turn)
+        for s in board_data['snakes']
+    }
     board = Board(
         board_height,
         board_width,
-        snake_dict,
+        snakes,
         food,
         my_snake_id,
         ate_last_turn,
@@ -104,7 +115,7 @@ def move():
     print("Took", (end - start), "to build the board and setup game data")
 
     move_alone = time()
-    move = pick_move(board, snake_dict, my_snake_id)
+    move = pick_move(board, my_snake_id)
     print("Computing the move took", (move_alone - start), "time")
 
     end = time()

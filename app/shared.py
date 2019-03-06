@@ -12,12 +12,8 @@ flip_dict = dict(
 DEBUG = True
 
 
-def get_head_coords(snake):
-    coords_head = snake['coords'][0]
-    return coords_head['x'], coords_head['y']
-
-def get_max_snake_length(snake_dict):
-    return max(len(snake['coords']) for snake in snake_dict.values())
+def get_max_snake_length(snakes):
+    return max(snake.length for _, snake in snakes.items())
 
 def get_pos_from_move(cur_pos, move):
     raise NotImplementedError()
@@ -189,18 +185,18 @@ def find_longest_snake(board, snake_ids):
     if len(snake_ids) < 1:
         return None
     cur_longest_snake = snake_ids[0]
-    cur_longest_len = board.get_snake_len_by_id(cur_longest_snake)
+    cur_longest_len = board.snakes[cur_longest_snake].length
     for other_snake_id in snake_ids:
         if other_snake_id == cur_longest_snake:
             continue
-        other_snake_len = board.get_snake_len_by_id(other_snake_id)
+        other_snake_len = board.snakes[other_snake_id].length
         if other_snake_len > cur_longest_len:
             cur_longest_len = other_snake_len
             cur_longest_snake = other_snake_id
         elif other_snake_len == cur_longest_len:
             cur_longest_snake = None
     assert (cur_longest_snake is None or
-            cur_longest_len == board.get_snake_len_by_id(cur_longest_snake))
+            cur_longest_len == board.snakes[cur_longest_snake].length)
     return cur_longest_snake
 
 def group_nearest_food_by_moves(valid_moves, snake_food_info):
@@ -286,20 +282,6 @@ def convert_to_coords_list(food_list):
         x, y = food_item_dict['x'], food_item_dict['y']
         food_coords.append([x, y])
     return food_coords
-
-def create_snake_dict(snake_list):
-    snake_dict = dict()
-    for snake in snake_list:
-        snake_dict[snake['id']] = snake
-        snake['coords'] = snake['body']
-        snake['eaten'] = 0
-        snake['ate'] = [False]  # init with prev game info.
-        snake['old_tails'] = []
-        snake['food_eaten'] = []
-
-        # NOTE: leaving this in causes no harm, but removing it messes with the (shotty) unit tests
-        #del snake['id']  # no longer needed.
-    return snake_dict
 
 # quick bfs to count reachable from specific board
 def count_reachable(board, head):

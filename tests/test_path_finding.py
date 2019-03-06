@@ -1,5 +1,6 @@
 from app import shared
 from app.food_fetcher import find_path_out
+from app.objects import snake
 import app.objects.board as Board
 import tests.fixtures as fixtures
 
@@ -12,17 +13,20 @@ class TestPathFinding(unittest.TestCase):
         board_data = game_data['board']
         my_snake_id = game_data['you']['id']
 
-        snake_dict = shared.create_snake_dict(board_data['snakes'])
+        snakes = {
+            s['id']: snake.Snake(s['id'], s['body'], s['health'], False)
+            for s in board_data['snakes']
+        }
         board = Board.Board(
             board_data['height'],
             board_data['width'],
-            snake_dict,
+            snakes,
             board_data['food'],
             my_snake_id,
         )
 
-        x, y = shared.get_head_coords(snake_dict[my_snake_id])
-        max_length = shared.get_max_snake_length(snake_dict)
+        x, y = snakes[my_snake_id].head
+        max_length = shared.get_max_snake_length(snakes)
 
         moves_with_valid_paths_out = []
         for move in valid_moves:
@@ -40,17 +44,20 @@ class TestPathFinding(unittest.TestCase):
         board_data = game_data['board']
         my_snake_id = game_data['you']['id']
 
-        snake_dict = shared.create_snake_dict(board_data['snakes'])
+        snakes = {
+            s['id']: snake.Snake(s['id'], s['body'], s['health'], False)
+            for s in board_data['snakes']
+        }
         board = Board.Board(
             board_data['height'],
             board_data['width'],
-            snake_dict,
+            snakes,
             board_data['food'],
             my_snake_id,
         )
 
-        x, y = shared.get_head_coords(snake_dict[my_snake_id])
-        max_length = shared.get_max_snake_length(snake_dict)
+        x, y = snakes[my_snake_id].head
+        max_length = shared.get_max_snake_length(snakes)
 
         moves_with_valid_paths_out = []
         for move in valid_moves:
