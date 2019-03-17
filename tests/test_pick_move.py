@@ -79,7 +79,7 @@ class TestBasicSafety(unittest.TestCase):
 
 class TestAdvancedSafety(unittest.TestCase):
     def test_prefer_larger_component(self):
-        game_data, best_move = fixtures.get_data_with_one_big_component()
+        game_data, best_move, _ = fixtures.get_data_with_one_big_component()
         board_data = game_data['board']
         my_snake_id = game_data['you']['id']
 

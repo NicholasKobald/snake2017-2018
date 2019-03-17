@@ -58,26 +58,33 @@ def get_new_bysnake_dict(snake_id, by_snake, snake_coords, dest_coord, path_len,
 
 # iterates over coords_list to find closest snake(s) using BFS
 def find_closest_snakes(board, coords_list):
-    """
-    We are building two dictionaries:
-    1) 'by_dest': { coord_key_str: [{
-                        snake_id: 'snake-007',
-                        path_len: 7,
-                        coords: [0,7]
-                    },
-                    ...
-                    ]
+    """Finds snakes closest to each of the given list of points.
+
+    Params:
+        board (Board).
+        coords_list (list): the various destinations e.g. [[0,0], [1,5], [2,3]]
+
+    Return:
+        by_dest (dict): e.g. {
+            1-2: [{
+                snake_id: 'snake-007',
+                path_len: 7,
+                coords: [0,7]
+            },
+            ...
+            ]
         }
-    2) 'by_snake': { snake_id: [{
-                        dest_info: {
-                            coords: [1,1],
-                            path_len: 7,
-                            tied_with: ['snake-006']
-                        },
-                        coords: [0, 7]
-                    },
-                    ...
-                    ]
+        by_snake (dict): e.g. {
+            snake_id: [{
+                dest_info: {
+                    coords: [1,1],
+                    path_len: 7,
+                    tied_with: ['snake-006']
+                },
+                coords: [0, 7]
+            },
+            ...
+            ]
         }
     """
     by_dest, by_snake = dict(), dict()
@@ -99,9 +106,9 @@ def find_closest_snakes(board, coords_list):
             cur_col, cur_row = cur_pos['x'], cur_pos['y']
 
             # have we reached our destination ?
-            if board.get_tile(cur_col, cur_row).is_head():
+            if board.get_tile(cur_col, cur_row).is_head:
                 working_min_path_len = cur_path_len
-                cur_snake_id = board.get_tile(cur_col, cur_row).get_snake_id()
+                cur_snake_id = board.get_tile(cur_col, cur_row).snake_id
                 by_dest = get_new_bydest_dict(
                     dest_coord_key_str,
                     by_dest,
@@ -124,7 +131,7 @@ def find_closest_snakes(board, coords_list):
                 if pos is None or visited[pos[0]][pos[1]]:
                     continue
                 # enqueue cell if unoccupied or containing snake head
-                if move in valid_moves or board.get_tile(pos[0], pos[1]).is_head():
+                if move in valid_moves or board.get_tile(pos[0], pos[1]).is_head:
                     if cur_path_len + 1 <= working_min_path_len:
                         queue.append(dict(coords={"x": pos[0], "y": pos[1]}, path_len=(cur_path_len + 1)))
                         visited[pos[0]][pos[1]] = True
@@ -132,6 +139,10 @@ def find_closest_snakes(board, coords_list):
     return dict(by_dest=by_dest, by_snake=by_snake)
 
 def coords_to_key_str(coords):
+    """
+    Returns:
+        key_str (str): e.g. "1-2" for x=1, y=2.
+    """
     col, row = coords['x'], coords['y']
     key_str = str(col) + ":" + str(row)
     return key_str
@@ -261,7 +272,7 @@ def find_snakes_that_just_ate(board_data, prev_food_list, board):
 
         tile = board.get_tile(prev_food[0], prev_food[1])
         if tile.is_snake():
-            snakes_just_ate.append(tile.get_snake_id())
+            snakes_just_ate.append(tile.snake_id)
     return snakes_just_ate
 
 def convert_to_coords_list(food_list):
