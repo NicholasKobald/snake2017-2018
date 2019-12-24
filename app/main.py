@@ -7,9 +7,10 @@ import sys
 # necessary for rest of import statements below
 sys.path.extend(['.', '../'])
 
-from app.food_fetcher import pick_move_to_food, find_snakes_that_just_ate, convert_to_coords_list
+from app.food_fetcher import pick_move_to_food, convert_to_coords_list
 from app.objects.snake import Snake
 from app.objects.board import Board
+from app.shared import find_snakes_that_just_ate
 
 PREV_GAME_DATA = dict()
 
