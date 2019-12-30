@@ -33,9 +33,9 @@ class Tile(object):
 
     def safe_in_the_future(self, num_turns_in_future, num_times_eaten, us_id):
         if self.is_snake() and self.snake_id == us_id:
-            num_turns_until_safe = self.turns_till_safe() + num_times_eaten
+            num_turns_until_safe = self.turns_til_safe() + num_times_eaten
         else:
-            num_turns_until_safe = self.turns_till_safe()
+            num_turns_until_safe = self.turns_til_safe()
         return num_turns_until_safe <= num_turns_in_future
 
     def is_safe(self):
@@ -47,7 +47,7 @@ class Tile(object):
     def is_snake(self):
         return self.snake_id is not None
 
-    def turns_till_safe(self):
+    def turns_til_safe(self):
         if not self.is_snake():
             return 0
 
