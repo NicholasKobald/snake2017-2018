@@ -2,8 +2,46 @@ import sys
 # necessary for rest of import statements below
 sys.path.extend(['.', '../'])
 
+from app.objects.board import Board
+from app.objects.snake import Snake
+from app.shared import find_snakes_that_just_ate
 from app.shared import *  # fixme
 
+
+def pick_move(board_height, board_width, snakes, food, my_snake_id, game_id, game_data_cache):
+    """
+    Params:
+        board_height (int).
+        board_width (int).
+        snakes (list of dicts): with the following keys:
+            'id' => str, 'body' => coords list, 'health' => int beteen 0,100.
+        food (list of x,y coords): e.g. [{"x": 0, "y": 0}, {"x": 1, "y": 1}].
+        my_snake_id (str): our snake ID.
+        game_id (str).
+        game_data_cache (GameDataCache): manages.
+
+    Returns:
+        move (str): one of 'up', 'left', 'right', 'down'
+    """
+    snakes_dict = {
+        s['id']: Snake(s['id'], s['body'], s['health'], False)
+        for s in snakes
+    }
+    board = Board(board_height, board_width, snakes_dict, food, my_snake_id)
+
+    prev_foods = game_data_cache.get_food_list(game_id)
+    game_data_cache.update_food_list(game_id, food)
+    if prev_foods is not None:
+        ate_last_turn = find_snakes_that_just_ate(food, convert_to_coords_list(prev_foods), board)
+    else:
+        ate_last_turn = []
+
+    for snake_id, snake in snakes_dict.items():
+        if snake_id in ate_last_turn:
+            snake.ate_last_turn = True
+
+    move = pick_move_to_food(board, my_snake_id)
+    return move
 
 def pick_move_to_food(board, my_snake_id):
     cur_x, cur_y = board.snakes[my_snake_id].head
@@ -325,11 +363,16 @@ def remove_losing_ties_by_snake_len(board, my_snake_id, food_info_list):
 def prioritize_moves_by_food(food, board, valid_moves, my_snake_id):
     """
     Params:
+        food (list of x,y coords): e.g. [{"x": 0, "y": 0}, {"x": 1, "y": 1}].
+        board (Board).
+        valid_moves (list of str): e.g. ["up", "left"].
+        my_snake_id (str).
 
     Returns:
-        (list): permuted valid_moves prioritized best->worst.
-            favours moves that approach most of: nearest cluster, largest cluster, nearest food
-        (dict): key (str) is move, value (int) is score [0,3] where higher is better
+        (2-tuple):
+            (list): permuted valid_moves prioritized best->worst.
+                favours moves that approach most of: nearest cluster, largest cluster, nearest food
+            (dict): key (str) is move, value (int) is score [0,3] where higher is better
     """
     closest_food_and_snakes = find_closest_snakes(board, food)
     foods_by_snake = closest_food_and_snakes['by_snake']

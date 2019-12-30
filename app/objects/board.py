@@ -40,9 +40,9 @@ class Tile(object):
 
     def is_safe(self):
         if self.is_tail:
-            snake_id = self.snake_id
-            return snake_id not in self.board.ate_last_turn
-        return not self.is_snake()
+            return self.board.snakes[self.snake_id].ate_last_turn
+        else:
+            return not self.is_snake()
 
     def is_snake(self):
         return self.snake_id is not None
@@ -50,16 +50,17 @@ class Tile(object):
     def turns_till_safe(self):
         if not self.is_snake():
             return 0
-        elif self.is_snake() and self.snake_id in self.board.ate_last_turn:
+
+        s = self.board.snakes.get(self.snake_id)
+        if s is not None and s.ate_last_turn:
             return self.til_empty
         else:
-            # because the tail is safe!
             return self.til_empty - 1
 
 
 class Board(object):
 
-    def __init__(self, height, width, snakes, food, my_snake_id, ate_last_turn=[]):
+    def __init__(self, height, width, snakes, food, my_snake_id):
         """
         Params:
             height (int): of board.
@@ -67,16 +68,12 @@ class Board(object):
             snakes (dict): IDs and locations of snakes.
             food (2D list): coords of food.
             my_snake_id (str): ID of our snake.
-            ate_last_turn (list): list of snake IDs that ate food in the previous turn
-                (which means they will grow by 1 tile in this turn, their tail staying where it was).
-
         """
         self.height = height
         self.width = width
         self.snakes = snakes
         self.my_snake_id = my_snake_id
         self.food = food
-        self.ate_last_turn = ate_last_turn
         self.board = self.populate_board()
 
     def __repr__(self):

@@ -1,10 +1,7 @@
 import sys
 sys.path.extend(['.', '../'])
 
-from app import main
-from app.food_fetcher import find_snakes_that_just_ate
-from app.objects import snake
-import app.objects.board as Board
+from app.food_fetcher import pick_move
 import tests.fixtures as fixtures
 
 import unittest
@@ -12,88 +9,71 @@ import unittest
 
 class TestBasicSafety(unittest.TestCase):
     def test_prefer_head_collision_over_wall(self):
-        game_data, only_valid_move = fixtures.get_data_with_one_valid_move()
-        board_data = game_data['board']
-        my_snake_id = game_data['you']['id']
+        data, only_valid_move = fixtures.get_data_with_one_valid_move()
+        board_data = data['board']
 
         # assume that the one other snake ate
-        ate_last_turn = [
-            snake_id for snake_id in board_data['snakes'] if snake_id != game_data['you']['id']
-        ]
+        if board_data['snakes'][0] == data['you']['id']:
+            other_snake = board_data['snakes'][1]
+        else:
+            other_snake = board_data['snakes'][0]
+        other_snake_head = other_snake['body'][0]
+        prev_foods = [{"x": other_snake_head['x'], "y": other_snake_head['y']}]
+        mock_game_data_cache = fixtures.get_mock_game_data_cache(data['game']['id'], prev_foods)
 
-        snakes = {
-            s['id']: snake.Snake(s['id'], s['body'], s['health'], s['id'] in ate_last_turn)
-            for s in board_data['snakes']
-        }
-        board = Board.Board(
+        move = pick_move(
             board_data['height'],
             board_data['width'],
-            snakes,
+            board_data['snakes'],
             board_data['food'],
-            my_snake_id,
+            data['you']['id'],
+            data['game']['id'],
+            mock_game_data_cache,
         )
-
-        move = main.pick_move(board, my_snake_id)
         self.assertEqual(move, only_valid_move, "Failed to choose only valid move.")
 
 
     def test_avoids_dead_end(self):
-        game_data, _, _, best_move = fixtures.get_data_with_one_way_out()
-        board_data = game_data['board']
-        my_snake_id = game_data['you']['id']
-
-        snakes = {
-            s['id']: snake.Snake(s['id'], s['body'], s['health'], False)
-            for s in board_data['snakes']
-        }
-        board = Board.Board(
-            board_data['height'],
-            board_data['width'],
-            snakes,
-            board_data['food'],
-            my_snake_id,
+        data, _, _, best_move = fixtures.get_data_with_one_way_out()
+        move = pick_move(
+            data['board']['height'],
+            data['board']['width'],
+            data['board']['snakes'],
+            data['board']['food'],
+            data['you']['id'],
+            data['game']['id'],
+            fixtures.get_empty_mock_game_data_cache(),
         )
 
-        move = main.pick_move(board, my_snake_id)
         self.assertEqual(move, best_move, "Failed to choose best move.")
 
     def test_prefers_move_away_from_snake(self):
-        game_data, _, _, best_move = fixtures.get_data_with_two_ways_out()
-        board_data = game_data['board']
-        my_snake_id = game_data['you']['id']
+        data, _, _, best_move = fixtures.get_data_with_two_ways_out()
 
-        snakes = {
-            s['id']: snake.Snake(s['id'], s['body'], s['health'], False)
-            for s in board_data['snakes']
-        }
-        board = Board.Board(
-            board_data['height'],
-            board_data['width'],
-            snakes,
-            board_data['food'],
-            my_snake_id,
+        move = pick_move(
+            data['board']['height'],
+            data['board']['width'],
+            data['board']['snakes'],
+            data['board']['food'],
+            data['you']['id'],
+            data['game']['id'],
+            fixtures.get_empty_mock_game_data_cache(),
         )
 
-        move = main.pick_move(board, my_snake_id)
         self.assertEqual(move, best_move, "Failed to choose best move.")
 
 class TestAdvancedSafety(unittest.TestCase):
     def test_prefer_larger_component(self):
-        game_data, best_move, _ = fixtures.get_data_with_one_big_component()
-        board_data = game_data['board']
-        my_snake_id = game_data['you']['id']
+        data, best_move, _ = fixtures.get_data_with_one_big_component()
 
-        snakes = {
-            s['id']: snake.Snake(s['id'], s['body'], s['health'], False)
-            for s in board_data['snakes']
-        }
-        board = Board.Board(
-            board_data['height'],
-            board_data['width'],
-            snakes,
-            board_data['food'],
-            my_snake_id,
+        move = pick_move(
+            data['board']['height'],
+            data['board']['width'],
+            data['board']['snakes'],
+            data['board']['food'],
+            data['you']['id'],
+            data['game']['id'],
+            fixtures.get_empty_mock_game_data_cache(),
         )
 
-        move = main.pick_move(board, my_snake_id)
         self.assertEqual(move, best_move, "Failed to choose move towards big component.")

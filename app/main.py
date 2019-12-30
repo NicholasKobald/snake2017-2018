@@ -7,13 +7,10 @@ import sys
 # necessary for rest of import statements below
 sys.path.extend(['.', '../'])
 
-from app.food_fetcher import pick_move_to_food, convert_to_coords_list
-from app.objects.snake import Snake
-from app.objects.board import Board
-from app.shared import find_snakes_that_just_ate
+from app.objects.game_data_cache import GameDataCache
 
-PREV_GAME_DATA = dict()
 
+GAME_DATA_CACHE = GameDataCache(max_concurrent_games=10)
 app = Flask(__name__)
 
 
@@ -21,28 +18,15 @@ app = Flask(__name__)
 def home():
     return "<b>Hello World</b>"
 
-def pick_move(board, my_snake_id):
-    """
-    Params:
-        board (Board): represents game state.
-        my_snake_id (str): our snake ID.
-
-    Returns:
-        move (str): one of 'up', 'left', 'right', 'down'
-    """
-    move = pick_move_to_food(board, my_snake_id)
-    return move
-
 @app.route('/ping')
 def ping():
     return "Successfully pinged"
 
 @app.route('/start', methods=['POST'])
 def start():
-    global PREV_GAME_DATA
+    global GAME_DATA_CACHE
     data = request.get_json(force=True)
-    PREV_GAME_DATA[data['game']['id']] = dict()
-
+    GAME_DATA_CACHE.new_game(data['game']['id'])
     print("STARTING GAME WITH ID",  data['game']['id'])
 
     # TODO update this to 2019 standard
@@ -58,16 +42,10 @@ def start():
 
 @app.route('/end', methods=['POST'])
 def end():
-    data = request.get_json(force=True)  # dict
-    print("We finished a game")
-    print(json.dumps(data, indent=2))
-    print("** end data")
-    game_finished = data['game']['id']
-    global PREV_GAME_DATA
-    try:
-        del PREV_GAME_DATA[game_finished]
-    except Exception:
-        print("Got told we finished a game we weren't in?")
+    global GAME_DATA_CACHE
+    data = request.get_json(force=True)
+    print("We finished a game: ", data['game']['id'])
+    GAME_DATA_CACHE.remove_entry(data['game']['id'])
     return json.dumps({'thanks': True})
 
 @app.route('/move', methods=['POST'])
@@ -80,47 +58,25 @@ def move():
     Returns:
         (json): e.g. {"move": "up"}
     """
-    global PREV_GAME_DATA
+    global GAME_DATA_CACHE
     data = request.get_json(force=True)
-    board_data = data['board']
-    board_height, board_width, food = board_data['height'], board_data['width'], board_data['food']
-    game_id = data['game']['id']
-    my_snake_id = data['you']['id']
 
-    print("\nPINGED\n  ********************")
+    print("\nReceived POST request at /move \n  ********************")
     start = time()
 
-    prev_foods = PREV_GAME_DATA.get(game_id, {}).get('prev_foods', [])
-    if prev_foods != []:
-        ate_last_turn = find_snakes_that_just_ate(board_data, prev_foods, board)
-    else:
-        ate_last_turn = []
-
-    snakes = {
-        s['id']: Snake(s['id'], s['body'], s['health'], s['id'] in ate_last_turn)
-        for s in board_data['snakes']
-    }
-    board = Board(
-        board_height,
-        board_width,
-        snakes,
-        food,
-        my_snake_id,
-        ate_last_turn,
+    # see docs: https://docs.battlesnake.com/snake-api#tag/endpoints/paths/~1move/post
+    move = pick_move(
+        data['board']['height'],    # int
+        data['board']['width'],     # int
+        data['board']['snakes'],    # list of dicts containing keys "x" and "y"
+        data['board']['food'],      # list of dicts containing keys "x" and "y"
+        data['you']['id'],          # string
+        data['game']['id'],         # string
+        GAME_DATA_CACHE,            # GameDataCache object
     )
 
-    if game_id in PREV_GAME_DATA:
-        PREV_GAME_DATA[game_id]['prev_foods'] = convert_to_coords_list(board_data['food'])
-
     end = time()
-    print("Took", (end - start), "to build the board and setup game data")
-
-    move_alone = time()
-    move = pick_move(board, my_snake_id)
-    print("Computing the move took", (move_alone - start), "time")
-
-    end = time()
-    print("TOTAL time:", (end - start), "to compute move", move)
+    print("Time to compute response:", (end - start), " -- move", move)
     return json.dumps(dict(move=move))
 
 
