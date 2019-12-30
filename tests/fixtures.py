@@ -1,8 +1,9 @@
 import json
+from app.objects.game_data_cache import GameDataCache
 
 DATA_W_ONE_WAY_OUT = dict(
     data={
-        'game': {'id': 'game-id-string'}, 'turn': 103, 'board': {'height': 11, 'width': 11, 'food': [{'x': 8, 'y': 1}, {'x': 0, 'y': 8}],
+        'game': {'id': 'one-way-out'}, 'turn': 103, 'board': {'height': 11, 'width': 11, 'food': [{'x': 8, 'y': 1}, {'x': 0, 'y': 8}],
         'snakes': [
             {'id': 'other-3', 'name': 'other 3', 'health': 100,
             'body': [dict(x=5, y=3), dict(x=5, y=4), dict(x=5, y=5), dict(x=5, y=6), dict(x=6, y=6), dict(x=6, y=5), dict(x=7, y=5), dict(x=7, y=4)]},
@@ -27,7 +28,7 @@ DATA_W_ONE_WAY_OUT = dict(
 
 DATA_W_TWO_WAYS_OUT = dict(
     data={
-        'game': {'id': 'game-id-string'}, 'turn': 103, 'board': {'height': 11, 'width': 11, 'food': [{'x': 8, 'y': 1}, {'x': 0, 'y': 8}],
+        'game': {'id': 'two-ways-out'}, 'turn': 103, 'board': {'height': 11, 'width': 11, 'food': [{'x': 8, 'y': 1}, {'x': 0, 'y': 8}],
         'snakes': [
             {'id': 'other-3', 'name': 'other 3', 'health': 100,
             'body': [dict(x=5, y=3), dict(x=5, y=4), dict(x=5, y=5), dict(x=5, y=6), dict(x=6, y=6), dict(x=6, y=5), dict(x=7, y=5), dict(x=7, y=4)]},
@@ -49,7 +50,7 @@ DATA_W_TWO_WAYS_OUT = dict(
 
 DATA_HEAD_OR_WALL = dict(
     data={
-        'game': {'id': 'game-id-string'}, 'turn': 103, 'board': {'height': 11, 'width': 11,
+        'game': {'id': 'head-or-wall'}, 'turn': 103, 'board': {'height': 11, 'width': 11,
         'food': [dict(x=10, y=0), dict(x=10, y=4), dict(x=7, y=3)],
         'snakes': [
             {'id': 'other-1', 'name': 'other 1', 'health': 100,
@@ -67,20 +68,21 @@ DATA_HEAD_OR_WALL = dict(
 
 DATA_ONE_BIG_COMPONENT = dict(
     data={
-        'game': {'id': 'game-id-string'}, 'turn': 103, 'board': {'height': 11, 'width': 11,
+        'game': {'id': 'one-big-component'}, 'turn': 103, 'board': {'height': 11, 'width': 11,
         'food': [dict(x=10, y=0), dict(x=10, y=4), dict(x=7, y=3)],
         'snakes': [
             {'id': 'other-1', 'name': 'other 1', 'health': 100,
             'body': [dict(x=8, y=7), dict(x=8, y=6), dict(x=8, y=5), dict(x=9, y=5), dict(x=9, y=6), dict(x=10, y=6), dict(x=10, y=5), dict(x=10, y=4), dict(x=10, y=3), dict(x=9, y=3), dict(x=9, y=4), dict(x=8, y=4), dict(x=7, y=4), dict(x=6, y=4), dict(x=6, y=5), dict(x=7, y=5), dict(x=7, y=6), dict(x=7, y=7), dict(x=7, y=8), dict(x=8, y=8), dict(x=9, y=8)]},
 
             {'id': 'snake-id-string', 'name': 'Sneky Snek', 'health': 100,
-            'body': [dict(x=5, y=10), dict(x=5, y=9), dict(x=6, y=9), dict(x=6, y=8), dict(x=5, y=8), dict(x=5, y=7), dict(x=6, y=7), dict(x=6, y=6), dict(x=5, y=6), dict(x=5, y=5), dict(x=4, y=5), dict(x=3, y=5), dict(x=2, y=5), dict(x=1, y=5), dict(x=0, y=5), dict(x=0, y=6), dict(x=1, y=6), dict(x=1, y=5)]}
+            'body': [dict(x=5, y=10), dict(x=5, y=9), dict(x=6, y=9), dict(x=6, y=8), dict(x=5, y=8), dict(x=5, y=7), dict(x=6, y=7), dict(x=6, y=6), dict(x=5, y=6), dict(x=5, y=5), dict(x=4, y=5), dict(x=3, y=5), dict(x=2, y=5), dict(x=1, y=5), dict(x=0, y=5), dict(x=0, y=6), dict(x=1, y=6), dict(x=1, y=7)]}
         ]},
         'you': {'id': 'snake-id-string', 'name': 'Sneky Snek', 'health': 70,
-            'body': [dict(x=0, y=10), dict(x=1, y=10), dict(x=2, y=10), dict(x=3, y=10)]
+            'body': [dict(x=5, y=10), dict(x=5, y=9), dict(x=6, y=9), dict(x=6, y=8), dict(x=5, y=8), dict(x=5, y=7), dict(x=6, y=7), dict(x=6, y=6), dict(x=5, y=6), dict(x=5, y=5), dict(x=4, y=5), dict(x=3, y=5), dict(x=2, y=5), dict(x=1, y=5), dict(x=0, y=5), dict(x=0, y=6), dict(x=1, y=6), dict(x=1, y=5)]
         }
     },
     best_move='left',
+    valid_moves=['left', 'right'],
 )
 
 
@@ -110,4 +112,14 @@ def get_data_with_one_big_component():
     return (
         DATA_ONE_BIG_COMPONENT['data'],
         DATA_ONE_BIG_COMPONENT['best_move'],
+        DATA_ONE_BIG_COMPONENT['valid_moves'],
     )
+
+def get_empty_mock_game_data_cache():
+    return GameDataCache(1)
+
+def get_mock_game_data_cache(game_id, prev_foods):
+    mock_game_data_cache = GameDataCache(1)
+    mock_game_data_cache.new_game(game_id)
+    mock_game_data_cache.update_food_list(game_id, prev_foods)
+    return mock_game_data_cache
