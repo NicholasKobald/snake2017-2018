@@ -15,7 +15,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def home():
-    return "<b>Hello World</b>"
+    return """ {"apiversion": "1", "author": "Nick+Juan", "head": "default", "tail": "default", "color": "#888888"} """
 
 
 def pick_move(data, board, snake_dict):
