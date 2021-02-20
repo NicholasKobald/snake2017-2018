@@ -9,7 +9,7 @@ ipython==7.3.0
 ipython-genutils==0.2.0
 itsdangerous==0.24
 jedi==0.13.3
-Jinja2==2.9.5
+Jinja2==2.10.1
 MarkupSafe==0.23
 packaging==16.8
 parso==0.3.4
