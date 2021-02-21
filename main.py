@@ -82,7 +82,7 @@ def move():
     board_data = data['board']
     snake_dict = create_snake_dict(board_data['snakes'])
     board = Board(board_data['height'], board_data['width'], snake_dict, board_data['food'], data['you']['id'])
-    board.print_board()
+    # board.print_board()
     try:
         prev_food_list = PREV_DATA_BY_GAME_ID[data['game']['id']]['prev_food_list']
     except KeyError:  # bit of a hack, but lets us restart the game server and resume the same game
@@ -108,6 +108,10 @@ def move():
     print("Computing the move took", (move_alone - start), "time")
     end = time()
     print("Took", (end - start), "to compute move", move)
+
+    # they reversed the origin of the coordinates from being (0,0) in to the top LHS
+    # to the bottom LHS, for whatever reason
+    # so here we are.
     if move == "up":
         move = "down"
     elif move == "down":
