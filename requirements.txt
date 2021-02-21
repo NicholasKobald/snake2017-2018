@@ -3,7 +3,7 @@ appnope==0.1.0
 backcall==0.1.0
 click==6.7
 decorator==4.3.2
-Flask==0.12
+Flask==1.0
 ipdb==0.11
 ipython==7.3.0
 ipython-genutils==0.2.0
